@@ -2,6 +2,7 @@ import { chromium, type Browser, type Page } from "playwright";
 import { existsSync, readFileSync, writeFileSync, unlinkSync, mkdirSync } from "node:fs";
 import { homedir } from "node:os";
 import { join } from "node:path";
+import { spawn } from "node:child_process";
 
 const STATE_FILE = "/tmp/browser-cli.json";
 const DEFAULT_PROFILE = join(homedir(), ".browser");
@@ -28,16 +29,48 @@ export function clearState(): void {
   if (existsSync(STATE_FILE)) unlinkSync(STATE_FILE);
 }
 
+function getChromiumPath(): string {
+  const cacheDir = join(homedir(), "Library/Caches/ms-playwright");
+  const dirs = Bun.spawnSync(["ls", cacheDir]).stdout.toString().split("\n");
+  const chromiumDir = dirs.find(d => d.startsWith("chromium-") && !d.includes("headless"));
+  if (!chromiumDir) throw new Error("Chromium not found");
+  return join(cacheDir, chromiumDir, "chrome-mac-arm64/Google Chrome for Testing.app/Contents/MacOS/Google Chrome for Testing");
+}
+
 export async function launch(options: { headless?: boolean; profile?: string }): Promise<number> {
+  // Check if already running
+  const existing = await connect();
+  if (existing) {
+    return existing.state.activeTabId;
+  }
+
   const profile = options.profile ?? DEFAULT_PROFILE;
   if (!existsSync(profile)) mkdirSync(profile, { recursive: true });
 
-  const context = await chromium.launchPersistentContext(profile, {
-    headless: options.headless ?? false,
-    args: [`--remote-debugging-port=${CDP_PORT}`],
-  });
+  const chromiumPath = getChromiumPath();
+  const args = [
+    `--remote-debugging-port=${CDP_PORT}`,
+    `--user-data-dir=${profile}`,
+  ];
+  if (options.headless) args.push("--headless=new");
 
-  if (context.pages().length === 0) await context.newPage();
+  // Spawn detached so it survives CLI exit
+  const child = spawn(chromiumPath, args, {
+    detached: true,
+    stdio: "ignore",
+  });
+  child.unref();
+
+  // Wait for CDP to be ready
+  for (let i = 0; i < 50; i++) {
+    await Bun.sleep(100);
+    try {
+      await chromium.connectOverCDP(`http://localhost:${CDP_PORT}`);
+      break;
+    } catch {
+      // Keep waiting
+    }
+  }
 
   writeState({ activeTabId: 1, nextTabId: 2 });
   return 1;
@@ -58,9 +91,11 @@ export async function connect(): Promise<{ browser: Browser; pages: Page[]; stat
 }
 
 export async function close(): Promise<void> {
-  const conn = await connect();
-  if (conn) {
-    await conn.browser.close();
+  try {
+    const browser = await chromium.connectOverCDP(`http://localhost:${CDP_PORT}`);
+    await browser.close();
+  } catch {
+    // Already closed
   }
   clearState();
 }
