@@ -8,10 +8,7 @@ async function main() {
   switch (cmd) {
     case "start": {
       const headless = args.includes("--headless");
-      const profileIdx = args.indexOf("--profile");
-      const profile = profileIdx >= 0 ? args[profileIdx + 1] : undefined;
-
-      const tabId = await browser.launch({ headless, profile });
+      const tabId = await browser.launch({ headless });
       console.log(`Started Chromium. Active tab: ${tabId}`);
       break;
     }
@@ -71,7 +68,7 @@ async function main() {
     }
 
     case "active": {
-      const tabId = browser.getActiveTabId();
+      const tabId = await browser.getActiveTabId();
       if (tabId !== null) {
         console.log(tabId);
       } else {

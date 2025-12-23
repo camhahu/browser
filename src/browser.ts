@@ -1,141 +1,131 @@
 import { chromium, type Browser, type Page } from "playwright";
-import { existsSync, readFileSync, writeFileSync, unlinkSync, mkdirSync } from "node:fs";
-import { homedir } from "node:os";
-import { join } from "node:path";
 import { spawn } from "node:child_process";
+import { dirname, join } from "node:path";
 
 const STATE_FILE = "/tmp/browser-cli.json";
-const DEFAULT_PROFILE = join(homedir(), ".browser");
-const CDP_PORT = 9222;
 
-// Maps our stable tab IDs to CDP target IDs
 interface State {
+  wsEndpoint: string;
   activeTabId: number;
-  nextTabId: number;
-  tabs: Record<number, string>; // tabId -> targetId
 }
 
-function readState(): State | null {
+async function readState(): Promise<State | null> {
   try {
-    return JSON.parse(readFileSync(STATE_FILE, "utf-8"));
+    const file = Bun.file(STATE_FILE);
+    return await file.json();
   } catch {
     return null;
   }
 }
 
-function writeState(state: State): void {
-  writeFileSync(STATE_FILE, JSON.stringify(state));
+async function writeState(state: State): Promise<void> {
+  await Bun.write(STATE_FILE, JSON.stringify(state));
 }
 
-export function clearState(): void {
-  if (existsSync(STATE_FILE)) unlinkSync(STATE_FILE);
+export async function clearState(): Promise<void> {
+  try {
+    const { unlink } = await import("node:fs/promises");
+    await unlink(STATE_FILE);
+  } catch {
+    // File doesn't exist
+  }
 }
 
-function getChromiumPath(): string {
-  const cacheDir = join(homedir(), "Library/Caches/ms-playwright");
-  const dirs = Bun.spawnSync(["ls", cacheDir]).stdout.toString().split("\n");
-  const chromiumDir = dirs.find(d => d.startsWith("chromium-") && !d.includes("headless"));
-  if (!chromiumDir) throw new Error("Chromium not found");
-  return join(cacheDir, chromiumDir, "chrome-mac-arm64/Google Chrome for Testing.app/Contents/MacOS/Google Chrome for Testing");
+async function connectToBrowser(wsEndpoint: string): Promise<Browser | null> {
+  try {
+    return await chromium.connect(wsEndpoint);
+  } catch {
+    return null;
+  }
 }
 
-function getTargetId(page: Page): string {
-  // Extract target ID from internal Playwright structure
-  // @ts-expect-error accessing internal property
-  return page._mainFrame._page._delegate._targetId;
+function getPages(browser: Browser): Page[] {
+  return browser.contexts()[0]?.pages() ?? [];
 }
 
-export async function launch(options: { headless?: boolean; profile?: string }): Promise<number> {
-  const existing = await connect();
-  if (existing) {
-    return existing.state.activeTabId;
+export async function launch(options: { headless?: boolean }): Promise<number> {
+  // Check if already running
+  const state = await readState();
+  if (state) {
+    const browser = await connectToBrowser(state.wsEndpoint);
+    if (browser) {
+      return state.activeTabId;
+    }
+    await clearState();
   }
 
-  const profile = options.profile ?? DEFAULT_PROFILE;
-  if (!existsSync(profile)) mkdirSync(profile, { recursive: true });
-
-  const chromiumPath = getChromiumPath();
-  const args = [
-    `--remote-debugging-port=${CDP_PORT}`,
-    `--user-data-dir=${profile}`,
-  ];
-  if (options.headless) args.push("--headless=new");
-
-  const child = spawn(chromiumPath, args, {
+  // Launch daemon process
+  const daemonPath = join(dirname(import.meta.path), "daemon.ts");
+  const args = options.headless ? ["--headless"] : [];
+  
+  const child = spawn("bun", ["run", daemonPath, ...args], {
     detached: true,
-    stdio: "ignore",
+    stdio: ["ignore", "pipe", "ignore"],
   });
   child.unref();
 
-  // Wait for CDP to be ready
-  let browser: Browser | null = null;
-  for (let i = 0; i < 50; i++) {
-    await Bun.sleep(100);
-    try {
-      browser = await chromium.connectOverCDP(`http://localhost:${CDP_PORT}`);
-      break;
-    } catch {
-      // Keep waiting
-    }
-  }
-
-  if (!browser) throw new Error("Failed to connect to browser");
-
-  const pages = browser.contexts()[0]?.pages() ?? [];
-  const firstPage = pages[0];
-  if (!firstPage) throw new Error("No page found");
-
-  const targetId = getTargetId(firstPage);
-  writeState({ activeTabId: 1, nextTabId: 2, tabs: { 1: targetId } });
-
-  return 1;
+  // Wait for daemon to write state file
+  return new Promise((resolve, reject) => {
+    let output = "";
+    const cleanup = () => {
+      child.stdout!.destroy();
+    };
+    child.stdout!.on("data", (data) => {
+      output += data.toString();
+      if (output.includes("READY")) {
+        cleanup();
+        resolve(1);
+      }
+    });
+    child.on("error", (err) => {
+      cleanup();
+      reject(err);
+    });
+    child.on("exit", (code) => {
+      cleanup();
+      if (code !== 0) reject(new Error(`Daemon exited with code ${code}`));
+    });
+    setTimeout(() => {
+      cleanup();
+      reject(new Error("Timeout waiting for browser"));
+    }, 10000);
+  });
 }
 
-export async function connect(): Promise<{ browser: Browser; state: State } | null> {
-  const state = readState();
+export async function connect(): Promise<{ browser: Browser; pages: Page[]; state: State } | null> {
+  const state = await readState();
   if (!state) return null;
 
-  try {
-    const browser = await chromium.connectOverCDP(`http://localhost:${CDP_PORT}`);
-    return { browser, state };
-  } catch {
-    clearState();
+  const browser = await connectToBrowser(state.wsEndpoint);
+  if (!browser) {
+    await clearState();
     return null;
   }
-}
 
-function findPageByTargetId(browser: Browser, targetId: string): Page | null {
-  const pages = browser.contexts()[0]?.pages() ?? [];
-  return pages.find(p => getTargetId(p) === targetId) ?? null;
+  return { browser, pages: getPages(browser), state };
 }
 
 export async function close(): Promise<void> {
-  try {
-    const browser = await chromium.connectOverCDP(`http://localhost:${CDP_PORT}`);
-    await browser.close();
-  } catch {
-    // Already closed
+  const state = await readState();
+  if (state) {
+    const browser = await connectToBrowser(state.wsEndpoint);
+    if (browser) {
+      await browser.close();
+    }
   }
-  clearState();
+  await clearState();
 }
 
 export async function openTab(url: string): Promise<{ tabId: number; url: string }> {
   const conn = await connect();
   if (!conn) throw new Error("No browser session");
 
-  const context = conn.browser.contexts()[0];
-  if (!context) throw new Error("No browser context");
-
+  const context = conn.browser.contexts()[0] ?? await conn.browser.newContext();
   const page = await context.newPage();
   await page.goto(url);
 
-  const tabId = conn.state.nextTabId;
-  const targetId = getTargetId(page);
-
-  conn.state.tabs[tabId] = targetId;
-  conn.state.activeTabId = tabId;
-  conn.state.nextTabId = tabId + 1;
-  writeState(conn.state);
+  const tabId = getPages(conn.browser).length;
+  await writeState({ ...conn.state, activeTabId: tabId });
 
   return { tabId, url };
 }
@@ -144,20 +134,14 @@ export async function getTabs(): Promise<{ activeTabId: number; tabs: { id: numb
   const conn = await connect();
   if (!conn) throw new Error("No browser session");
 
-  const tabs: { id: number; url: string; title: string }[] = [];
+  const tabs = await Promise.all(
+    conn.pages.map(async (page, i) => ({
+      id: i + 1,
+      url: page.url(),
+      title: await page.title(),
+    }))
+  );
 
-  for (const [idStr, targetId] of Object.entries(conn.state.tabs)) {
-    const page = findPageByTargetId(conn.browser, targetId);
-    if (page) {
-      tabs.push({
-        id: Number(idStr),
-        url: page.url(),
-        title: await page.title(),
-      });
-    }
-  }
-
-  tabs.sort((a, b) => a.id - b.id);
   return { activeTabId: conn.state.activeTabId, tabs };
 }
 
@@ -165,14 +149,11 @@ export async function useTab(tabId: number): Promise<boolean> {
   const conn = await connect();
   if (!conn) throw new Error("No browser session");
 
-  const targetId = conn.state.tabs[tabId];
-  if (!targetId) return false;
+  if (tabId < 1 || tabId > conn.pages.length) {
+    return false;
+  }
 
-  const page = findPageByTargetId(conn.browser, targetId);
-  if (!page) return false;
-
-  conn.state.activeTabId = tabId;
-  writeState(conn.state);
+  await writeState({ ...conn.state, activeTabId: tabId });
   return true;
 }
 
@@ -180,40 +161,35 @@ export async function closeTab(tabId?: number): Promise<number | null> {
   const conn = await connect();
   if (!conn) throw new Error("No browser session");
 
-  const targetId = tabId ?? conn.state.activeTabId;
-  const targetIdStr = conn.state.tabs[targetId];
-  if (!targetIdStr) return null;
-
-  const page = findPageByTargetId(conn.browser, targetIdStr);
+  const id = tabId ?? conn.state.activeTabId;
+  const page = conn.pages[id - 1];
   if (!page) return null;
 
   await page.close();
-  delete conn.state.tabs[targetId];
 
-  // Update active tab if we closed it
-  if (conn.state.activeTabId === targetId) {
-    const remainingIds = Object.keys(conn.state.tabs).map(Number).sort((a, b) => a - b);
-    conn.state.activeTabId = remainingIds[0] ?? 0;
+  const remaining = conn.pages.length - 1;
+  let newActive = conn.state.activeTabId;
+  if (id === conn.state.activeTabId) {
+    newActive = Math.min(id, remaining) || 1;
+  } else if (id < conn.state.activeTabId) {
+    newActive = conn.state.activeTabId - 1;
   }
 
-  writeState(conn.state);
-  return targetId;
+  await writeState({ ...conn.state, activeTabId: newActive });
+  return id;
 }
 
 export async function getActivePage(): Promise<Page> {
   const conn = await connect();
   if (!conn) throw new Error("No browser session");
 
-  const targetId = conn.state.tabs[conn.state.activeTabId];
-  if (!targetId) throw new Error("No active tab");
-
-  const page = findPageByTargetId(conn.browser, targetId);
-  if (!page) throw new Error("Active tab not found");
+  const page = conn.pages[conn.state.activeTabId - 1];
+  if (!page) throw new Error("No active tab");
 
   return page;
 }
 
-export function getActiveTabId(): number | null {
-  const state = readState();
+export async function getActiveTabId(): Promise<number | null> {
+  const state = await readState();
   return state?.activeTabId ?? null;
 }
