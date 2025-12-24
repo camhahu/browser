@@ -10,12 +10,6 @@ program
   .description("CLI tool for controlling a Chromium browser via CDP")
   .version("1.0.0");
 
-async function ensureBrowser() {
-  if (!await browser.isRunning()) {
-    await browser.launch({});
-  }
-}
-
 program
   .command("start")
   .description("Start the browser")
@@ -37,7 +31,7 @@ program
   .command("open <url>")
   .description("Open a new tab with the given URL")
   .action(async (url) => {
-    await ensureBrowser();
+    await browser.ensureRunning();
     const { tabId } = await browser.openTab(url);
     console.log(`Opened tab ${tabId}: ${url}`);
   });
@@ -46,7 +40,7 @@ program
   .command("tabs")
   .description("List all open tabs")
   .action(async () => {
-    await ensureBrowser();
+    await browser.ensureRunning();
     const { activeTabId, tabs } = await browser.getTabs();
     console.log(`Active tab: ${activeTabId}`);
     for (const tab of tabs) {
@@ -58,7 +52,7 @@ program
   .command("use <tab-id>")
   .description("Switch to a specific tab")
   .action(async (tabId) => {
-    await ensureBrowser();
+    await browser.ensureRunning();
     const ok = await browser.useTab(tabId);
     if (ok) {
       console.log(`Active tab is now ${tabId}`);
@@ -72,7 +66,7 @@ program
   .command("close [tab-id]")
   .description("Close a tab (defaults to active tab)")
   .action(async (tabId) => {
-    await ensureBrowser();
+    await browser.ensureRunning();
     const closed = await browser.closeTab(tabId);
     if (closed !== null) {
       console.log(`Closed tab ${closed}`);
@@ -99,7 +93,7 @@ program
   .command("url")
   .description("Print the URL of the active tab")
   .action(async () => {
-    await ensureBrowser();
+    await browser.ensureRunning();
     const url = await browser.getUrl();
     console.log(url);
   });
@@ -108,7 +102,7 @@ program
   .command("title")
   .description("Print the title of the active tab")
   .action(async () => {
-    await ensureBrowser();
+    await browser.ensureRunning();
     const title = await browser.getTitle();
     console.log(title);
   });
@@ -117,7 +111,7 @@ program
   .command("find <selector>")
   .description("Find elements matching a CSS selector")
   .action(async (selector) => {
-    await ensureBrowser();
+    await browser.ensureRunning();
     const count = await browser.find(selector);
     console.log(`Found ${count} match${count === 1 ? "" : "es"} for: ${selector}`);
   });
@@ -126,7 +120,7 @@ program
   .command("click <selector>")
   .description("Click an element matching a CSS selector")
   .action(async (selector) => {
-    await ensureBrowser();
+    await browser.ensureRunning();
     await browser.click(selector);
     console.log(`Clicked: ${selector}`);
   });
@@ -135,7 +129,7 @@ program
   .command("type <text> <selector>")
   .description("Type text into an element matching a CSS selector")
   .action(async (text, selector) => {
-    await ensureBrowser();
+    await browser.ensureRunning();
     await browser.type(text, selector);
     console.log(`Typed into: ${selector}`);
   });
@@ -144,7 +138,7 @@ program
   .command("wait <selector>")
   .description("Wait for an element matching a CSS selector to appear")
   .action(async (selector) => {
-    await ensureBrowser();
+    await browser.ensureRunning();
     await browser.wait(selector);
     console.log(`Visible: ${selector}`);
   });
