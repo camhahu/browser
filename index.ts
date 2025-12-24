@@ -71,7 +71,7 @@ program
     if (closed !== null) {
       console.log(`Closed tab ${closed}`);
     } else {
-      console.error(`No such tab: ${tabId ?? "active"}`);
+      console.error(tabId ? `No such tab: ${tabId}` : "No active tab");
       process.exit(1);
     }
   });
