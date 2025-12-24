@@ -6,7 +6,6 @@
 - `navigate <url>` - navigate current tab (vs `open` which creates new tab)
 
 ## Important
-- `eval <js>` - run arbitrary JS for complex interactions (fill forms, scroll, etc.)
 - `waitfor:hidden`, `waitfor:navigation` - wait variants beyond element visibility
 - `back` / `forward` / `refresh` - basic navigation
 - `select <selector> <value>` - dropdown selection (common form element)
