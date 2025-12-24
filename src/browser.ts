@@ -131,7 +131,6 @@ export async function closeTab(tabId?: string): Promise<string | null> {
     await CDP.Close({ port: CDP_PORT, id });
     if (state?.activeTabId === id) {
       const targets = await listTargets();
-      // Exclude the just-closed tab when finding the next active tab
       const next = targets.find(t => t.type === "page" && t.id !== id);
       await writeState({ activeTabId: next?.id ?? "" });
     }
@@ -145,7 +144,6 @@ async function withActivePage<T>(fn: (client: CDP.Client) => Promise<T>): Promis
   const state = await readState();
   if (!state?.activeTabId) throw new Error("No active tab");
   
-  // Verify the target still exists before connecting
   const targets = await listTargets();
   const target = targets.find(t => t.id === state.activeTabId);
   if (!target) {
