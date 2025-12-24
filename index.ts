@@ -143,6 +143,17 @@ program
     console.log(`Visible: ${selector}`);
   });
 
+program
+  .command("eval <js>")
+  .description("Evaluate JavaScript in the active tab")
+  .action(async (js) => {
+    await browser.ensureRunning();
+    const result = await browser.evaluate(js);
+    if (result !== undefined) {
+      console.log(typeof result === "object" ? JSON.stringify(result, null, 2) : result);
+    }
+  });
+
 program.parseAsync(process.argv).catch((err) => {
   console.error(err.message);
   process.exit(1);

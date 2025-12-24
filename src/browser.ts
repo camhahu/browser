@@ -226,3 +226,19 @@ export async function wait(selector: string, timeout = 15000): Promise<void> {
   }
   throw new Error(`Timed out waiting for: ${selector}`);
 }
+
+export async function evaluate(js: string): Promise<unknown> {
+  return withActivePage(async (client) => {
+    await client.Runtime.enable();
+    const { result, exceptionDetails } = await client.Runtime.evaluate({
+      expression: js,
+      awaitPromise: true,
+      returnByValue: true,
+    });
+    if (exceptionDetails) {
+      const msg = exceptionDetails.exception?.description ?? exceptionDetails.text;
+      throw new Error(msg);
+    }
+    return result.value;
+  });
+}
