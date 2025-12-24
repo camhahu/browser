@@ -141,16 +141,10 @@ export async function closeTab(tabId?: string): Promise<string | null> {
 }
 
 async function withActivePage<T>(fn: (client: CDP.Client) => Promise<T>): Promise<T> {
-  const state = await readState();
-  if (!state?.activeTabId) throw new Error("No active tab");
+  const target = await getActiveTarget();
+  if (!target) throw new Error("No active tab");
   
-  const targets = await listTargets();
-  const target = targets.find(t => t.id === state.activeTabId);
-  if (!target) {
-    throw new Error(`No such tab: ${state.activeTabId}`);
-  }
-  
-  const client = await CDP({ port: CDP_PORT, target: state.activeTabId });
+  const client = await CDP({ port: CDP_PORT, target: target.id });
   try {
     return await fn(client);
   } finally {
