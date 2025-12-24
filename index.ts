@@ -3,8 +3,15 @@
 import * as browser from "./src/browser";
 
 const [cmd, ...args] = process.argv.slice(2);
+const noStart = args.includes("--no-start");
+
+const needsBrowser = !["start", "stop"].includes(cmd ?? "");
 
 async function main() {
+  if (needsBrowser && !noStart && !await browser.isRunning()) {
+    await browser.launch({});
+  }
+
   switch (cmd) {
     case "start": {
       const headless = args.includes("--headless");

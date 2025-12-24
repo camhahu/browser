@@ -40,12 +40,18 @@ async function listTargets(): Promise<CDP.Target[]> {
   return CDP.List({ port: CDP_PORT });
 }
 
-async function isRunning(): Promise<boolean> {
+export async function isRunning(): Promise<boolean> {
   try {
     await listTargets();
     return true;
   } catch {
     return false;
+  }
+}
+
+export async function ensureRunning(): Promise<void> {
+  if (!await isRunning()) {
+    await launch({});
   }
 }
 
