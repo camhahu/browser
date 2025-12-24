@@ -131,7 +131,8 @@ export async function closeTab(tabId?: string): Promise<string | null> {
     await CDP.Close({ port: CDP_PORT, id });
     if (state?.activeTabId === id) {
       const targets = await listTargets();
-      const next = targets.find(t => t.type === "page");
+      // Exclude the just-closed tab when finding the next active tab
+      const next = targets.find(t => t.type === "page" && t.id !== id);
       await writeState({ activeTabId: next?.id ?? "" });
     }
     return id;
@@ -143,6 +144,13 @@ export async function closeTab(tabId?: string): Promise<string | null> {
 async function withActivePage<T>(fn: (client: CDP.Client) => Promise<T>): Promise<T> {
   const state = await readState();
   if (!state?.activeTabId) throw new Error("No active tab");
+  
+  // Verify the target still exists before connecting
+  const targets = await listTargets();
+  const target = targets.find(t => t.id === state.activeTabId);
+  if (!target) {
+    throw new Error(`No such tab: ${state.activeTabId}`);
+  }
   
   const client = await CDP({ port: CDP_PORT, target: state.activeTabId });
   try {
@@ -187,10 +195,14 @@ export async function click(selector: string): Promise<void> {
   return withActivePage(async (client) => {
     await client.Runtime.enable();
     const { result } = await client.Runtime.evaluate({
-      expression: `document.querySelector(${JSON.stringify(selector)})?.click()`,
+      expression: `(() => {
+        const el = document.querySelector(${JSON.stringify(selector)});
+        if (!el) throw new Error("Element not found");
+        el.click();
+      })()`,
       awaitPromise: true,
     });
-    if (result.subtype === "error") throw new Error(`Failed to click: ${selector}`);
+    if (result.subtype === "error") throw new Error(`Element not found: ${selector}`);
   });
 }
 
