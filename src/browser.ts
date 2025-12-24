@@ -24,9 +24,7 @@ async function writeState(state: State): Promise<void> {
 }
 
 async function clearState(): Promise<void> {
-  try {
-    await Bun.$`rm -f ${STATE_FILE}`.quiet();
-  } catch {}
+  await Bun.$`rm -f ${STATE_FILE}`.quiet();
 }
 
 function getChromiumPath(): string {
@@ -71,7 +69,6 @@ export async function launch(options: { headless?: boolean }): Promise<string> {
     stdio: "ignore",
   }).unref();
 
-  // Wait for CDP
   for (let i = 0; i < 50; i++) {
     await Bun.sleep(100);
     if (await isRunning()) {
@@ -88,13 +85,11 @@ export async function launch(options: { headless?: boolean }): Promise<string> {
 }
 
 export async function close(): Promise<void> {
-  try {
-    const targets = await listTargets();
-    if (targets.length > 0) {
-      const client = await CDP({ port: CDP_PORT, target: targets[0] });
-      await client.Browser.close();
-    }
-  } catch {}
+  const targets = await listTargets().catch(() => []);
+  if (targets.length > 0) {
+    const client = await CDP({ port: CDP_PORT, target: targets[0] });
+    await client.Browser.close();
+  }
   await clearState();
 }
 
@@ -151,17 +146,20 @@ async function withActivePage<T>(fn: (client: CDP.Client) => Promise<T>): Promis
   }
 }
 
-export async function getUrl(): Promise<string> {
+async function getActiveTarget(): Promise<CDP.Target | null> {
   const state = await readState();
+  if (!state?.activeTabId) return null;
   const targets = await listTargets();
-  const target = targets.find(t => t.id === state?.activeTabId);
+  return targets.find(t => t.id === state.activeTabId) ?? null;
+}
+
+export async function getUrl(): Promise<string> {
+  const target = await getActiveTarget();
   return target?.url ?? "";
 }
 
 export async function getTitle(): Promise<string> {
-  const state = await readState();
-  const targets = await listTargets();
-  const target = targets.find(t => t.id === state?.activeTabId);
+  const target = await getActiveTarget();
   return target?.title ?? "";
 }
 
