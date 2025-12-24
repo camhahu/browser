@@ -7,10 +7,11 @@
     "browser": "./index.ts"
   },
   "dependencies": {
-    "playwright": "^1.57.0"
+    "chrome-remote-interface": "^0.33.3"
   },
   "devDependencies": {
-    "@types/bun": "latest"
+    "@types/bun": "latest",
+    "@types/chrome-remote-interface": "^0.33.0"
   },
   "peerDependencies": {
     "typescript": "^5"

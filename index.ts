@@ -40,7 +40,7 @@ async function main() {
     }
 
     case "use": {
-      const tabId = Number(args[0]);
+      const tabId = args[0];
       if (!tabId) {
         console.log("Usage: browser use <tab-id>");
         process.exit(1);
@@ -56,7 +56,7 @@ async function main() {
     }
 
     case "close": {
-      const tabId = args[0] ? Number(args[0]) : undefined;
+      const tabId = args[0];
       const closed = await browser.closeTab(tabId);
       if (closed !== null) {
         console.log(`Closed tab ${closed}`);
@@ -75,6 +75,63 @@ async function main() {
         console.log("No browser session");
         process.exit(1);
       }
+      break;
+    }
+
+    case "url": {
+      const url = await browser.getUrl();
+      console.log(url);
+      break;
+    }
+
+    case "title": {
+      const title = await browser.getTitle();
+      console.log(title);
+      break;
+    }
+
+    case "find": {
+      const selector = args[0];
+      if (!selector) {
+        console.log("Usage: browser find <selector>");
+        process.exit(1);
+      }
+      const count = await browser.find(selector);
+      console.log(`Found ${count} match${count === 1 ? "" : "es"} for: ${selector}`);
+      break;
+    }
+
+    case "click": {
+      const selector = args[0];
+      if (!selector) {
+        console.log("Usage: browser click <selector>");
+        process.exit(1);
+      }
+      await browser.click(selector);
+      console.log(`Clicked: ${selector}`);
+      break;
+    }
+
+    case "type": {
+      const text = args[0];
+      const selector = args[1];
+      if (!text || !selector) {
+        console.log("Usage: browser type <text> <selector>");
+        process.exit(1);
+      }
+      await browser.type(text, selector);
+      console.log(`Typed into: ${selector}`);
+      break;
+    }
+
+    case "wait": {
+      const selector = args[0];
+      if (!selector) {
+        console.log("Usage: browser wait <selector>");
+        process.exit(1);
+      }
+      await browser.wait(selector);
+      console.log(`Visible: ${selector}`);
       break;
     }
 

@@ -1,18 +1,19 @@
-import { chromium, type Browser, type Page } from "playwright";
+import CDP from "chrome-remote-interface";
+import { homedir } from "node:os";
+import { join } from "node:path";
 import { spawn } from "node:child_process";
-import { dirname, join } from "node:path";
 
 const STATE_FILE = "/tmp/browser-cli.json";
+const DEFAULT_PROFILE = join(homedir(), ".browser");
+const CDP_PORT = 9222;
 
 interface State {
-  wsEndpoint: string;
-  activeTabId: number;
+  activeTabId: string;
 }
 
 async function readState(): Promise<State | null> {
   try {
-    const file = Bun.file(STATE_FILE);
-    return await file.json();
+    return await Bun.file(STATE_FILE).json();
   } catch {
     return null;
   }
@@ -22,174 +23,195 @@ async function writeState(state: State): Promise<void> {
   await Bun.write(STATE_FILE, JSON.stringify(state));
 }
 
-export async function clearState(): Promise<void> {
+async function clearState(): Promise<void> {
   try {
-    const { unlink } = await import("node:fs/promises");
-    await unlink(STATE_FILE);
-  } catch {
-    // File doesn't exist
-  }
+    await Bun.$`rm -f ${STATE_FILE}`.quiet();
+  } catch {}
 }
 
-async function connectToBrowser(wsEndpoint: string): Promise<Browser | null> {
+function getChromiumPath(): string {
+  const cacheDir = join(homedir(), "Library/Caches/ms-playwright");
+  const result = Bun.spawnSync(["ls", cacheDir]);
+  const dirs = result.stdout.toString().split("\n");
+  const chromiumDir = dirs.find(d => d.startsWith("chromium-") && !d.includes("headless"));
+  if (!chromiumDir) throw new Error("Chromium not found. Run: bunx playwright install chromium");
+  return join(cacheDir, chromiumDir, "chrome-mac-arm64/Google Chrome for Testing.app/Contents/MacOS/Google Chrome for Testing");
+}
+
+async function listTargets(): Promise<CDP.Target[]> {
+  return CDP.List({ port: CDP_PORT });
+}
+
+async function isRunning(): Promise<boolean> {
   try {
-    return await chromium.connect(wsEndpoint);
+    await listTargets();
+    return true;
   } catch {
-    return null;
+    return false;
   }
 }
 
-function getPages(browser: Browser): Page[] {
-  return browser.contexts()[0]?.pages() ?? [];
-}
-
-export async function launch(options: { headless?: boolean }): Promise<number> {
-  // Check if already running
-  const state = await readState();
-  if (state) {
-    const browser = await connectToBrowser(state.wsEndpoint);
-    if (browser) {
-      return state.activeTabId;
-    }
-    await clearState();
+export async function launch(options: { headless?: boolean }): Promise<string> {
+  if (await isRunning()) {
+    const state = await readState();
+    return state?.activeTabId ?? "1";
   }
 
-  // Launch daemon process
-  const daemonPath = join(dirname(import.meta.path), "daemon.ts");
-  const args = options.headless ? ["--headless"] : [];
-  
-  const child = spawn("bun", ["run", daemonPath, ...args], {
+  await Bun.$`mkdir -p ${DEFAULT_PROFILE}`.quiet();
+
+  const chromiumPath = getChromiumPath();
+  const args = [
+    `--remote-debugging-port=${CDP_PORT}`,
+    `--user-data-dir=${DEFAULT_PROFILE}`,
+  ];
+  if (options.headless) args.push("--headless=new");
+
+  spawn(chromiumPath, args, {
     detached: true,
-    stdio: ["ignore", "pipe", "ignore"],
-  });
-  child.unref();
+    stdio: "ignore",
+  }).unref();
 
-  // Wait for daemon to write state file
-  return new Promise((resolve, reject) => {
-    let output = "";
-    const cleanup = () => {
-      child.stdout!.destroy();
-    };
-    child.stdout!.on("data", (data) => {
-      output += data.toString();
-      if (output.includes("READY")) {
-        cleanup();
-        resolve(1);
+  // Wait for CDP
+  for (let i = 0; i < 50; i++) {
+    await Bun.sleep(100);
+    if (await isRunning()) {
+      const targets = await listTargets();
+      const page = targets.find(t => t.type === "page");
+      if (page) {
+        await writeState({ activeTabId: page.id });
+        return page.id;
       }
-    });
-    child.on("error", (err) => {
-      cleanup();
-      reject(err);
-    });
-    child.on("exit", (code) => {
-      cleanup();
-      if (code !== 0) reject(new Error(`Daemon exited with code ${code}`));
-    });
-    setTimeout(() => {
-      cleanup();
-      reject(new Error("Timeout waiting for browser"));
-    }, 10000);
-  });
-}
-
-export async function connect(): Promise<{ browser: Browser; pages: Page[]; state: State } | null> {
-  const state = await readState();
-  if (!state) return null;
-
-  const browser = await connectToBrowser(state.wsEndpoint);
-  if (!browser) {
-    await clearState();
-    return null;
+    }
   }
 
-  return { browser, pages: getPages(browser), state };
+  throw new Error("Failed to start browser");
 }
 
 export async function close(): Promise<void> {
-  const state = await readState();
-  if (state) {
-    const browser = await connectToBrowser(state.wsEndpoint);
-    if (browser) {
-      await browser.close();
+  try {
+    const targets = await listTargets();
+    if (targets.length > 0) {
+      const client = await CDP({ port: CDP_PORT, target: targets[0] });
+      await client.Browser.close();
     }
-  }
+  } catch {}
   await clearState();
 }
 
-export async function openTab(url: string): Promise<{ tabId: number; url: string }> {
-  const conn = await connect();
-  if (!conn) throw new Error("No browser session");
-
-  const context = conn.browser.contexts()[0] ?? await conn.browser.newContext();
-  const page = await context.newPage();
-  await page.goto(url);
-
-  const tabId = getPages(conn.browser).length;
-  await writeState({ ...conn.state, activeTabId: tabId });
-
-  return { tabId, url };
+export async function openTab(url: string): Promise<{ tabId: string; url: string }> {
+  const target = await CDP.New({ port: CDP_PORT, url });
+  await writeState({ activeTabId: target.id });
+  return { tabId: target.id, url };
 }
 
-export async function getTabs(): Promise<{ activeTabId: number; tabs: { id: number; url: string; title: string }[] }> {
-  const conn = await connect();
-  if (!conn) throw new Error("No browser session");
-
-  const tabs = await Promise.all(
-    conn.pages.map(async (page, i) => ({
-      id: i + 1,
-      url: page.url(),
-      title: await page.title(),
-    }))
-  );
-
-  return { activeTabId: conn.state.activeTabId, tabs };
+export async function getTabs(): Promise<{ activeTabId: string; tabs: { id: string; url: string; title: string }[] }> {
+  const state = await readState();
+  const targets = await listTargets();
+  const tabs = targets
+    .filter(t => t.type === "page")
+    .map(t => ({ id: t.id, url: t.url, title: t.title }));
+  return { activeTabId: state?.activeTabId ?? tabs[0]?.id ?? "", tabs };
 }
 
-export async function useTab(tabId: number): Promise<boolean> {
-  const conn = await connect();
-  if (!conn) throw new Error("No browser session");
-
-  if (tabId < 1 || tabId > conn.pages.length) {
-    return false;
-  }
-
-  await writeState({ ...conn.state, activeTabId: tabId });
+export async function useTab(tabId: string): Promise<boolean> {
+  const targets = await listTargets();
+  const target = targets.find(t => t.id === tabId);
+  if (!target) return false;
+  await writeState({ activeTabId: tabId });
   return true;
 }
 
-export async function closeTab(tabId?: number): Promise<number | null> {
-  const conn = await connect();
-  if (!conn) throw new Error("No browser session");
+export async function closeTab(tabId?: string): Promise<string | null> {
+  const state = await readState();
+  const id = tabId ?? state?.activeTabId;
+  if (!id) return null;
 
-  const id = tabId ?? conn.state.activeTabId;
-  const page = conn.pages[id - 1];
-  if (!page) return null;
-
-  await page.close();
-
-  const remaining = conn.pages.length - 1;
-  let newActive = conn.state.activeTabId;
-  if (id === conn.state.activeTabId) {
-    newActive = Math.min(id, remaining) || 1;
-  } else if (id < conn.state.activeTabId) {
-    newActive = conn.state.activeTabId - 1;
+  try {
+    await CDP.Close({ port: CDP_PORT, id });
+    if (state?.activeTabId === id) {
+      const targets = await listTargets();
+      const next = targets.find(t => t.type === "page");
+      await writeState({ activeTabId: next?.id ?? "" });
+    }
+    return id;
+  } catch {
+    return null;
   }
-
-  await writeState({ ...conn.state, activeTabId: newActive });
-  return id;
 }
 
-export async function getActivePage(): Promise<Page> {
-  const conn = await connect();
-  if (!conn) throw new Error("No browser session");
-
-  const page = conn.pages[conn.state.activeTabId - 1];
-  if (!page) throw new Error("No active tab");
-
-  return page;
+async function withActivePage<T>(fn: (client: CDP.Client) => Promise<T>): Promise<T> {
+  const state = await readState();
+  if (!state?.activeTabId) throw new Error("No active tab");
+  
+  const client = await CDP({ port: CDP_PORT, target: state.activeTabId });
+  try {
+    return await fn(client);
+  } finally {
+    await client.close();
+  }
 }
 
-export async function getActiveTabId(): Promise<number | null> {
+export async function getUrl(): Promise<string> {
+  const state = await readState();
+  const targets = await listTargets();
+  const target = targets.find(t => t.id === state?.activeTabId);
+  return target?.url ?? "";
+}
+
+export async function getTitle(): Promise<string> {
+  const state = await readState();
+  const targets = await listTargets();
+  const target = targets.find(t => t.id === state?.activeTabId);
+  return target?.title ?? "";
+}
+
+export async function getActiveTabId(): Promise<string | null> {
   const state = await readState();
   return state?.activeTabId ?? null;
+}
+
+export async function find(selector: string): Promise<number> {
+  return withActivePage(async (client) => {
+    await client.DOM.enable();
+    const { root } = await client.DOM.getDocument();
+    const { nodeIds } = await client.DOM.querySelectorAll({ nodeId: root.nodeId, selector });
+    return nodeIds.length;
+  });
+}
+
+export async function click(selector: string): Promise<void> {
+  return withActivePage(async (client) => {
+    await client.Runtime.enable();
+    const { result } = await client.Runtime.evaluate({
+      expression: `document.querySelector(${JSON.stringify(selector)})?.click()`,
+      awaitPromise: true,
+    });
+    if (result.subtype === "error") throw new Error(`Failed to click: ${selector}`);
+  });
+}
+
+export async function type(text: string, selector: string): Promise<void> {
+  return withActivePage(async (client) => {
+    await client.Runtime.enable();
+    const { result } = await client.Runtime.evaluate({
+      expression: `(() => {
+        const el = document.querySelector(${JSON.stringify(selector)});
+        if (!el) throw new Error("Element not found");
+        el.value = ${JSON.stringify(text)};
+        el.dispatchEvent(new Event("input", { bubbles: true }));
+      })()`,
+      awaitPromise: true,
+    });
+    if (result.subtype === "error") throw new Error(`Failed to type: ${selector}`);
+  });
+}
+
+export async function wait(selector: string, timeout = 15000): Promise<void> {
+  const start = Date.now();
+  while (Date.now() - start < timeout) {
+    const count = await find(selector);
+    if (count > 0) return;
+    await Bun.sleep(100);
+  }
+  throw new Error(`Timed out waiting for: ${selector}`);
 }
