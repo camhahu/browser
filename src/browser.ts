@@ -242,3 +242,38 @@ export async function evaluate(js: string): Promise<unknown> {
     return result.value;
   });
 }
+
+export async function console(callback: (type: string, args: string[]) => void): Promise<() => Promise<void>> {
+  const target = await getActiveTarget();
+  if (!target) throw new Error("No active tab");
+
+  const client = await CDP({ port: CDP_PORT, target: target.id });
+  await client.Runtime.enable();
+
+  client.Runtime.consoleAPICalled(async (params) => {
+    const args: string[] = [];
+    for (const arg of params.args) {
+      if (arg.value !== undefined) {
+        args.push(typeof arg.value === "object" ? JSON.stringify(arg.value) : String(arg.value));
+      } else if (arg.objectId) {
+        try {
+          const { result } = await client.Runtime.callFunctionOn({
+            objectId: arg.objectId,
+            functionDeclaration: "function() { return JSON.stringify(this); }",
+            returnByValue: true,
+          });
+          args.push(result.value ?? arg.description ?? arg.type);
+        } catch {
+          args.push(arg.description ?? arg.type);
+        }
+      } else {
+        args.push(arg.description ?? arg.type);
+      }
+    }
+    callback(params.type, args);
+  });
+
+  return async () => {
+    await client.close();
+  };
+}

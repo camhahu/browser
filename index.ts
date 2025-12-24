@@ -154,6 +154,22 @@ program
     }
   });
 
+program
+  .command("console")
+  .description("Stream console output from the active tab (tip: run detached with `browser console > /tmp/console.log 2>&1 &`)")
+  .action(async () => {
+    await browser.ensureRunning();
+    const close = await browser.console((type, args) => {
+      const prefix = type === "log" ? "" : `[${type}] `;
+      console.log(`${prefix}${args.join(" ")}`);
+    });
+    process.on("SIGINT", async () => {
+      await close();
+      process.exit(0);
+    });
+    console.error("Listening for console output... (Ctrl+C to stop)");
+  });
+
 program.parseAsync(process.argv).catch((err) => {
   console.error(err.message);
   process.exit(1);
