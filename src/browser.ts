@@ -6,6 +6,8 @@ import { spawn } from "node:child_process";
 const STATE_FILE = "/tmp/browser-cli.json";
 const DEFAULT_PROFILE = join(homedir(), ".browser");
 const CDP_PORT = 9222;
+const LAUNCH_TIMEOUT_MS = 5000;
+const LAUNCH_POLL_INTERVAL_MS = 100;
 
 interface State {
   activeTabId: string;
@@ -75,8 +77,9 @@ export async function launch(options: { headless?: boolean }): Promise<string> {
     stdio: "ignore",
   }).unref();
 
-  for (let i = 0; i < 50; i++) {
-    await Bun.sleep(100);
+  const maxAttempts = LAUNCH_TIMEOUT_MS / LAUNCH_POLL_INTERVAL_MS;
+  for (let i = 0; i < maxAttempts; i++) {
+    await Bun.sleep(LAUNCH_POLL_INTERVAL_MS);
     if (await isRunning()) {
       const targets = await listTargets();
       const page = targets.find(t => t.type === "page");
