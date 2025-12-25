@@ -11,6 +11,11 @@ import {
 } from "./src/page";
 import { network, networkRequest, clearNetwork, type NetworkFilter } from "./src/network";
 import { runDaemon } from "./src/network-daemon";
+import {
+  getCookies, getCookie, setCookie, deleteCookie, clearCookies,
+  getStorageEntries, getStorageValue, setStorageValue, deleteStorageValue, clearStorage,
+  type StorageType,
+} from "./src/storage";
 
 const program = new Command();
 
@@ -335,6 +340,121 @@ program
         console.log(`#${req.id.toString().padEnd(4)} ${method} ${status.padEnd(3)} ${url}  ${duration}${failed}`);
       }
     }
+  });
+
+const cookiesCmd = program
+  .command("cookies [name]")
+  .description("List cookies or get a specific cookie value")
+  .action(async (name) => {
+    await ensureRunning();
+    if (name) {
+      const cookie = await getCookie(name);
+      if (!cookie) {
+        console.error(`Cookie not found: ${name}`);
+        process.exit(1);
+      }
+      console.log(cookie.value);
+    } else {
+      const cookies = await getCookies();
+      if (cookies.length === 0) {
+        console.log("No cookies");
+        return;
+      }
+      for (const c of cookies) {
+        const expires = c.expires === -1 ? "session" : new Date(c.expires * 1000).toISOString().split("T")[0];
+        const value = c.value.length > 30 ? c.value.slice(0, 30) + "..." : c.value;
+        console.log(`${c.name.padEnd(24)} ${value.padEnd(34)} ${c.domain.padEnd(20)} ${expires}`);
+      }
+    }
+  });
+
+cookiesCmd
+  .command("set <name> <value>")
+  .description("Set a cookie")
+  .option("-d, --domain <domain>", "Cookie domain (defaults to current hostname)")
+  .action(async function(name, value) {
+    await ensureRunning();
+    const options = this.optsWithGlobals();
+    await setCookie(name, value, options.domain);
+    console.log(`Set cookie: ${name}`);
+  });
+
+cookiesCmd
+  .command("delete <name>")
+  .description("Delete a cookie")
+  .action(async (name) => {
+    await ensureRunning();
+    await deleteCookie(name);
+    console.log(`Deleted cookie: ${name}`);
+  });
+
+cookiesCmd
+  .command("clear")
+  .description("Clear all cookies for the current origin")
+  .action(async () => {
+    await ensureRunning();
+    await clearCookies();
+    console.log("Cleared all cookies");
+  });
+
+const storageCmd = program
+  .command("storage [key]")
+  .description("List localStorage keys or get a specific value")
+  .option("-s, --session", "Use sessionStorage instead of localStorage")
+  .action(async (key, options) => {
+    await ensureRunning();
+    const type: StorageType = options.session ? "session" : "local";
+    if (key) {
+      const value = await getStorageValue(key, type);
+      if (value === null) {
+        console.error(`Key not found: ${key}`);
+        process.exit(1);
+      }
+      console.log(value);
+    } else {
+      const entries = await getStorageEntries(type);
+      if (entries.length === 0) {
+        console.log(`No ${type}Storage entries`);
+        return;
+      }
+      for (const { key: k, value: v } of entries) {
+        const truncated = v.length > 50 ? v.slice(0, 50) + "..." : v;
+        console.log(`${k.padEnd(30)} ${truncated}`);
+      }
+    }
+  });
+
+storageCmd
+  .command("set <key> <value>")
+  .description("Set a storage value")
+  .action(async function(key, value) {
+    await ensureRunning();
+    const options = this.optsWithGlobals();
+    const type: StorageType = options.session ? "session" : "local";
+    await setStorageValue(key, value, type);
+    console.log(`Set ${type}Storage: ${key}`);
+  });
+
+storageCmd
+  .command("delete <key>")
+  .description("Delete a storage key")
+  .action(async function(key) {
+    await ensureRunning();
+    const options = this.optsWithGlobals();
+    const type: StorageType = options.session ? "session" : "local";
+    await deleteStorageValue(key, type);
+    console.log(`Deleted ${type}Storage: ${key}`);
+  });
+
+storageCmd
+  .command("clear")
+  .description("Clear all storage")
+  .action(async function() {
+    await ensureRunning();
+    const options = this.optsWithGlobals();
+    const type: StorageType = options.session ? "session" : "local";
+    await clearStorage(type);
+    console.log(`Cleared ${type}Storage`);
   });
 
 program

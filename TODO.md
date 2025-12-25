@@ -10,8 +10,6 @@
 ## Nice to have
 - `hover <selector>` - trigger hover states/menus
 - `scroll <selector>` / `scroll top/bottom` - scroll into view or page position
-- `pdf` - save page as PDF for records
-- `cookies` / `storage` - inspect/manipulate state
 - `network` - wait for network idle, useful after actions
 
 ## Future (still under consideration)
