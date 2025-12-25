@@ -170,6 +170,45 @@ program
     console.error("Listening for console output... (Ctrl+C to stop)");
   });
 
+program
+  .command("html [selector]")
+  .description("Get HTML content of an element (default: body)")
+  .option("-l, --limit <chars>", "Character limit", "2000")
+  .action(async (selector = "body", options) => {
+    await browser.ensureRunning();
+    const limit = parseInt(options.limit, 10);
+    const result = await browser.html(selector, limit);
+    if (result.truncated) {
+      console.log(`[truncated: showing ${limit} of ${result.originalLength} chars]`);
+    }
+    console.log(result.content);
+  });
+
+program
+  .command("text [selector]")
+  .description("Get text content of an element (default: body)")
+  .option("-l, --limit <chars>", "Character limit", "2000")
+  .action(async (selector = "body", options) => {
+    await browser.ensureRunning();
+    const limit = parseInt(options.limit, 10);
+    const result = await browser.text(selector, limit);
+    if (result.truncated) {
+      console.log(`[truncated: showing ${limit} of ${result.originalLength} chars]`);
+    }
+    console.log(result.content);
+  });
+
+program
+  .command("outline [selector]")
+  .description("Get structural outline of the page (default: body)")
+  .option("-d, --depth <levels>", "Maximum depth", "6")
+  .action(async (selector = "body", options) => {
+    await browser.ensureRunning();
+    const depth = parseInt(options.depth, 10);
+    const result = await browser.outline(selector, depth);
+    console.log(result);
+  });
+
 program.parseAsync(process.argv).catch((err) => {
   console.error(err.message);
   process.exit(1);

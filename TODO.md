@@ -1,7 +1,6 @@
 # TODO
 
 ## Critical
-- `html` / `text` - get page content to verify elements, read text, understand page structure
 - `navigate <url>` - navigate current tab (vs `open` which creates new tab)
 
 ## Important
@@ -21,5 +20,3 @@
 
 ## Future (still under consideration)
 - `screenshot` - LLMs need visual feedback to verify page state
-
-
