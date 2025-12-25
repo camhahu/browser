@@ -1,15 +1,21 @@
 # browser
 
-To install dependencies:
+CLI tool for controlling a Chromium browser via CDP.
+
+## Setup
 
 ```bash
 bun install
+bun run build
+sudo ln -s $(pwd)/dist/browser /usr/local/bin/browser
 ```
 
-To run:
+## Usage
 
 ```bash
-bun run index.ts
+browser start
+browser open https://example.com
+browser network-listen &
+browser click "button"
+browser network
 ```
-
-This project was created using `bun init` in bun v1.3.5. [Bun](https://bun.com) is a fast all-in-one JavaScript runtime.

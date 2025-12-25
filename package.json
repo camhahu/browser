@@ -3,6 +3,9 @@
   "module": "index.ts",
   "type": "module",
   "private": true,
+  "scripts": {
+    "build": "bun build --compile index.ts --outfile dist/browser"
+  },
   "bin": {
     "browser": "./index.ts"
   },
