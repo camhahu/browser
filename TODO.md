@@ -15,8 +15,5 @@
 - `cookies` / `storage` - inspect/manipulate state
 - `network` - wait for network idle, useful after actions
 
-## Output format
-- `--json` flag for structured output that LLMs can parse reliably
-
 ## Future (still under consideration)
 - `screenshot` - LLMs need visual feedback to verify page state
