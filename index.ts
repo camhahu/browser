@@ -155,6 +155,38 @@ program
   });
 
 program
+  .command("back")
+  .description("Go back in history")
+  .action(async () => {
+    await browser.ensureRunning();
+    const ok = await browser.back();
+    if (!ok) {
+      console.error("No previous page");
+      process.exit(1);
+    }
+  });
+
+program
+  .command("forward")
+  .description("Go forward in history")
+  .action(async () => {
+    await browser.ensureRunning();
+    const ok = await browser.forward();
+    if (!ok) {
+      console.error("No next page");
+      process.exit(1);
+    }
+  });
+
+program
+  .command("refresh")
+  .description("Reload the active tab")
+  .action(async () => {
+    await browser.ensureRunning();
+    await browser.refresh();
+  });
+
+program
   .command("console")
   .description("Stream console output from the active tab (tip: run detached with `browser console > /tmp/console.log 2>&1 &`)")
   .action(async () => {

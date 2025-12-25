@@ -5,7 +5,6 @@
 
 ## Important
 - `waitfor:hidden`, `waitfor:navigation` - wait variants beyond element visibility
-- `back` / `forward` / `refresh` - basic navigation
 - `select <selector> <value>` - dropdown selection (common form element)
 
 ## Nice to have

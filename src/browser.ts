@@ -310,6 +310,30 @@ export async function text(selector = "body", limit = DEFAULT_LIMIT): Promise<Co
   return truncate(content as string, limit);
 }
 
+export async function back(): Promise<boolean> {
+  return withActivePage(async (client) => {
+    const { currentIndex, entries } = await client.Page.getNavigationHistory();
+    if (currentIndex <= 0) return false;
+    await client.Page.navigateToHistoryEntry({ entryId: entries[currentIndex - 1]!.id });
+    return true;
+  });
+}
+
+export async function forward(): Promise<boolean> {
+  return withActivePage(async (client) => {
+    const { currentIndex, entries } = await client.Page.getNavigationHistory();
+    if (currentIndex >= entries.length - 1) return false;
+    await client.Page.navigateToHistoryEntry({ entryId: entries[currentIndex + 1]!.id });
+    return true;
+  });
+}
+
+export async function refresh(): Promise<void> {
+  return withActivePage(async (client) => {
+    await client.Page.reload({});
+  });
+}
+
 export async function outline(selector = "body", maxDepth = 6): Promise<string> {
   const result = await evaluate(`(() => {
     const root = document.querySelector(${JSON.stringify(selector)});
