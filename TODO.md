@@ -1,7 +1,6 @@
 # TODO
 
 ## Critical
-- `screenshot` - LLMs need visual feedback to verify page state
 - `html` / `text` - get page content to verify elements, read text, understand page structure
 - `navigate <url>` - navigate current tab (vs `open` which creates new tab)
 
@@ -19,3 +18,8 @@
 
 ## Output format
 - `--json` flag for structured output that LLMs can parse reliably
+
+## Future (still under consideration)
+- `screenshot` - LLMs need visual feedback to verify page state
+
+
