@@ -241,6 +241,105 @@ program
     console.log(result);
   });
 
+program
+  .command("network [id]")
+  .description("List network requests or show details of a specific request")
+  .option("-f, --filter <pattern>", "Filter by URL pattern")
+  .option("-t, --type <types>", "Filter by type (comma-separated: xhr,fetch,document,script,stylesheet,image,font,websocket,other)")
+  .option("--failed", "Show only failed requests")
+  .option("--headers", "Show headers (when viewing specific request)")
+  .option("--body", "Show response body (when viewing specific request)")
+  .option("--request-body", "Show request body (when viewing specific request)")
+  .action(async (id, options) => {
+    await browser.ensureRunning();
+
+    if (id) {
+      const requestId = parseInt(id, 10);
+      const request = await browser.networkRequest(requestId);
+      if (!request) {
+        console.error(`Request #${requestId} not found`);
+        process.exit(1);
+      }
+
+      const duration = request.duration ? `${Math.round(request.duration)}ms` : "pending";
+      const status = request.status ?? (request.failed ? "FAILED" : "...");
+      console.log(`${request.method} ${status} ${request.url}  ${duration}`);
+      if (request.error) console.log(`Error: ${request.error}`);
+      console.log();
+
+      if (options.headers || (!options.body && !options.requestBody)) {
+        console.log("Request Headers:");
+        for (const [key, value] of Object.entries(request.requestHeaders)) {
+          console.log(`  ${key}: ${value}`);
+        }
+        console.log();
+
+        if (request.responseHeaders) {
+          console.log("Response Headers:");
+          for (const [key, value] of Object.entries(request.responseHeaders)) {
+            console.log(`  ${key}: ${value}`);
+          }
+          console.log();
+        }
+      }
+
+      if (options.requestBody && request.requestBody) {
+        console.log("Request Body:");
+        console.log(request.requestBody);
+        console.log();
+      }
+
+      if (options.body && request.responseBody) {
+        console.log("Response Body:");
+        console.log(request.responseBody);
+      }
+    } else {
+      const filter: browser.NetworkFilter = {};
+      if (options.filter) filter.pattern = options.filter;
+      if (options.type) filter.type = options.type.split(",");
+      if (options.failed) filter.failed = true;
+
+      const { requests } = await browser.network(filter);
+
+      if (requests.length === 0) {
+        console.log("No requests captured");
+        return;
+      }
+
+      for (const req of requests) {
+        const duration = req.duration ? `${Math.round(req.duration)}ms`.padStart(6) : "...".padStart(6);
+        const status = req.status?.toString() ?? (req.failed ? "ERR" : "...");
+        const method = req.method.padEnd(6);
+        const failed = req.failed ? "  FAILED" : "";
+        const url = req.url.length > 60 ? req.url.slice(0, 60) + "..." : req.url;
+        console.log(`#${req.id.toString().padEnd(4)} ${method} ${status.padEnd(3)} ${url}  ${duration}${failed}`);
+      }
+    }
+  });
+
+program
+  .command("network-listen")
+  .description("Listen for network requests (run in background)")
+  .action(async () => {
+    await browser.ensureRunning();
+    const close = await browser.networkListen();
+    process.on("SIGINT", async () => {
+      await close();
+      process.exit(0);
+    });
+    console.error("Listening for network requests... (Ctrl+C to stop)");
+    await new Promise(() => {});
+  });
+
+program
+  .command("network-clear")
+  .description("Clear captured network requests")
+  .action(async () => {
+    await browser.ensureRunning();
+    await browser.clearNetwork();
+    console.log("Network requests cleared");
+  });
+
 program.parseAsync(process.argv).catch((err) => {
   console.error(err.message);
   process.exit(1);

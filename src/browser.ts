@@ -13,6 +13,55 @@ interface State {
   activeTabId: string;
 }
 
+export interface NetworkRequest {
+  id: number;
+  url: string;
+  method: string;
+  status?: number;
+  statusText?: string;
+  type: string;
+  startTime: number;
+  endTime?: number;
+  duration?: number;
+  requestHeaders: Record<string, string>;
+  responseHeaders?: Record<string, string>;
+  requestBody?: string;
+  responseBody?: string;
+  error?: string;
+  failed: boolean;
+}
+
+interface PendingRequest {
+  id: number;
+  requestId: string;
+  url: string;
+  method: string;
+  type: string;
+  startTime: number;
+  requestHeaders: Record<string, string>;
+  postData?: string;
+}
+
+const NETWORK_FILE = "/tmp/browser-network.json";
+
+interface NetworkState {
+  tabId: string;
+  requests: NetworkRequest[];
+  nextId: number;
+}
+
+async function readNetworkState(): Promise<NetworkState | null> {
+  try {
+    return await Bun.file(NETWORK_FILE).json();
+  } catch {
+    return null;
+  }
+}
+
+async function writeNetworkState(state: NetworkState): Promise<void> {
+  await Bun.write(NETWORK_FILE, JSON.stringify(state));
+}
+
 async function readState(): Promise<State | null> {
   try {
     return await Bun.file(STATE_FILE).json();
@@ -426,4 +475,162 @@ export async function outline(selector = "body", maxDepth = 6): Promise<string> 
     return walk(root, 0);
   })()`);
   return (result as string).trimEnd();
+}
+
+export interface NetworkFilter {
+  pattern?: string;
+  type?: string[];
+  failed?: boolean;
+}
+
+export interface NetworkListResult {
+  requests: NetworkRequest[];
+}
+
+export async function networkListen(): Promise<() => Promise<void>> {
+  const target = await getActiveTarget();
+  if (!target) throw new Error("No active tab");
+
+  const client = await CDP({ port: CDP_PORT, target: target.id });
+  await client.Network.enable({});
+
+  const existing = await readNetworkState();
+  const state: NetworkState = existing?.tabId === target.id
+    ? existing
+    : { tabId: target.id, requests: [], nextId: 1 };
+
+  const pending = new Map<string, PendingRequest>();
+
+  client.Network.requestWillBeSent((params) => {
+    pending.set(params.requestId, {
+      id: state.nextId++,
+      requestId: params.requestId,
+      url: params.request.url,
+      method: params.request.method,
+      type: params.type ?? "Other",
+      startTime: params.timestamp * 1000,
+      requestHeaders: params.request.headers as Record<string, string>,
+      postData: params.request.postData,
+    });
+  });
+
+  client.Network.responseReceived(async (params) => {
+    const p = pending.get(params.requestId);
+    if (!p) return;
+
+    state.requests.push({
+      id: p.id,
+      url: p.url,
+      method: p.method,
+      status: params.response.status,
+      statusText: params.response.statusText,
+      type: p.type,
+      startTime: p.startTime,
+      requestHeaders: p.requestHeaders,
+      responseHeaders: params.response.headers as Record<string, string>,
+      requestBody: p.postData,
+      failed: false,
+    });
+    await writeNetworkState(state);
+  });
+
+  client.Network.loadingFinished(async (params) => {
+    const p = pending.get(params.requestId);
+    if (!p) return;
+
+    const request = state.requests.find(r => r.id === p.id);
+    if (request) {
+      request.endTime = params.timestamp * 1000;
+      request.duration = request.endTime - request.startTime;
+      await writeNetworkState(state);
+    }
+    pending.delete(params.requestId);
+  });
+
+  client.Network.loadingFailed(async (params) => {
+    const p = pending.get(params.requestId);
+    if (!p) return;
+
+    const existing = state.requests.find(r => r.id === p.id);
+    if (existing) {
+      existing.endTime = params.timestamp * 1000;
+      existing.duration = existing.endTime - existing.startTime;
+      if (params.errorText && params.errorText !== "net::ERR_ABORTED") {
+        existing.error = params.errorText;
+        existing.failed = true;
+      }
+    } else {
+      const endTime = params.timestamp * 1000;
+      state.requests.push({
+        id: p.id,
+        url: p.url,
+        method: p.method,
+        type: p.type,
+        startTime: p.startTime,
+        endTime,
+        duration: endTime - p.startTime,
+        requestHeaders: p.requestHeaders,
+        requestBody: p.postData,
+        error: params.errorText,
+        failed: true,
+      });
+    }
+    await writeNetworkState(state);
+    pending.delete(params.requestId);
+  });
+
+  return async () => {
+    await client.close();
+  };
+}
+
+export async function network(filter?: NetworkFilter): Promise<NetworkListResult> {
+  const target = await getActiveTarget();
+  if (!target) throw new Error("No active tab");
+
+  const state = await readNetworkState();
+  if (!state || state.tabId !== target.id) {
+    return { requests: [] };
+  }
+
+  let requests = [...state.requests];
+
+  if (filter?.pattern) {
+    const pattern = filter.pattern.toLowerCase();
+    requests = requests.filter(r => r.url.toLowerCase().includes(pattern));
+  }
+
+  if (filter?.type && filter.type.length > 0) {
+    const types = new Set(filter.type.map(t => t.toLowerCase()));
+    requests = requests.filter(r => types.has(r.type.toLowerCase()));
+  }
+
+  if (filter?.failed) {
+    requests = requests.filter(r => r.failed);
+  }
+
+  return { requests };
+}
+
+export async function networkRequest(id: number): Promise<NetworkRequest | null> {
+  const target = await getActiveTarget();
+  if (!target) throw new Error("No active tab");
+
+  const state = await readNetworkState();
+  if (!state || state.tabId !== target.id) {
+    return null;
+  }
+
+  return state.requests.find(r => r.id === id) ?? null;
+}
+
+export async function clearNetwork(): Promise<void> {
+  const target = await getActiveTarget();
+  if (!target) throw new Error("No active tab");
+
+  const state = await readNetworkState();
+  if (state?.tabId === target.id) {
+    state.requests = [];
+    await writeNetworkState(state);
+  }
 }
