@@ -2,19 +2,28 @@ import CDP from "chrome-remote-interface";
 import { homedir } from "node:os";
 import { join } from "node:path";
 import { spawn } from "node:child_process";
+import { Socket } from "node:net";
 
 const STATE_FILE = "/tmp/browser-cli.json";
 const DEFAULT_PROFILE = join(homedir(), ".browser");
 const CDP_PORT = 9222;
 const LAUNCH_TIMEOUT_MS = 5000;
 const LAUNCH_POLL_INTERVAL_MS = 100;
+const DAEMON_STATE_FILE = "/tmp/browser-network-daemon.json";
+const DAEMON_SOCKET_PATH = "/tmp/browser-network.sock";
 
 interface State {
   activeTabId: string;
 }
 
+interface DaemonState {
+  pid: number;
+  socketPath: string;
+}
+
 export interface NetworkRequest {
   id: number;
+  tabId: string;
   url: string;
   method: string;
   status?: number;
@@ -31,37 +40,6 @@ export interface NetworkRequest {
   failed: boolean;
 }
 
-interface PendingRequest {
-  id: number;
-  requestId: string;
-  url: string;
-  method: string;
-  type: string;
-  startTime: number;
-  requestHeaders: Record<string, string>;
-  postData?: string;
-}
-
-const NETWORK_FILE = "/tmp/browser-network.json";
-
-interface NetworkState {
-  tabId: string;
-  requests: NetworkRequest[];
-  nextId: number;
-}
-
-async function readNetworkState(): Promise<NetworkState | null> {
-  try {
-    return await Bun.file(NETWORK_FILE).json();
-  } catch {
-    return null;
-  }
-}
-
-async function writeNetworkState(state: NetworkState): Promise<void> {
-  await Bun.write(NETWORK_FILE, JSON.stringify(state));
-}
-
 async function readState(): Promise<State | null> {
   try {
     return await Bun.file(STATE_FILE).json();
@@ -76,6 +54,94 @@ async function writeState(state: State): Promise<void> {
 
 async function clearState(): Promise<void> {
   await Bun.$`rm -f ${STATE_FILE}`.quiet();
+}
+
+async function readDaemonState(): Promise<DaemonState | null> {
+  try {
+    return await Bun.file(DAEMON_STATE_FILE).json();
+  } catch {
+    return null;
+  }
+}
+
+async function isDaemonRunning(): Promise<boolean> {
+  const state = await readDaemonState();
+  if (!state) return false;
+  try {
+    process.kill(state.pid, 0);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+async function startDaemon(): Promise<void> {
+  if (await isDaemonRunning()) return;
+
+  spawn(process.execPath, ["_network-daemon"], {
+    detached: true,
+    stdio: "ignore",
+  }).unref();
+
+  for (let i = 0; i < 30; i++) {
+    await Bun.sleep(100);
+    if (await isDaemonRunning()) return;
+  }
+}
+
+async function stopDaemon(): Promise<void> {
+  const state = await readDaemonState();
+  if (state) {
+    try {
+      process.kill(state.pid, "SIGTERM");
+    } catch {}
+  }
+  await Bun.$`pkill -f "network-daemon" 2>/dev/null || true`.quiet();
+  await Bun.$`rm -f ${DAEMON_STATE_FILE} ${DAEMON_SOCKET_PATH}`.quiet();
+}
+
+interface IPCRequest {
+  type: "list" | "get" | "clear";
+  tabId?: string;
+  requestId?: number;
+}
+
+interface IPCResponse {
+  success: boolean;
+  data?: unknown;
+  error?: string;
+}
+
+async function sendDaemonRequest(req: IPCRequest): Promise<IPCResponse> {
+  return new Promise((resolve, reject) => {
+    const socket = new Socket();
+    let data = "";
+
+    socket.connect(DAEMON_SOCKET_PATH, () => {
+      socket.write(JSON.stringify(req));
+    });
+
+    socket.on("data", (chunk) => {
+      data += chunk.toString();
+    });
+
+    socket.on("end", () => {
+      try {
+        resolve(JSON.parse(data));
+      } catch {
+        reject(new Error("Invalid response from daemon"));
+      }
+    });
+
+    socket.on("error", (err) => {
+      reject(err);
+    });
+
+    socket.setTimeout(5000, () => {
+      socket.destroy();
+      reject(new Error("Daemon request timeout"));
+    });
+  });
 }
 
 function getChromiumPath(): string {
@@ -134,6 +200,7 @@ export async function launch(options: { headless?: boolean }): Promise<string> {
       const page = targets.find(t => t.type === "page");
       if (page) {
         await writeState({ activeTabId: page.id });
+        await startDaemon();
         return page.id;
       }
     }
@@ -143,6 +210,7 @@ export async function launch(options: { headless?: boolean }): Promise<string> {
 }
 
 export async function close(): Promise<void> {
+  await stopDaemon();
   const targets = await listTargets().catch(() => []);
   if (targets.length > 0) {
     const client = await CDP({ port: CDP_PORT, target: targets[0] });
@@ -487,150 +555,58 @@ export interface NetworkListResult {
   requests: NetworkRequest[];
 }
 
-export async function networkListen(): Promise<() => Promise<void>> {
-  const target = await getActiveTarget();
-  if (!target) throw new Error("No active tab");
-
-  const client = await CDP({ port: CDP_PORT, target: target.id });
-  await client.Network.enable({});
-
-  const existing = await readNetworkState();
-  const state: NetworkState = existing?.tabId === target.id
-    ? existing
-    : { tabId: target.id, requests: [], nextId: 1 };
-
-  const pending = new Map<string, PendingRequest>();
-
-  client.Network.requestWillBeSent((params) => {
-    pending.set(params.requestId, {
-      id: state.nextId++,
-      requestId: params.requestId,
-      url: params.request.url,
-      method: params.request.method,
-      type: params.type ?? "Other",
-      startTime: params.timestamp * 1000,
-      requestHeaders: params.request.headers as Record<string, string>,
-      postData: params.request.postData,
-    });
-  });
-
-  client.Network.responseReceived(async (params) => {
-    const p = pending.get(params.requestId);
-    if (!p) return;
-
-    state.requests.push({
-      id: p.id,
-      url: p.url,
-      method: p.method,
-      status: params.response.status,
-      statusText: params.response.statusText,
-      type: p.type,
-      startTime: p.startTime,
-      requestHeaders: p.requestHeaders,
-      responseHeaders: params.response.headers as Record<string, string>,
-      requestBody: p.postData,
-      failed: false,
-    });
-    await writeNetworkState(state);
-  });
-
-  client.Network.loadingFinished(async (params) => {
-    const p = pending.get(params.requestId);
-    if (!p) return;
-
-    const request = state.requests.find(r => r.id === p.id);
-    if (request) {
-      request.endTime = params.timestamp * 1000;
-      request.duration = request.endTime - request.startTime;
-      await writeNetworkState(state);
-    }
-    pending.delete(params.requestId);
-  });
-
-  client.Network.loadingFailed(async (params) => {
-    const p = pending.get(params.requestId);
-    if (!p) return;
-
-    const existing = state.requests.find(r => r.id === p.id);
-    if (existing) {
-      existing.endTime = params.timestamp * 1000;
-      existing.duration = existing.endTime - existing.startTime;
-      if (params.errorText && params.errorText !== "net::ERR_ABORTED") {
-        existing.error = params.errorText;
-        existing.failed = true;
-      }
-    } else {
-      const endTime = params.timestamp * 1000;
-      state.requests.push({
-        id: p.id,
-        url: p.url,
-        method: p.method,
-        type: p.type,
-        startTime: p.startTime,
-        endTime,
-        duration: endTime - p.startTime,
-        requestHeaders: p.requestHeaders,
-        requestBody: p.postData,
-        error: params.errorText,
-        failed: true,
-      });
-    }
-    await writeNetworkState(state);
-    pending.delete(params.requestId);
-  });
-
-  return async () => {
-    await client.close();
-  };
-}
-
 export async function network(filter?: NetworkFilter): Promise<NetworkListResult> {
   const target = await getActiveTarget();
   if (!target) throw new Error("No active tab");
 
-  const state = await readNetworkState();
-  if (!state || state.tabId !== target.id) {
+  if (!await isDaemonRunning()) {
+    await startDaemon();
+  }
+
+  try {
+    const response = await sendDaemonRequest({ type: "list", tabId: target.id });
+    if (!response.success) return { requests: [] };
+
+    let requests = response.data as NetworkRequest[];
+
+    if (filter?.pattern) {
+      const pattern = filter.pattern.toLowerCase();
+      requests = requests.filter(r => r.url.toLowerCase().includes(pattern));
+    }
+    if (filter?.type && filter.type.length > 0) {
+      const types = new Set(filter.type.map(t => t.toLowerCase()));
+      requests = requests.filter(r => types.has(r.type.toLowerCase()));
+    }
+    if (filter?.failed) {
+      requests = requests.filter(r => r.failed);
+    }
+
+    return { requests };
+  } catch {
     return { requests: [] };
   }
-
-  let requests = [...state.requests];
-
-  if (filter?.pattern) {
-    const pattern = filter.pattern.toLowerCase();
-    requests = requests.filter(r => r.url.toLowerCase().includes(pattern));
-  }
-
-  if (filter?.type && filter.type.length > 0) {
-    const types = new Set(filter.type.map(t => t.toLowerCase()));
-    requests = requests.filter(r => types.has(r.type.toLowerCase()));
-  }
-
-  if (filter?.failed) {
-    requests = requests.filter(r => r.failed);
-  }
-
-  return { requests };
 }
 
 export async function networkRequest(id: number): Promise<NetworkRequest | null> {
   const target = await getActiveTarget();
   if (!target) throw new Error("No active tab");
+  if (!await isDaemonRunning()) return null;
 
-  const state = await readNetworkState();
-  if (!state || state.tabId !== target.id) {
+  try {
+    const response = await sendDaemonRequest({ type: "get", tabId: target.id, requestId: id });
+    if (!response.success) return null;
+    return response.data as NetworkRequest;
+  } catch {
     return null;
   }
-
-  return state.requests.find(r => r.id === id) ?? null;
 }
 
 export async function clearNetwork(): Promise<void> {
   const target = await getActiveTarget();
   if (!target) throw new Error("No active tab");
+  if (!await isDaemonRunning()) return;
 
-  const state = await readNetworkState();
-  if (state?.tabId === target.id) {
-    state.requests = [];
-    await writeNetworkState(state);
-  }
+  try {
+    await sendDaemonRequest({ type: "clear", tabId: target.id });
+  } catch {}
 }

@@ -2,6 +2,7 @@
 
 import { Command } from "commander";
 import * as browser from "./src/browser";
+import { runDaemon } from "./src/network-daemon";
 
 const program = new Command();
 
@@ -250,8 +251,15 @@ program
   .option("--headers", "Show headers (when viewing specific request)")
   .option("--body", "Show response body (when viewing specific request)")
   .option("--request-body", "Show request body (when viewing specific request)")
+  .option("--clear", "Clear captured network requests for active tab")
   .action(async (id, options) => {
     await browser.ensureRunning();
+
+    if (options.clear) {
+      await browser.clearNetwork();
+      console.log("Network requests cleared");
+      return;
+    }
 
     if (id) {
       const requestId = parseInt(id, 10);
@@ -289,9 +297,13 @@ program
         console.log();
       }
 
-      if (options.body && request.responseBody) {
-        console.log("Response Body:");
-        console.log(request.responseBody);
+      if (options.body) {
+        if (request.responseBody) {
+          console.log("Response Body:");
+          console.log(request.responseBody);
+        } else {
+          console.log("Response Body: (not captured)");
+        }
       }
     } else {
       const filter: browser.NetworkFilter = {};
@@ -318,27 +330,8 @@ program
   });
 
 program
-  .command("network-listen")
-  .description("Listen for network requests (run in background)")
-  .action(async () => {
-    await browser.ensureRunning();
-    const close = await browser.networkListen();
-    process.on("SIGINT", async () => {
-      await close();
-      process.exit(0);
-    });
-    console.error("Listening for network requests... (Ctrl+C to stop)");
-    await new Promise(() => {});
-  });
-
-program
-  .command("network-clear")
-  .description("Clear captured network requests")
-  .action(async () => {
-    await browser.ensureRunning();
-    await browser.clearNetwork();
-    console.log("Network requests cleared");
-  });
+  .command("_network-daemon", { hidden: true })
+  .action(runDaemon);
 
 program.parseAsync(process.argv).catch((err) => {
   console.error(err.message);
