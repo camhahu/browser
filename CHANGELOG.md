@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.2] - 2025-12-26
+
+### Added
+- Self-update command for updating the browser CLI
+- Curl-based install script for easy installation
+- MIT license
+
+### Changed
+- Restructure opencode command directory
+- Improve install script post-install messaging
+- Update README for public release
+
 ## [0.1.1] - 2025-12-26
 
 ### Added
