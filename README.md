@@ -2,6 +2,8 @@
 
 CLI tool for controlling a Chromium browser via CDP. Designed for AI agents and automation.
 
+https://github.com/user-attachments/assets/5a4f118d-6234-4b92-aa6b-b7d72ec40a08
+
 ## Install
 
 ```bash
