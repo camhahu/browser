@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.4] - 2025-12-26
+
+### Added
+- Browser skill installation for AI agents
+
+### Changed
+- Make skill documentation more concise
+
+### Fixed
+- Network request capture for tabs created via daemon
+
 ## [0.1.3] - 2025-12-26
 
 ### Added
