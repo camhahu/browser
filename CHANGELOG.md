@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.3] - 2025-12-26
+
+### Added
+- Config command for managing CLI settings (`browser config set/unset`)
+- Cross-platform Chrome detection for macOS, Windows, and Linux
+
+### Changed
+- Use system Chrome instead of Playwright Chromium
+- Browser profiles are now ephemeral and cleaned up on stop
+
+### Removed
+- Playwright browser dependency
+
 ## [0.1.2] - 2025-12-26
 
 ### Added
