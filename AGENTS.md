@@ -1,5 +1,6 @@
 # AGENTS.md
 
+- Always use Bun (never npm, pnpm, etc.)
 - Use Bun standard library instead of Node standard library where possible
 - Build with `bun run build` to compile to `./dist/browser`
 - `/usr/local/bin/browser` is a symlink to `./dist/browser`
