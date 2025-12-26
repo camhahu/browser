@@ -215,6 +215,15 @@ browser storage clear
 browser storage clear -s  # sessionStorage
 ```
 
+## Update
+
+### update
+Check for and install updates.
+```bash
+browser update          # Download and install latest version
+browser update --check  # Check for updates without installing
+```
+
 ## Selector Tips
 
 Use standard CSS selectors:
