@@ -11,3 +11,7 @@ The `text` command (and similar commands) returns text from elements that are no
 - Other CSS properties that hide content
 
 These hidden elements should be filtered out so only user-visible text is returned. Off-screen elements can be included.
+
+## `openTab` has fallback logic
+
+`cdp.ts:openTab()` tries `createTabViaDaemon()` first, then falls back to `CDP.New()`. This violates the "no fallback" rule - should use daemon as the sole path.
