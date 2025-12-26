@@ -83,11 +83,16 @@ if [[ ":$PATH:" != *":$INSTALL_DIR:"* ]]; then
         echo "export PATH=\"$INSTALL_DIR:\$PATH\"" >> "$shell_config"
       fi
       echo -e "${DIM}Added to PATH in $shell_config${NC}"
+      echo ""
+      echo "Run 'source $shell_config' or restart your terminal, then run 'browser --help'"
+    else
+      echo ""
+      echo "Run 'browser --help' to get started"
     fi
   else
     echo -e "${DIM}Add to your PATH:${NC} export PATH=\"$INSTALL_DIR:\$PATH\""
   fi
+else
+  echo ""
+  echo "Run 'browser --help' to get started"
 fi
-
-echo ""
-echo "Run 'browser --help' to get started (restart your shell or run 'source $shell_config')"
