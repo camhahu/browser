@@ -1,10 +1,9 @@
 import CDP from "chrome-remote-interface";
-import { homedir } from "node:os";
-import { join } from "node:path";
 import { spawn } from "node:child_process";
+import { getBrowserPath } from "./config";
 
 const STATE_FILE = "/tmp/browser-cli.json";
-const DEFAULT_PROFILE = join(homedir(), ".browser");
+const PROFILE_DIR = "/tmp/browser-cli-profile";
 export const CDP_PORT = 9222;
 const LAUNCH_TIMEOUT_MS = 5000;
 const LAUNCH_POLL_INTERVAL_MS = 100;
@@ -27,15 +26,6 @@ async function writeState(state: State): Promise<void> {
 
 async function clearState(): Promise<void> {
   await Bun.$`rm -f ${STATE_FILE}`.quiet();
-}
-
-function getChromiumPath(): string {
-  const cacheDir = join(homedir(), "Library/Caches/ms-playwright");
-  const result = Bun.spawnSync(["ls", cacheDir]);
-  const dirs = result.stdout.toString().split("\n");
-  const chromiumDir = dirs.find(d => d.startsWith("chromium-") && !d.includes("headless"));
-  if (!chromiumDir) throw new Error("Chromium not found. Run: bunx playwright install chromium");
-  return join(cacheDir, chromiumDir, "chrome-mac-arm64/Google Chrome for Testing.app/Contents/MacOS/Google Chrome for Testing");
 }
 
 export async function listTargets(): Promise<CDP.Target[]> {
@@ -96,16 +86,18 @@ export async function launch(options: { headless?: boolean }): Promise<string> {
     return state?.activeTabId ?? "1";
   }
 
-  await Bun.$`mkdir -p ${DEFAULT_PROFILE}`.quiet();
+  await Bun.$`mkdir -p ${PROFILE_DIR}`.quiet();
 
-  const chromiumPath = getChromiumPath();
+  const browserPath = await getBrowserPath();
   const args = [
     `--remote-debugging-port=${CDP_PORT}`,
-    `--user-data-dir=${DEFAULT_PROFILE}`,
+    `--user-data-dir=${PROFILE_DIR}`,
+    "--no-first-run",
+    "--no-default-browser-check",
   ];
   if (options.headless) args.push("--headless=new");
 
-  spawn(chromiumPath, args, {
+  spawn(browserPath, args, {
     detached: true,
     stdio: "ignore",
   }).unref();
@@ -135,6 +127,7 @@ export async function close(): Promise<void> {
     await client.Browser.close();
   }
   await clearState();
+  await Bun.$`rm -rf ${PROFILE_DIR}`.quiet();
 }
 
 export async function openTab(url: string): Promise<{ tabId: string; url: string }> {
