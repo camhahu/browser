@@ -234,10 +234,11 @@ program
   .command("text [selector]")
   .description("Get text content of an element (default: body)")
   .option("-l, --limit <chars>", "Character limit", "2000")
+  .option("--include-invisible", "Include text from hidden elements")
   .action(async (selector = "body", options) => {
     await ensureRunning();
     const limit = parseInt(options.limit, 10);
-    const result = await text(selector, limit);
+    const result = await text(selector, limit, !options.includeInvisible);
     if (result.truncated) {
       console.log(`[truncated: showing ${limit} of ${result.originalLength} chars]`);
     }

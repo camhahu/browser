@@ -131,9 +131,37 @@ export async function html(selector = "body", limit = DEFAULT_LIMIT): Promise<Co
   return truncate(content as string, limit);
 }
 
-export async function text(selector = "body", limit = DEFAULT_LIMIT): Promise<ContentResult> {
+export async function text(selector = "body", limit = DEFAULT_LIMIT, visibleOnly = true): Promise<ContentResult> {
   const escapedSelector = JSON.stringify(selector);
-  const content = await evaluate(`document.querySelector(${escapedSelector})?.innerText ?? (() => { throw new Error("Element not found: " + ${escapedSelector}) })()`);
+  const expression = visibleOnly ? `(() => {
+    const root = document.querySelector(${escapedSelector});
+    if (!root) throw new Error("Element not found: " + ${escapedSelector});
+
+    const cache = new Map();
+    function isVisible(el) {
+      if (!el || el === document.documentElement) return true;
+      if (cache.has(el)) return cache.get(el);
+      const style = getComputedStyle(el);
+      const visible = style.display !== 'none'
+        && style.visibility !== 'hidden' && style.visibility !== 'collapse'
+        && parseFloat(style.opacity) !== 0
+        && isVisible(el.parentElement);
+      cache.set(el, visible);
+      return visible;
+    }
+
+    const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+    const texts = [];
+    while (walker.nextNode()) {
+      const node = walker.currentNode;
+      if (isVisible(node.parentElement)) {
+        const t = node.textContent;
+        if (t && t.trim()) texts.push(t);
+      }
+    }
+    return texts.join('');
+  })()` : `document.querySelector(${escapedSelector})?.innerText ?? (() => { throw new Error("Element not found: " + ${escapedSelector}) })()`;
+  const content = await evaluate(expression);
   return truncate(content as string, limit);
 }
 
