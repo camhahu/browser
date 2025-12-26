@@ -4,7 +4,8 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "build": "bun build --compile index.ts --outfile dist/browser"
+    "build": "bun build --compile index.ts --outfile dist/browser",
+    "test": "bun test"
   },
   "bin": {
     "browser": "./index.ts"
