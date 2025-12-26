@@ -208,11 +208,22 @@ interface IPCRequest {
   url?: string;
 }
 
-function isAttached(targetId: string): boolean {
-  for (const tid of sessions.values()) {
-    if (tid === targetId) return true;
+function getSessionId(targetId: string): string | undefined {
+  for (const [sessionId, tid] of sessions) {
+    if (tid === targetId) return sessionId;
   }
-  return false;
+}
+
+function isAttached(targetId: string): boolean {
+  return getSessionId(targetId) !== undefined;
+}
+
+async function waitForSession(targetId: string): Promise<string | undefined> {
+  for (let i = 0; i < 50; i++) {
+    const sessionId = getSessionId(targetId);
+    if (sessionId) return sessionId;
+    await Bun.sleep(20);
+  }
 }
 
 async function attachToNewTargets(): Promise<void> {
@@ -253,21 +264,10 @@ async function handleIPC(req: IPCRequest): Promise<{ success: boolean; data?: un
     case "createTab":
       if (!client || !req.url) return { success: false, error: "url required" };
       try {
-        // Create tab with about:blank first, attach, enable network, then navigate
         const { targetId } = await client.Target.createTarget({ url: "about:blank" });
-        // Wait for attachment (happens via setAutoAttach or targetCreated)
-        await Bun.sleep(100);
-        // Navigate to actual URL
-        const { targetInfos } = await client.Target.getTargets();
-        const target = targetInfos.find(t => t.targetId === targetId);
-        if (target) {
-          // Find our session for this target
-          for (const [sessionId, tid] of sessions) {
-            if (tid === targetId) {
-              await client.send("Page.navigate", { url: req.url }, sessionId);
-              break;
-            }
-          }
+        const sessionId = await waitForSession(targetId);
+        if (sessionId) {
+          await client.send("Page.navigate", { url: req.url }, sessionId);
         }
         return { success: true, data: { targetId } };
       } catch (e) {
