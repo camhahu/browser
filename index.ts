@@ -17,6 +17,7 @@ import {
   type StorageType,
 } from "./src/storage";
 import { getConfig, setConfig, unsetConfig, type Config } from "./src/config";
+import { fetchSkillFiles, AGENT_TARGETS, SUPPORTED_TARGETS } from "./src/skill-files";
 
 const program = new Command();
 
@@ -500,6 +501,33 @@ configCmd
   .action(async (key) => {
     await unsetConfig(key as keyof Config);
     console.log(`Unset ${key}`);
+  });
+
+program
+  .command("add-skill <target>")
+  .description(`Install the browser skill for an AI agent. Targets: ${SUPPORTED_TARGETS.join(", ")}`)
+  .action(async (target: string) => {
+    const targetPath = AGENT_TARGETS[target];
+    if (!targetPath) {
+      console.error(`Unknown target: ${target}`);
+      console.error(`Supported targets: ${SUPPORTED_TARGETS.join(", ")}`);
+      process.exit(1);
+    }
+
+    console.log(`Fetching skill files...`);
+    const { skillMd, commandsMd } = await fetchSkillFiles();
+
+    const fs = await import("fs");
+    const path = await import("path");
+
+    const skillDir = path.join(process.cwd(), targetPath);
+    const referencesDir = path.join(skillDir, "references");
+
+    fs.mkdirSync(referencesDir, { recursive: true });
+    fs.writeFileSync(path.join(skillDir, "SKILL.md"), skillMd);
+    fs.writeFileSync(path.join(referencesDir, "COMMANDS.md"), commandsMd);
+
+    console.log(`Installed browser skill to ${targetPath}/`);
   });
 
 program

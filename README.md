@@ -24,6 +24,23 @@ browser click "button.submit"    # Click an element
 browser stop                     # Stop browser
 ```
 
+## Agent Integration
+
+Give your AI agent browser control by installing the skill:
+
+```bash
+browser add-skill opencode   # OpenCode
+browser add-skill claude     # Claude Code
+browser add-skill cursor     # Cursor
+browser add-skill amp        # Amp
+browser add-skill goose      # Goose
+browser add-skill github     # GitHub Copilot
+browser add-skill vscode     # VS Code
+browser add-skill codex      # OpenAI Codex
+```
+
+This installs the browser skill to the appropriate directory for your agent (e.g. `.opencode/skill/browser/`). The agent will automatically discover and use it when browser automation is needed.
+
 ## Commands
 
 See [skill/references/COMMANDS.md](skill/references/COMMANDS.md) for full command reference.

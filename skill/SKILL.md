@@ -11,6 +11,16 @@ metadata:
 
 Control a headless or headed Chromium browser via the Chrome DevTools Protocol (CDP).
 
+**Repository:** https://github.com/camhahu/browser
+
+## Install
+
+If the `browser` command is not available, install it:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/camhahu/browser/main/install.sh | bash
+```
+
 ## Quick Start
 
 ```bash
