@@ -22,7 +22,7 @@ const program = new Command();
 program
   .name("browser")
   .description("CLI tool for controlling a Chromium browser via CDP")
-  .version("1.0.0");
+  .version(process.env.VERSION ?? "0.0.0-dev");
 
 program
   .command("start")

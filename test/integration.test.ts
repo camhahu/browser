@@ -35,6 +35,10 @@ describe("browser CLI", () => {
   });
 
   test("full integration", async () => {
+    // Version
+    const pkg = await Bun.file("package.json").json();
+    expect(await browser("--version")).toBe(pkg.version);
+
     // Open page and verify navigation
     await browser(`open ${TEST_URL}`);
     expect(await browser("url")).toBe("https://camhahu.com/");

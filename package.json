@@ -1,10 +1,11 @@
 {
   "name": "browser",
+  "version": "0.1.0",
   "module": "index.ts",
   "type": "module",
   "private": true,
   "scripts": {
-    "build": "bun build --compile index.ts --outfile dist/browser",
+    "build": "bun run script/build.ts",
     "test": "bun test"
   },
   "bin": {
