@@ -1,6 +1,7 @@
 {
   "name": "browser",
   "version": "0.1.1",
+  "license": "MIT",
   "module": "index.ts",
   "type": "module",
   "private": true,
