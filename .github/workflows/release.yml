@@ -1,0 +1,59 @@
+name: release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v2
+
+      - name: Validate version
+        run: |
+          TAG_VERSION="${GITHUB_REF_NAME#v}"
+          PKG_VERSION=$(bun pm pkg get version | tr -d '"')
+          if [ "$TAG_VERSION" != "$PKG_VERSION" ]; then
+            echo "Tag version ($TAG_VERSION) does not match package.json version ($PKG_VERSION)"
+            exit 1
+          fi
+          echo "VERSION=$TAG_VERSION" >> $GITHUB_ENV
+
+      - name: Extract changelog
+        run: |
+          CHANGELOG=$(awk '/^## \['"$VERSION"'\]/{flag=1; next} /^## \[/{flag=0} flag' CHANGELOG.md)
+          if [ -z "$CHANGELOG" ]; then
+            echo "No changelog entry found for version $VERSION"
+            exit 1
+          fi
+          echo "CHANGELOG<<EOF" >> $GITHUB_ENV
+          echo "$CHANGELOG" >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
+
+      - run: bun install
+
+      - name: Build all targets
+        run: |
+          bun run script/build.ts bun-darwin-arm64
+          bun run script/build.ts bun-darwin-x64
+          bun run script/build.ts bun-linux-x64
+          bun run script/build.ts bun-linux-arm64
+          bun run script/build.ts bun-windows-x64
+
+      - name: Create release
+        uses: softprops/action-gh-release@v2
+        with:
+          body: ${{ env.CHANGELOG }}
+          files: |
+            dist/browser-darwin-arm64
+            dist/browser-darwin-x64
+            dist/browser-linux-x64
+            dist/browser-linux-arm64
+            dist/browser-windows-x64.exe

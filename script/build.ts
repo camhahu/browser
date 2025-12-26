@@ -3,7 +3,11 @@
 import { $ } from "bun";
 
 const version = (await $`bun pm pkg get version`.text()).trim().replace(/"/g, "");
+const target = process.argv[2];
 
-console.log(`Building browser v${version}`);
+const outfile = target ? `dist/browser-${target.replace("bun-", "")}` : "dist/browser";
+const targetFlag = target ? `--target=${target}` : "";
 
-await $`bun build --compile index.ts --outfile dist/browser --define "process.env.VERSION='${version}'"`;
+console.log(`Building browser v${version}${target ? ` for ${target}` : ""}`);
+
+await $`bun build --compile index.ts --outfile ${outfile} ${targetFlag} --define "process.env.VERSION='${version}'"`;
