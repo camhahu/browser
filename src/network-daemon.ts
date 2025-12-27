@@ -202,10 +202,9 @@ function setupNetworkHandlers(): void {
 }
 
 interface IPCRequest {
-  type: "list" | "get" | "clear" | "createTab";
+  type: "list" | "get" | "clear";
   tabId?: string;
   requestId?: number;
-  url?: string;
 }
 
 function getSessionId(targetId: string): string | undefined {
@@ -216,14 +215,6 @@ function getSessionId(targetId: string): string | undefined {
 
 function isAttached(targetId: string): boolean {
   return getSessionId(targetId) !== undefined;
-}
-
-async function waitForSession(targetId: string): Promise<string | undefined> {
-  for (let i = 0; i < 50; i++) {
-    const sessionId = getSessionId(targetId);
-    if (sessionId) return sessionId;
-    await Bun.sleep(20);
-  }
 }
 
 async function attachToNewTargets(): Promise<void> {
@@ -261,18 +252,6 @@ async function handleIPC(req: IPCRequest): Promise<{ success: boolean; data?: un
       if (req.tabId) requests.delete(req.tabId);
       else requests.clear();
       return { success: true };
-    case "createTab":
-      if (!client || !req.url) return { success: false, error: "url required" };
-      try {
-        const { targetId } = await client.Target.createTarget({ url: "about:blank" });
-        const sessionId = await waitForSession(targetId);
-        if (sessionId) {
-          await client.send("Page.navigate", { url: req.url }, sessionId);
-        }
-        return { success: true, data: { targetId } };
-      } catch (e) {
-        return { success: false, error: String(e) };
-      }
     default:
       return { success: false, error: "Unknown type" };
   }

@@ -39,10 +39,9 @@ interface DaemonState {
 }
 
 interface IPCRequest {
-  type: "list" | "get" | "clear" | "createTab";
+  type: "list" | "get" | "clear";
   tabId?: string;
   requestId?: number;
-  url?: string;
 }
 
 interface IPCResponse {
@@ -158,20 +157,6 @@ export async function clearNetwork(): Promise<void> {
   try {
     await sendDaemonRequest({ type: "clear", tabId: target.id });
   } catch {}
-}
-
-export async function createTabViaDaemon(url: string): Promise<string | null> {
-  if (!await isDaemonRunning()) {
-    await startDaemon();
-  }
-
-  try {
-    const response = await sendDaemonRequest({ type: "createTab", url });
-    if (!response.success) return null;
-    return (response.data as { targetId: string }).targetId;
-  } catch {
-    return null;
-  }
 }
 
 setOnLaunch(startDaemon);
