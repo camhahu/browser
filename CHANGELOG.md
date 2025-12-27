@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.7] - 2025-12-27
+
+### Added
+- `type` command now supports sending key combos without a selector (e.g. `type ctrl+c`, `type Escape`)
+
+### Fixed
+- Clarified navigation commands in skill documentation to prevent confusion between `open`, `navigate`, and `refresh`
+
 ## [0.1.6] - 2025-12-27
 
 ### Added
