@@ -3,7 +3,7 @@
 - Always use Bun (never npm, pnpm, etc.)
 - Use Bun standard library instead of Node standard library where possible
 - Build with `bun run build` to compile to `./dist/browser`
-- `/usr/local/bin/browser` is a symlink to `./dist/browser`
+- For testing, always use `./dist/browser` (not the globally installed `browser` command)
 - See `docs/TODO.md` for planned features and `docs/BUGS.md` for known issues
 - When fixing a bug or implementing a TODO, remove the corresponding entry from `docs/BUGS.md` or `docs/TODO.md`
 - No barrel exports

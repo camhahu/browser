@@ -1,5 +1,6 @@
 import CDP from "chrome-remote-interface";
 import { CDP_PORT, getActiveTarget, withActivePage } from "./cdp";
+export { navigate } from "./cdp";
 
 export async function find(selector: string): Promise<number> {
   return withActivePage(async (client) => {
@@ -186,12 +187,6 @@ export async function forward(): Promise<boolean> {
 export async function refresh(): Promise<void> {
   return withActivePage(async (client) => {
     await client.Page.reload({});
-  });
-}
-
-export async function navigate(url: string): Promise<void> {
-  return withActivePage(async (client) => {
-    await client.Page.navigate({ url });
   });
 }
 

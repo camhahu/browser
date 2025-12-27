@@ -60,6 +60,24 @@ export async function withActivePage<T>(fn: (client: CDP.Client) => Promise<T>):
   }
 }
 
+const PAGE_LOAD_TIMEOUT_MS = 5000;
+
+async function navigateWithPageLoad(client: CDP.Client, url: string): Promise<void> {
+  await client.Page.enable();
+  
+  let timeoutId: Timer;
+  const loaded = new Promise<void>((resolve, reject) => {
+    client.Page.loadEventFired(() => {
+      clearTimeout(timeoutId);
+      resolve();
+    });
+    timeoutId = setTimeout(() => reject(new Error("Page load timeout")), PAGE_LOAD_TIMEOUT_MS);
+  });
+
+  await client.Page.navigate({ url });
+  await loaded;
+}
+
 export async function ensureRunning(): Promise<void> {
   if (!await isRunning()) {
     await launch({});
@@ -131,19 +149,20 @@ export async function close(): Promise<void> {
 }
 
 export async function openTab(url: string): Promise<{ tabId: string; url: string }> {
-  // Try to create via daemon first (daemon's session has waitForDebuggerOnStart)
-  const { createTabViaDaemon } = await import("./network");
-  const targetId = await createTabViaDaemon(url);
-  
-  if (targetId) {
-    await writeState({ activeTabId: targetId });
-    return { tabId: targetId, url };
-  }
-  
-  // Fallback to HTTP API
-  const target = await CDP.New({ port: CDP_PORT, url });
+  const target = await CDP.New({ port: CDP_PORT });
   await writeState({ activeTabId: target.id });
+  
+  const client = await CDP({ port: CDP_PORT, target: target.id });
+  try {
+    await navigateWithPageLoad(client, url);
+  } finally {
+    await client.close();
+  }
   return { tabId: target.id, url };
+}
+
+export async function navigate(url: string): Promise<void> {
+  return withActivePage((client) => navigateWithPageLoad(client, url));
 }
 
 export async function getTabs(): Promise<{ activeTabId: string; tabs: { id: string; url: string; title: string }[] }> {
