@@ -11,7 +11,7 @@ import { registerNetworkCommands } from "./commands/network";
 import { registerCookiesCommand } from "./commands/cookies";
 import { registerStorageCommand } from "./commands/storage";
 import { registerConfigCommand } from "./commands/config";
-import { fetchSkillFiles, AGENT_TARGETS, SUPPORTED_TARGETS } from "./skill-files";
+import { registerSkillCommand } from "./commands/skill";
 
 const program = new Command();
 
@@ -29,33 +29,7 @@ registerNetworkCommands(program);
 registerCookiesCommand(program);
 registerStorageCommand(program);
 registerConfigCommand(program);
-
-program
-  .command("add-skill <target>")
-  .description(`Install the browser skill for an AI agent. Targets: ${SUPPORTED_TARGETS.join(", ")}`)
-  .action(async (target: string) => {
-    const targetPath = AGENT_TARGETS[target];
-    if (!targetPath) {
-      console.error(`Unknown target: ${target}`);
-      console.error(`Supported targets: ${SUPPORTED_TARGETS.join(", ")}`);
-      process.exit(1);
-    }
-
-    console.log(`Fetching skill files...`);
-    const { skillMd, commandsMd } = await fetchSkillFiles();
-
-    const fs = await import("fs");
-    const path = await import("path");
-
-    const skillDir = path.join(process.cwd(), targetPath);
-    const referencesDir = path.join(skillDir, "references");
-
-    fs.mkdirSync(referencesDir, { recursive: true });
-    fs.writeFileSync(path.join(skillDir, "SKILL.md"), skillMd);
-    fs.writeFileSync(path.join(referencesDir, "COMMANDS.md"), commandsMd);
-
-    console.log(`Installed browser skill to ${targetPath}/`);
-  });
+registerSkillCommand(program);
 
 program
   .command("update")
