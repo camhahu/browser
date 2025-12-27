@@ -1,14 +1,12 @@
 #!/usr/bin/env bun
 
 import { Command } from "commander";
-import { ensureRunning, getUrl, getTitle } from "./cdp";
+import { ensureRunning } from "./cdp";
 import { registerBrowserCommands } from "./commands/browser";
 import { registerTabCommands } from "./commands/tabs";
 import { registerPageCommands } from "./commands/page";
-import {
-  console as browserConsole,
-  html, text, back, forward, refresh, navigate, outline,
-} from "./page";
+import { registerNavigationCommands } from "./commands/navigation";
+import { console as browserConsole, html, text, outline } from "./page";
 import { network, networkRequest, clearNetwork, type NetworkFilter } from "./network";
 import { runDaemon } from "./network-daemon";
 import {
@@ -29,65 +27,7 @@ program
 registerBrowserCommands(program);
 registerTabCommands(program);
 registerPageCommands(program);
-
-program
-  .command("url")
-  .description("Print the URL of the active tab")
-  .action(async () => {
-    await ensureRunning();
-    const url = await getUrl();
-    console.log(url);
-  });
-
-program
-  .command("title")
-  .description("Print the title of the active tab")
-  .action(async () => {
-    await ensureRunning();
-    const title = await getTitle();
-    console.log(title);
-  });
-
-program
-  .command("back")
-  .description("Go back in history")
-  .action(async () => {
-    await ensureRunning();
-    const ok = await back();
-    if (!ok) {
-      console.error("No previous page");
-      process.exit(1);
-    }
-  });
-
-program
-  .command("forward")
-  .description("Go forward in history")
-  .action(async () => {
-    await ensureRunning();
-    const ok = await forward();
-    if (!ok) {
-      console.error("No next page");
-      process.exit(1);
-    }
-  });
-
-program
-  .command("refresh")
-  .description("Reload the active tab")
-  .action(async () => {
-    await ensureRunning();
-    await refresh();
-  });
-
-program
-  .command("navigate <url>")
-  .description("Navigate the active tab to a URL")
-  .action(async (url) => {
-    await ensureRunning();
-    await navigate(url);
-    console.log(`Navigated to: ${url}`);
-  });
+registerNavigationCommands(program);
 
 program
   .command("console")
