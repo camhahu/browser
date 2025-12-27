@@ -11,7 +11,6 @@
 
 ## Future (still under consideration)
 - `screenshot` - LLMs need visual feedback to verify page state
-- consolidate agent docs under a single directory
 - the agent always wants to use `sleep`, check to see if that's necessary
 
 ## Not doing

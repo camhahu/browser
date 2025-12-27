@@ -49,6 +49,8 @@ See [skill/references/COMMANDS.md](skill/references/COMMANDS.md) for full comman
 
 ## Contributing
 
+See [docs/TODO.md](docs/TODO.md) for planned features and [docs/BUGS.md](docs/BUGS.md) for known issues.
+
 ```bash
 bun install
 bun run build
