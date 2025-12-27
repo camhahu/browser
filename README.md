@@ -43,6 +43,8 @@ browser add-skill codex      # OpenAI Codex
 
 This installs the browser skill to the appropriate directory for your agent (e.g. `.opencode/skill/browser/`). The agent will automatically discover and use it when browser automation is needed.
 
+Running `add-skill` again will update the skill files to the latest version. After running `browser update`, re-run `add-skill` to get the latest skill documentation.
+
 ## Commands
 
 See [skill/references/COMMANDS.md](skill/references/COMMANDS.md) for full command reference.
