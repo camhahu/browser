@@ -12,11 +12,11 @@ browser stop                  # Stop browser and close all tabs
 Commands wait for page load before returning.
 
 ```bash
-browser open <url>            # Open URL in new tab (waits for load)
-browser navigate <url>        # Navigate current tab to URL (waits for load)
-browser back                  # Go back
-browser forward               # Go forward
-browser refresh               # Reload page
+browser open <url>            # Open URL in NEW TAB
+browser navigate <url>        # Navigate CURRENT TAB to URL
+browser refresh               # Reload current page (does not open new tab)
+browser back                  # Go back in history
+browser forward               # Go forward in history
 browser url                   # Get current URL
 browser title                 # Get page title
 ```

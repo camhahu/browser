@@ -35,9 +35,12 @@ browser stop
 |---------|---------|
 | `browser start [--headless]` | Launch browser (use --headless by default) |
 | `browser stop` | Close browser (always clean up) |
-| `browser open <url>` | Navigate to URL |
+| `browser open <url>` | Open URL in new tab |
+| `browser navigate <url>` | Navigate current tab to URL |
+| `browser refresh` | Reload current page |
+| `browser back` / `forward` | History navigation |
 | `browser click <selector>` | Click element |
-| `browser type <text> <selector>` | Type into input |
+| `browser type <text> [selector]` | Type into input, or send keys to page |
 | `browser find <selector>` | Count matching elements |
 | `browser wait <selector>` | Wait for element to appear |
 | `browser text [selector]` | Get text content |
