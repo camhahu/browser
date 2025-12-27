@@ -1,5 +1,5 @@
 import CDP from "chrome-remote-interface";
-import { CDP_PORT, getActiveTarget, withActivePage } from "./cdp";
+import { CDP_PORT, getActiveTarget, withActivePage, withNavigation } from "./cdp";
 export { navigate } from "./cdp";
 
 export async function find(selector: string): Promise<number> {
@@ -14,15 +14,17 @@ export async function find(selector: string): Promise<number> {
 export async function click(selector: string): Promise<void> {
   return withActivePage(async (client) => {
     await client.Runtime.enable();
-    const { result } = await client.Runtime.evaluate({
-      expression: `(() => {
-        const el = document.querySelector(${JSON.stringify(selector)});
-        if (!el) throw new Error("Element not found");
-        el.click();
-      })()`,
-      awaitPromise: true,
+    await withNavigation(client, async () => {
+      const { result } = await client.Runtime.evaluate({
+        expression: `(() => {
+          const el = document.querySelector(${JSON.stringify(selector)});
+          if (!el) throw new Error("Element not found");
+          el.click();
+        })()`,
+        awaitPromise: true,
+      });
+      if (result.subtype === "error") throw new Error(`Element not found: ${selector}`);
     });
-    if (result.subtype === "error") throw new Error(`Element not found: ${selector}`);
   });
 }
 
@@ -229,7 +231,9 @@ export async function back(): Promise<boolean> {
   return withActivePage(async (client) => {
     const { currentIndex, entries } = await client.Page.getNavigationHistory();
     if (currentIndex <= 0) return false;
-    await client.Page.navigateToHistoryEntry({ entryId: entries[currentIndex - 1]!.id });
+    await withNavigation(client, async () => {
+      await client.Page.navigateToHistoryEntry({ entryId: entries[currentIndex - 1]!.id });
+    });
     return true;
   });
 }
@@ -238,14 +242,18 @@ export async function forward(): Promise<boolean> {
   return withActivePage(async (client) => {
     const { currentIndex, entries } = await client.Page.getNavigationHistory();
     if (currentIndex >= entries.length - 1) return false;
-    await client.Page.navigateToHistoryEntry({ entryId: entries[currentIndex + 1]!.id });
+    await withNavigation(client, async () => {
+      await client.Page.navigateToHistoryEntry({ entryId: entries[currentIndex + 1]!.id });
+    });
     return true;
   });
 }
 
 export async function refresh(): Promise<void> {
   return withActivePage(async (client) => {
-    await client.Page.reload({});
+    await withNavigation(client, async () => {
+      await client.Page.reload({});
+    });
   });
 }
 

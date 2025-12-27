@@ -61,6 +61,32 @@ export async function withActivePage<T>(fn: (client: CDP.Client) => Promise<T>):
 }
 
 const PAGE_LOAD_TIMEOUT_MS = 5000;
+const NAV_DETECT_MS = 100;
+
+export async function withNavigation<T>(client: CDP.Client, action: () => Promise<T>): Promise<T> {
+  await client.Page.enable();
+
+  let navigating = false;
+  let resolve: () => void;
+  let reject: (err: Error) => void;
+  const done = new Promise<void>((res, rej) => { resolve = res; reject = rej; });
+
+  client.Page.navigatedWithinDocument(() => resolve());
+  client.Page.frameNavigated(() => { navigating = true; });
+  client.Page.loadEventFired(() => resolve());
+  client.Page.frameStoppedLoading(() => resolve());
+
+  const result = await action();
+
+  await Promise.race([done, Bun.sleep(NAV_DETECT_MS)]);
+
+  if (navigating) {
+    const timeout = setTimeout(() => reject(new Error("Page load timeout")), PAGE_LOAD_TIMEOUT_MS);
+    await done.finally(() => clearTimeout(timeout));
+  }
+
+  return result;
+}
 
 async function navigateWithPageLoad(client: CDP.Client, url: string): Promise<void> {
   await client.Page.enable();
