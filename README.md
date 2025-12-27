@@ -2,6 +2,12 @@
 
 CLI tool for controlling a Chromium browser via CDP. Designed for AI agents and automation.
 
+<p>
+  <a href="https://github.com/camhahu/browser/releases/latest"><img alt="Release" src="https://img.shields.io/github/v/release/camhahu/browser?style=flat-square" /></a>
+  <a href="https://github.com/camhahu/browser/actions/workflows/release.yml"><img alt="Build status" src="https://img.shields.io/github/actions/workflow/status/camhahu/browser/release.yml?style=flat-square" /></a>
+  <a href="https://github.com/camhahu/browser/blob/main/LICENSE"><img alt="License" src="https://img.shields.io/github/license/camhahu/browser?style=flat-square" /></a>
+</p>
+
 https://github.com/user-attachments/assets/9d551f3f-0dda-42f7-8b2d-d0e068842d3a
 
 ## Install
