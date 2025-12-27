@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.6] - 2025-12-27
+
+### Added
+- `hover` command for triggering hover states and menus
+
 ## [0.1.5] - 2025-12-27
 
 ### Added
