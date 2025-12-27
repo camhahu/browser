@@ -47,7 +47,7 @@ Running `add-skill` again will update the skill files to the latest version. Aft
 
 ## Commands
 
-See [skill/references/COMMANDS.md](skill/references/COMMANDS.md) for full command reference.
+See [skill/SKILL.md](skill/SKILL.md) for full command reference.
 
 ## Contributing
 
