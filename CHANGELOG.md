@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.5] - 2025-12-27
+
+### Added
+- `navigate` command for same-tab URL navigation
+
+### Changed
+- `open` and `navigate` commands now wait for page load before returning
+
 ## [0.1.4] - 2025-12-26
 
 ### Added
