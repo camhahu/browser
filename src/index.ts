@@ -12,6 +12,7 @@ import { registerStorageCommand } from "./commands/storage";
 import { registerConfigCommand } from "./commands/config";
 import { registerSkillCommand } from "./commands/skill";
 import { registerUpdateCommand } from "./commands/update";
+import { registerScreenshotCommand } from "./commands/screenshot";
 
 const program = new Command();
 
@@ -31,6 +32,7 @@ registerStorageCommand(program);
 registerConfigCommand(program);
 registerSkillCommand(program);
 registerUpdateCommand(program);
+registerScreenshotCommand(program);
 
 program.parseAsync(process.argv).catch((err) => {
   console.error(err.message);

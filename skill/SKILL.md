@@ -48,5 +48,6 @@ browser stop
 | `browser outline [selector]` | Get page structure (useful before interacting) |
 | `browser eval <js>` | Run JavaScript |
 | `browser network` | List captured network requests |
+| `browser screenshot [name]` | Capture screenshot to .screenshots/ |
 
 All selectors use CSS syntax. See [references/COMMANDS.md](references/COMMANDS.md) for full reference.

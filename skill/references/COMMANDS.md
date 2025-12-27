@@ -96,6 +96,14 @@ browser storage clear                   # Clear all
 browser console                         # Stream console output (Ctrl+C to stop)
 ```
 
+## Screenshot
+
+```bash
+browser screenshot                      # Save to .screenshots/<timestamp>.png
+browser screenshot my-capture           # Save to .screenshots/my-capture.png
+browser screenshot -f jpeg              # Use jpeg format (png, jpeg, webp)
+```
+
 ## Selectors
 
 CSS selector syntax: `#id`, `.class`, `tag`, `[attr=value]`, `parent > child`, `ancestor descendant`, `:nth-child(n)`

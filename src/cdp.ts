@@ -245,6 +245,15 @@ export async function getActiveTabId(): Promise<string | null> {
   return state?.activeTabId ?? null;
 }
 
+export type ScreenshotFormat = "png" | "jpeg" | "webp";
+
+export async function captureScreenshot(format: ScreenshotFormat = "png"): Promise<string> {
+  return withActivePage(async (client) => {
+    const result = await client.Page.captureScreenshot({ format });
+    return result.data;
+  });
+}
+
 const SHORT_ID_LENGTH = 4;
 
 export function toShortId(fullId: string): string {
