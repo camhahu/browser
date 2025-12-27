@@ -37,6 +37,7 @@ browser find <selector>                 # Count matching elements
 browser click <selector>                # Click element
 browser type <text> <selector>          # Type into element
 browser wait <selector>                 # Wait for element to appear
+browser hover <selector>                # Move mouse to element (triggers hover states)
 ```
 
 ## Content

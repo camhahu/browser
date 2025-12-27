@@ -7,7 +7,7 @@ import {
 } from "./cdp";
 import {
   find, click, type, wait, evaluate, console as browserConsole,
-  html, text, back, forward, refresh, navigate, outline,
+  html, text, back, forward, refresh, navigate, outline, hover,
 } from "./page";
 import { network, networkRequest, clearNetwork, type NetworkFilter } from "./network";
 import { runDaemon } from "./network-daemon";
@@ -157,6 +157,15 @@ program
     await ensureRunning();
     await wait(selector);
     console.log(`Visible: ${selector}`);
+  });
+
+program
+  .command("hover <selector>")
+  .description("Move mouse to element matching a CSS selector")
+  .action(async (selector) => {
+    await ensureRunning();
+    await hover(selector);
+    console.log(`Hovered: ${selector}`);
   });
 
 program

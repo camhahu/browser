@@ -190,6 +190,28 @@ export async function refresh(): Promise<void> {
   });
 }
 
+export async function hover(selector: string): Promise<void> {
+  return withActivePage(async (client) => {
+    await client.Runtime.enable();
+    const escapedSelector = JSON.stringify(selector);
+    const { result, exceptionDetails } = await client.Runtime.evaluate({
+      expression: `(() => {
+        const el = document.querySelector(${escapedSelector});
+        if (!el) throw new Error("Element not found: " + ${escapedSelector});
+        el.scrollIntoView({ block: "center", inline: "center" });
+        const rect = el.getBoundingClientRect();
+        return { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
+      })()`,
+      returnByValue: true,
+    });
+    if (exceptionDetails) {
+      throw new Error(exceptionDetails.exception?.description ?? `Element not found: ${selector}`);
+    }
+    const { x, y } = result.value as { x: number; y: number };
+    await client.Input.dispatchMouseEvent({ type: "mouseMoved", x, y });
+  });
+}
+
 export async function outline(selector = "body", maxDepth = 6): Promise<string> {
   const escapedSelector = JSON.stringify(selector);
   const result = await evaluate(`(() => {
