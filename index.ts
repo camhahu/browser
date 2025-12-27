@@ -7,7 +7,7 @@ import {
 } from "./src/cdp";
 import {
   find, click, type, wait, evaluate, console as browserConsole,
-  html, text, back, forward, refresh, outline,
+  html, text, back, forward, refresh, navigate, outline,
 } from "./src/page";
 import { network, networkRequest, clearNetwork, type NetworkFilter } from "./src/network";
 import { runDaemon } from "./src/network-daemon";
@@ -200,6 +200,15 @@ program
   .action(async () => {
     await ensureRunning();
     await refresh();
+  });
+
+program
+  .command("navigate <url>")
+  .description("Navigate the active tab to a URL")
+  .action(async (url) => {
+    await ensureRunning();
+    await navigate(url);
+    console.log(`Navigated to: ${url}`);
   });
 
 program

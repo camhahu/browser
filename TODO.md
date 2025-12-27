@@ -1,8 +1,5 @@
 # TODO
 
-## Critical
-- `navigate <url>` - navigate current tab (vs `open` which creates new tab)
-
 ## Important
 - `waitfor:hidden`, `waitfor:navigation` - wait variants beyond element visibility
 - `select <selector> <value>` - dropdown selection (common form element)
@@ -14,6 +11,9 @@
 
 ## Future (still under consideration)
 - `screenshot` - LLMs need visual feedback to verify page state
+- put index.ts inside of src
+- consolidate agent docs under a single directory
+- the agent always wants to use `sleep`, check to see if that's necessary
 
 ## Not doing
 - **Command chaining / scripting** - For simple tasks, single commands or shell `&&` work fine. For complex automation, use Playwright/Puppeteer. Chaining would put this CLI in an awkward middle ground. The value prop is ad-hoc terminal interaction, not scripting.

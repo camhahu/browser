@@ -189,6 +189,12 @@ export async function refresh(): Promise<void> {
   });
 }
 
+export async function navigate(url: string): Promise<void> {
+  return withActivePage(async (client) => {
+    await client.Page.navigate({ url });
+  });
+}
+
 export async function outline(selector = "body", maxDepth = 6): Promise<string> {
   const escapedSelector = JSON.stringify(selector);
   const result = await evaluate(`(() => {

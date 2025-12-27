@@ -10,3 +10,4 @@
 - Never add `--json` output flags to CLI commands
 - No fallback logic - each piece of code should do one thing, one way
 - Run `bun test` after changes to verify integration tests pass
+- After completing a new feature, manually test it and add coverage to `test/integration.test.ts`

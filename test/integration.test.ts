@@ -66,15 +66,20 @@ describe("browser CLI", () => {
     await browser('wait "main ul"');
     expect(await browser("url")).toContain("/blog");
     
-    // Back/forward/refresh
-    await browser("back");
+    // Navigate (same tab navigation)
+    await browser(`navigate ${TEST_URL}`);
     await browser('wait "main p"');
     expect(await browser("url")).toBe("https://camhahu.com/");
-    await browser("forward");
+
+    // Back/forward/refresh
+    await browser("back");
     await browser('wait "main ul"');
     expect(await browser("url")).toContain("/blog");
+    await browser("forward");
+    await browser('wait "main p"');
+    expect(await browser("url")).toBe("https://camhahu.com/");
     await browser("refresh");
-    expect(await browser("url")).toContain("/blog");
+    expect(await browser("url")).toBe("https://camhahu.com/");
 
     // Tab management
     await browser(`open ${TEST_URL}`);

@@ -11,6 +11,7 @@ browser stop                  # Stop browser and close all tabs
 
 ```bash
 browser open <url>            # Open URL in new tab
+browser navigate <url>        # Navigate current tab to URL
 browser back                  # Go back
 browser forward               # Go forward
 browser refresh               # Reload page
