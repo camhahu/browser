@@ -1,6 +1,6 @@
 # browser
 
-CLI tool for controlling a Chromium browser via CDP. Designed for AI agents and automation.
+The fastest, most token-efficient way for AI agents to control Chrome.
 
 <p>
   <a href="https://github.com/camhahu/browser/releases/latest"><img alt="Release" src="https://img.shields.io/github/v/release/camhahu/browser?style=flat-square" /></a>
