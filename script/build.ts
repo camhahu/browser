@@ -10,4 +10,4 @@ const targetFlag = target ? `--target=${target}` : "";
 
 console.log(`Building browser v${version}${target ? ` for ${target}` : ""}`);
 
-await $`bun build --compile index.ts --outfile ${outfile} ${targetFlag} --define "process.env.VERSION='${version}'"`;
+await $`bun build --compile src/index.ts --outfile ${outfile} ${targetFlag} --define "process.env.VERSION='${version}'"`;

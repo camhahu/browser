@@ -4,20 +4,20 @@ import { Command } from "commander";
 import {
   launch, close, ensureRunning, openTab, getTabs, useTab, closeTab,
   getUrl, getTitle, getActiveTabId,
-} from "./src/cdp";
+} from "./cdp";
 import {
   find, click, type, wait, evaluate, console as browserConsole,
   html, text, back, forward, refresh, navigate, outline,
-} from "./src/page";
-import { network, networkRequest, clearNetwork, type NetworkFilter } from "./src/network";
-import { runDaemon } from "./src/network-daemon";
+} from "./page";
+import { network, networkRequest, clearNetwork, type NetworkFilter } from "./network";
+import { runDaemon } from "./network-daemon";
 import {
   getCookies, getCookie, setCookie, deleteCookie, clearCookies,
   getStorageEntries, getStorageValue, setStorageValue, deleteStorageValue, clearStorage,
   type StorageType,
-} from "./src/storage";
-import { getConfig, setConfig, unsetConfig, type Config } from "./src/config";
-import { fetchSkillFiles, AGENT_TARGETS, SUPPORTED_TARGETS } from "./src/skill-files";
+} from "./storage";
+import { getConfig, setConfig, unsetConfig, type Config } from "./config";
+import { fetchSkillFiles, AGENT_TARGETS, SUPPORTED_TARGETS } from "./skill-files";
 
 const program = new Command();
 
