@@ -38,6 +38,7 @@ browser stop
 | `browser open <url>` | Navigate to URL |
 | `browser click <selector>` | Click element |
 | `browser type <text> <selector>` | Type into input |
+| `browser find <selector>` | Count matching elements |
 | `browser wait <selector>` | Wait for element to appear |
 | `browser text [selector]` | Get text content |
 | `browser html [selector]` | Get HTML content |
