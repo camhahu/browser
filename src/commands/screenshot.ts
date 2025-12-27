@@ -18,7 +18,7 @@ function generateFilename(): string {
 export const registerScreenshotCommand: RegisterCommand = (program) => {
   program
     .command("screenshot [filename]")
-    .description("Capture a screenshot of the active tab")
+    .description("Capture a screenshot of the active tab (saves to .screenshots/<filename>.<format>)")
     .option("-f, --format <format>", "Image format: png, jpeg, webp", "png")
     .action(async (filename, options) => {
       await ensureRunning();
