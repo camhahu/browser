@@ -15,39 +15,37 @@ Control a Chromium browser via CDP. Install: https://github.com/camhahu/browser
 curl -fsSL https://raw.githubusercontent.com/camhahu/browser/main/install.sh | bash
 ```
 
-## Usage
-
-Use `--headless` by default. Always run `browser stop` when finished. Navigation commands (`open`, `navigate`) wait for page load before returning.
+## Quick Start
 
 ```bash
 browser start --headless
 browser open https://example.com
-browser text ".content"            # Page is already loaded, no sleep needed
-browser click "button.submit"
-browser wait ".result"             # Wait for dynamic content after click
-browser text ".result"
+browser text "h1"
 browser stop
 ```
 
-## Commands
+Always use `--headless` for automation. Always run `browser stop` when finished.
 
-| Command | Purpose |
-|---------|---------|
-| `browser start [--headless]` | Launch browser (use --headless by default) |
-| `browser stop` | Close browser (always clean up) |
-| `browser open <url>` | Open URL in new tab |
-| `browser navigate <url>` | Navigate current tab to URL |
-| `browser refresh` | Reload current page |
-| `browser back` / `forward` | History navigation |
-| `browser click <selector>` | Click element |
-| `browser type <text> [selector]` | Type into input, or send keys to page |
-| `browser find <selector>` | Count matching elements |
-| `browser wait <selector>` | Wait for element to appear |
-| `browser text [selector]` | Get text content |
-| `browser html [selector]` | Get HTML content |
-| `browser outline [selector]` | Get page structure (useful before interacting) |
-| `browser eval <js>` | Run JavaScript |
-| `browser network` | List captured network requests |
-| `browser screenshot [name]` | Capture screenshot to .screenshots/ |
+## Use Cases
 
-All selectors use CSS syntax. See [references/COMMANDS.md](references/COMMANDS.md) for full reference.
+| Task | Reference |
+|------|-----------|
+| Extract text, HTML, structured data from pages | [scraping.md](references/scraping.md) |
+| Fill forms, login, submit data | [forms.md](references/forms.md) |
+| Screenshots, responsive testing, visual verification | [testing.md](references/testing.md) |
+| Inspect network requests, cookies, storage, console | [debugging.md](references/debugging.md) |
+| Multi-page flows, tabs, history navigation | [navigation.md](references/navigation.md) |
+
+## Selectors
+
+All commands use CSS selector syntax:
+
+```
+#id                    Element with id
+.class                 Elements with class
+tag                    Elements by tag name
+[attr=value]           Attribute selector
+parent > child         Direct child
+ancestor descendant    Any descendant
+:nth-child(n)          Position-based
+```
