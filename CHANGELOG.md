@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.2.0] - 2025-12-27
+
+### Added
+- `screenshot` command for capturing page screenshots (saves to .screenshots/ directory)
+- `viewport` command with presets for desktop, tablet, mobile, and custom dimensions
+
+### Changed
+- Tab IDs are now short 4-character codes for easier use
+
+### Fixed
+- Click and navigation commands now wait for page load before returning
+- Helpful error message when attempting operations with no active tab
+
 ## [0.1.7] - 2025-12-27
 
 ### Added
