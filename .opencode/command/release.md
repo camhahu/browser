@@ -25,6 +25,7 @@ The bump type is: $ARGUMENTS.
 
 - Look at commits since the last tag (or all commits if no tags exist)
 - Only include customer-facing changes (new features, bug fixes, behavior changes, removed functionality)
+- Changes to skill files (skill/SKILL.md, skill/references/COMMANDS.md) are customer-facing and should be included
 - Exclude internal changes like: CI/CD, tests, refactoring, docs, build scripts, code cleanup, dependency updates
 - Group changes into categories: Added, Changed, Fixed, Removed (only include categories that have entries)
 - Format as a new section at the top of CHANGELOG.md (after the header):
