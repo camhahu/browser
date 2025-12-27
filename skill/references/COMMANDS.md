@@ -9,9 +9,11 @@ browser stop                  # Stop browser and close all tabs
 
 ## Navigation
 
+Commands wait for page load before returning.
+
 ```bash
-browser open <url>            # Open URL in new tab
-browser navigate <url>        # Navigate current tab to URL
+browser open <url>            # Open URL in new tab (waits for load)
+browser navigate <url>        # Navigate current tab to URL (waits for load)
 browser back                  # Go back
 browser forward               # Go forward
 browser refresh               # Reload page

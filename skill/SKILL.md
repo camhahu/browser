@@ -17,14 +17,15 @@ curl -fsSL https://raw.githubusercontent.com/camhahu/browser/main/install.sh | b
 
 ## Usage
 
-Use `--headless` by default. Always run `browser stop` when finished.
+Use `--headless` by default. Always run `browser stop` when finished. Navigation commands (`open`, `navigate`) wait for page load before returning.
 
 ```bash
 browser start --headless
 browser open https://example.com
+browser text ".content"            # Page is already loaded, no sleep needed
 browser click "button.submit"
-browser type "hello" "#search-input"
-browser text ".content"
+browser wait ".result"             # Wait for dynamic content after click
+browser text ".result"
 browser stop
 ```
 
