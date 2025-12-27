@@ -2,9 +2,10 @@
 
 import { Command } from "commander";
 import {
-  launch, close, ensureRunning, openTab, getTabs, useTab, closeTab,
-  getUrl, getTitle, getActiveTabId,
+  ensureRunning, openTab, getTabs, useTab, closeTab,
+  getUrl, getTitle,
 } from "./cdp";
+import { registerBrowserCommands } from "./commands/browser";
 import {
   find, click, type, wait, evaluate, console as browserConsole,
   html, text, back, forward, refresh, navigate, outline, hover,
@@ -26,22 +27,7 @@ program
   .description("CLI tool for controlling a Chromium browser via CDP")
   .version(process.env.VERSION ?? "0.0.0-dev");
 
-program
-  .command("start")
-  .description("Start the browser")
-  .option("--headless", "Run in headless mode")
-  .action(async (options) => {
-    const tabId = await launch({ headless: options.headless });
-    console.log(`Started Chromium. Active tab: ${tabId}`);
-  });
-
-program
-  .command("stop")
-  .description("Stop the browser")
-  .action(async () => {
-    await close();
-    console.log("Stopped Chromium.");
-  });
+registerBrowserCommands(program);
 
 program
   .command("open <url>")
@@ -88,19 +74,6 @@ program
       console.log(`Closed tab ${closed}`);
     } else {
       console.error(tabId ? `No such tab: ${tabId}` : "No active tab");
-      process.exit(1);
-    }
-  });
-
-program
-  .command("active")
-  .description("Print the active tab ID")
-  .action(async () => {
-    const tabId = await getActiveTabId();
-    if (tabId !== null) {
-      console.log(tabId);
-    } else {
-      console.error("No browser session");
       process.exit(1);
     }
   });
