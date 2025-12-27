@@ -104,6 +104,17 @@ browser screenshot my-capture           # Save to .screenshots/my-capture.png
 browser screenshot -f jpeg              # Use jpeg format (png, jpeg, webp)
 ```
 
+## Viewport
+
+Viewport changes apply to the active tab only. New tabs inherit the browser default (1920x1080).
+
+```bash
+browser viewport desktop                # 1920x1080 (default on launch)
+browser viewport tablet                 # 768x1024
+browser viewport mobile                 # 375x667
+browser viewport set <width> <height>   # Custom dimensions
+```
+
 ## Selectors
 
 CSS selector syntax: `#id`, `.class`, `tag`, `[attr=value]`, `parent > child`, `ancestor descendant`, `:nth-child(n)`

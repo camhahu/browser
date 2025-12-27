@@ -13,6 +13,7 @@ import { registerConfigCommand } from "./commands/config";
 import { registerSkillCommand } from "./commands/skill";
 import { registerUpdateCommand } from "./commands/update";
 import { registerScreenshotCommand } from "./commands/screenshot";
+import { registerViewportCommand } from "./commands/viewport";
 
 const program = new Command();
 
@@ -33,6 +34,7 @@ registerConfigCommand(program);
 registerSkillCommand(program);
 registerUpdateCommand(program);
 registerScreenshotCommand(program);
+registerViewportCommand(program);
 
 program.parseAsync(process.argv).catch((err) => {
   console.error(err.message);

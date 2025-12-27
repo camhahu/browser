@@ -6,6 +6,7 @@ out
 dist
 *.tgz
 /browser
+.screenshots
 
 # code coverage
 coverage

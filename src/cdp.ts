@@ -1,6 +1,7 @@
 import CDP from "chrome-remote-interface";
 import { spawn } from "node:child_process";
 import { getBrowserPath } from "./config";
+import { setViewportForClient } from "./viewport";
 
 const STATE_FILE = "/tmp/browser-cli.json";
 const PROFILE_DIR = "/tmp/browser-cli-profile";
@@ -158,6 +159,9 @@ export async function launch(options: { headless?: boolean }): Promise<string> {
       const page = targets.find(t => t.type === "page");
       if (page) {
         await writeState({ activeTabId: page.id });
+        const client = await CDP({ port: CDP_PORT, target: page.id });
+        await setViewportForClient(client, "desktop");
+        await client.close();
         if (onLaunchCallback) await onLaunchCallback();
         return page.id;
       }
