@@ -244,3 +244,17 @@ export async function getActiveTabId(): Promise<string | null> {
   const state = await readState();
   return state?.activeTabId ?? null;
 }
+
+const SHORT_ID_LENGTH = 4;
+
+export function toShortId(fullId: string): string {
+  return fullId.slice(0, SHORT_ID_LENGTH).toLowerCase();
+}
+
+export async function resolveTabId(shortId: string): Promise<string | null> {
+  const normalized = shortId.toLowerCase();
+  const targets = await listTargets();
+  const matches = targets.filter(t => t.type === "page" && t.id.toLowerCase().startsWith(normalized));
+  if (matches.length === 1) return matches[0]!.id;
+  return null;
+}
