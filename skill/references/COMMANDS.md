@@ -35,7 +35,10 @@ browser active                # Get active tab ID
 ```bash
 browser find <selector>                 # Count matching elements
 browser click <selector>                # Click element
-browser type <text> <selector>          # Type into element
+browser type <text> [selector]          # Type into element, or send keys to page
+browser type "hello" "#input"           # Type text into element
+browser type "ctrl+c"                   # Send key combo to page (shortcuts)
+browser type "Escape"                   # Send single key (Escape, Enter, Tab, etc.)
 browser wait <selector>                 # Wait for element to appear
 browser hover <selector>                # Move mouse to element (triggers hover states)
 ```

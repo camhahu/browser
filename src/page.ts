@@ -26,25 +26,84 @@ export async function click(selector: string): Promise<void> {
   });
 }
 
-export async function type(text: string, selector: string): Promise<void> {
+const SPECIAL_KEYS: Record<string, { key: string; code: string; keyCode: number }> = {
+  escape: { key: "Escape", code: "Escape", keyCode: 27 },
+  enter: { key: "Enter", code: "Enter", keyCode: 13 },
+  tab: { key: "Tab", code: "Tab", keyCode: 9 },
+  backspace: { key: "Backspace", code: "Backspace", keyCode: 8 },
+  delete: { key: "Delete", code: "Delete", keyCode: 46 },
+  arrowup: { key: "ArrowUp", code: "ArrowUp", keyCode: 38 },
+  arrowdown: { key: "ArrowDown", code: "ArrowDown", keyCode: 40 },
+  arrowleft: { key: "ArrowLeft", code: "ArrowLeft", keyCode: 37 },
+  arrowright: { key: "ArrowRight", code: "ArrowRight", keyCode: 39 },
+  home: { key: "Home", code: "Home", keyCode: 36 },
+  end: { key: "End", code: "End", keyCode: 35 },
+  pageup: { key: "PageUp", code: "PageUp", keyCode: 33 },
+  pagedown: { key: "PageDown", code: "PageDown", keyCode: 34 },
+  space: { key: " ", code: "Space", keyCode: 32 },
+};
+
+function parseKeyCombo(combo: string) {
+  const parts = combo.toLowerCase().split("+");
+  const keyPart = parts.pop()!;
+  let modifiers = 0;
+  for (const mod of parts) {
+    if (mod === "ctrl" || mod === "control") modifiers |= 2;
+    else if (mod === "alt" || mod === "opt" || mod === "option") modifiers |= 1;
+    else if (mod === "shift") modifiers |= 8;
+    else if (mod === "meta" || mod === "cmd" || mod === "command") modifiers |= 4;
+  }
+
+  const special = SPECIAL_KEYS[keyPart];
+  if (special) return { modifiers, ...special };
+
+  return {
+    modifiers,
+    key: keyPart,
+    code: keyPart.length === 1 ? `Key${keyPart.toUpperCase()}` : keyPart,
+    keyCode: keyPart.length === 1 ? keyPart.toUpperCase().charCodeAt(0) : 0,
+  };
+}
+
+export async function type(text: string, selector?: string): Promise<void> {
   return withActivePage(async (client) => {
-    await client.Runtime.enable();
-    const escapedSelector = JSON.stringify(selector);
-    const { exceptionDetails } = await client.Runtime.evaluate({
-      expression: `(() => {
-        const el = document.querySelector(${escapedSelector});
-        if (!el) throw new Error("Element not found: " + ${escapedSelector});
-        el.focus();
-        el.click();
-        el.value = '';
-      })()`,
-    });
-    if (exceptionDetails) {
-      throw new Error(exceptionDetails.exception?.description ?? `Element not found: ${selector}`);
-    }
-    for (const char of text) {
-      await client.Input.dispatchKeyEvent({ type: "keyDown", text: char });
-      await client.Input.dispatchKeyEvent({ type: "keyUp", text: char });
+    if (selector) {
+      await client.Runtime.enable();
+      const escapedSelector = JSON.stringify(selector);
+      const { exceptionDetails } = await client.Runtime.evaluate({
+        expression: `(() => {
+          const el = document.querySelector(${escapedSelector});
+          if (!el) throw new Error("Element not found: " + ${escapedSelector});
+          el.focus();
+          el.click();
+          el.value = '';
+        })()`,
+      });
+      if (exceptionDetails) {
+        throw new Error(exceptionDetails.exception?.description ?? `Element not found: ${selector}`);
+      }
+      for (const char of text) {
+        await client.Input.dispatchKeyEvent({ type: "keyDown", text: char });
+        await client.Input.dispatchKeyEvent({ type: "keyUp", text: char });
+      }
+    } else {
+      const { modifiers, key, code, keyCode } = parseKeyCombo(text);
+      await client.Input.dispatchKeyEvent({
+        type: "keyDown",
+        modifiers,
+        key,
+        code,
+        windowsVirtualKeyCode: keyCode,
+        nativeVirtualKeyCode: keyCode,
+      });
+      await client.Input.dispatchKeyEvent({
+        type: "keyUp",
+        modifiers,
+        key,
+        code,
+        windowsVirtualKeyCode: keyCode,
+        nativeVirtualKeyCode: keyCode,
+      });
     }
   });
 }

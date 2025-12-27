@@ -142,12 +142,16 @@ program
   });
 
 program
-  .command("type <text> <selector>")
-  .description("Type text into an element matching a CSS selector")
+  .command("type <text> [selector]")
+  .description("Type text into an element, or send keys to the page (e.g. 'type ctrl+c' for shortcuts)")
   .action(async (txt, selector) => {
     await ensureRunning();
     await type(txt, selector);
-    console.log(`Typed into: ${selector}`);
+    if (selector) {
+      console.log(`Typed into: ${selector}`);
+    } else {
+      console.log(`Sent keys: ${txt}`);
+    }
   });
 
 program
