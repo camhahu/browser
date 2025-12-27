@@ -5,7 +5,6 @@
 - `select <selector> <value>` - dropdown selection (common form element)
 
 ## Nice to have
-- `hover <selector>` - trigger hover states/menus
 - `scroll <selector>` / `scroll top/bottom` - scroll into view or page position
 - `network` - wait for network idle, useful after actions
 
