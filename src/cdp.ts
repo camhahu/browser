@@ -45,7 +45,11 @@ export async function getActiveTarget(): Promise<CDP.Target | null> {
   const state = await readState();
   if (!state?.activeTabId) return null;
   const targets = await listTargets();
-  return targets.find(t => t.id === state.activeTabId) ?? null;
+  const target = targets.find(t => t.id === state.activeTabId);
+  if (!target) {
+    throw new Error("Active tab was closed. Use `browser tabs` to see available tabs and `browser use <id>` to select one.");
+  }
+  return target;
 }
 
 export async function withActivePage<T>(fn: (client: CDP.Client) => Promise<T>): Promise<T> {

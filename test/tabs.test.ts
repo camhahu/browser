@@ -1,5 +1,5 @@
 import { describe, test, expect } from "bun:test";
-import { browser, setupBrowser, TEST_URL } from "./helpers";
+import { browser, run, setupBrowser, TEST_URL } from "./helpers";
 
 describe("tabs", () => {
   setupBrowser();
@@ -14,5 +14,16 @@ describe("tabs", () => {
     expect(activeTab).toBeTruthy();
     
     await browser("close");
+  });
+
+  test("error when active tab is closed externally", async () => {
+    await browser(`open ${TEST_URL}`);
+    await Bun.write("/tmp/browser-cli.json", JSON.stringify({ activeTabId: "nonexistent" }));
+    
+    const { stderr, exitCode } = await run("url");
+    expect(exitCode).toBe(1);
+    expect(stderr).toContain("Active tab was closed");
+    expect(stderr).toContain("browser tabs");
+    expect(stderr).toContain("browser use");
   });
 });
