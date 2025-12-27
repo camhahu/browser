@@ -16,25 +16,7 @@ https://github.com/user-attachments/assets/9d551f3f-0dda-42f7-8b2d-d0e068842d3a
 curl -fsSL https://raw.githubusercontent.com/camhahu/browser/main/install.sh | bash
 ```
 
-## Update
-
-```bash
-browser update
-```
-
-## Quick Start
-
-```bash
-browser start                    # Start browser
-browser open https://example.com # Open a page
-browser text                     # Get page text
-browser click "button.submit"    # Click an element
-browser stop                     # Stop browser
-```
-
-## Agent Integration
-
-Give your AI agent browser control by installing the skill:
+Point your agent to the [skill file](skill/SKILL.md) to get started, or install it directly:
 
 ```bash
 browser add-skill opencode   # OpenCode
@@ -47,9 +29,11 @@ browser add-skill vscode     # VS Code
 browser add-skill codex      # OpenAI Codex
 ```
 
-This installs the browser skill to the appropriate directory for your agent (e.g. `.opencode/skill/browser/`). The agent will automatically discover and use it when browser automation is needed.
+## Update
 
-Running `add-skill` again will update the skill files to the latest version. After running `browser update`, re-run `add-skill` to get the latest skill documentation.
+```bash
+browser update
+```
 
 ## Commands
 
