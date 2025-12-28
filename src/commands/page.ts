@@ -1,6 +1,6 @@
 import type { RegisterCommand } from "./common";
 import { ensureRunning, exitWithError } from "./common";
-import { findAll, click, type, wait, hover, evaluate, scroll } from "../page";
+import { findAll, click, type, wait, hover, evaluate, scroll, select } from "../page";
 
 export const registerPageCommands: RegisterCommand = (program) => {
     program
@@ -71,5 +71,14 @@ export const registerPageCommands: RegisterCommand = (program) => {
             await ensureRunning();
             await scroll(target);
             console.log(`Scrolled to: ${target}`);
+        });
+
+    program
+        .command("select <selector> <value>")
+        .description("Select an option from a <select> element by value, label, or text")
+        .action(async (selector, value) => {
+            await ensureRunning();
+            const selected = await select(selector, value);
+            console.log(`Selected: ${selected.join(", ")}`);
         });
 };

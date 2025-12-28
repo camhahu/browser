@@ -3,7 +3,6 @@
 ## Important
 
 - `waitfor:hidden`, `waitfor:navigation` - wait variants beyond element visibility
-- `select <selector> <value>` - dropdown selection (common form element)
 
 ## Nice to have
 

@@ -45,4 +45,19 @@ describe("page", () => {
         const scrolled = await browser("eval \"window.scrollY >= 0\"");
         expect(scrolled).toBe("true");
     });
+
+    test("select by value", async () => {
+        await browser(`navigate ${TEST_URL}`);
+        await browser(`eval "document.body.innerHTML = '<select id=color><option value=r>Red</option><option value=g>Green</option></select>'"`);
+        const result = await browser('select "#color" "g"');
+        expect(result).toBe("Selected: g");
+        const value = await browser(`eval "document.querySelector('#color').value"`);
+        expect(value).toBe("g");
+    });
+
+    test("select by label", async () => {
+        await browser(`eval "document.body.innerHTML = '<select id=color><option value=r>Red</option><option value=g>Green</option></select>'"`);
+        const result = await browser('select "#color" "Red"');
+        expect(result).toBe("Selected: r");
+    });
 });

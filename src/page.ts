@@ -490,6 +490,41 @@ export async function scroll(target: string): Promise<void> {
     });
 }
 
+export async function select(selector: string, value: string): Promise<string[]> {
+    return withActivePage(async (client) => {
+        await client.Runtime.enable();
+        const escapedSelector = JSON.stringify(selector);
+        const escapedValue = JSON.stringify(value);
+        const { result, exceptionDetails } = await client.Runtime.evaluate({
+            expression: `(() => {
+        const el = document.querySelector(${escapedSelector});
+        if (!el) throw new Error("Element not found: " + ${escapedSelector});
+        if (el.tagName !== 'SELECT') throw new Error("Element is not a <select>: " + ${escapedSelector});
+        const value = ${escapedValue};
+        const selected = [];
+        for (const option of el.options) {
+          if (option.value === value || option.label === value || option.textContent.trim() === value) {
+            option.selected = true;
+            selected.push(option.value);
+            if (!el.multiple) break;
+          }
+        }
+        if (selected.length === 0) throw new Error("No option matching: " + value);
+        el.dispatchEvent(new Event('input', { bubbles: true }));
+        el.dispatchEvent(new Event('change', { bubbles: true }));
+        return selected;
+      })()`,
+            returnByValue: true,
+        });
+        if (exceptionDetails) {
+            const desc = exceptionDetails.exception?.description ?? "";
+            const message = desc.split("\n")[0]?.replace(/^Error:\s*/, "") || `Element not found: ${selector}`;
+            throw new Error(message);
+        }
+        return result.value as string[];
+    });
+}
+
 export async function interactiveOutline(selector = "body"): Promise<string> {
     const escapedSelector = JSON.stringify(selector);
     const result = await evaluate(`(() => {
