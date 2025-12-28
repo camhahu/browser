@@ -458,6 +458,28 @@ export async function outline(selector = "body", maxDepth = 6): Promise<string> 
     return (result as string).trimEnd();
 }
 
+export async function scroll(target: string): Promise<void> {
+    return withActivePage(async (client) => {
+        await client.Runtime.enable();
+        const escapedTarget = JSON.stringify(target);
+        const { exceptionDetails } = await client.Runtime.evaluate({
+            expression: `(() => {
+        const target = ${escapedTarget};
+        if (target === "top") return window.scrollTo({ top: 0, behavior: 'instant' });
+        if (target === "bottom") return window.scrollTo({ top: document.documentElement.scrollHeight, behavior: 'instant' });
+        const el = document.querySelector(target);
+        if (!el) throw new Error("Element not found: " + target);
+        el.scrollIntoView({ block: "center", behavior: "instant" });
+      })()`,
+        });
+        if (exceptionDetails) {
+            const desc = exceptionDetails.exception?.description ?? "";
+            const message = desc.split("\n")[0]?.replace(/^Error:\s*/, "") || `Element not found: ${target}`;
+            throw new Error(message);
+        }
+    });
+}
+
 export async function interactiveOutline(selector = "body"): Promise<string> {
     const escapedSelector = JSON.stringify(selector);
     const result = await evaluate(`(() => {

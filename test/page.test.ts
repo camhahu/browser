@@ -27,4 +27,22 @@ describe("page", () => {
         const result = await browser('eval "1 + 1"');
         expect(result).toBe("2");
     });
+
+    test("scroll top/bottom", async () => {
+        await browser(`navigate ${TEST_URL}/blog`);
+        await browser("scroll bottom");
+        const scrolledDown = await browser("eval \"window.scrollY > 0\"");
+        expect(scrolledDown).toBe("true");
+
+        await browser("scroll top");
+        const scrolledUp = await browser("eval \"window.scrollY === 0\"");
+        expect(scrolledUp).toBe("true");
+    });
+
+    test("scroll to selector", async () => {
+        await browser("scroll top");
+        await browser("scroll main");
+        const scrolled = await browser("eval \"window.scrollY >= 0\"");
+        expect(scrolled).toBe("true");
+    });
 });

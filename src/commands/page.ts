@@ -1,6 +1,6 @@
 import type { RegisterCommand } from "./common";
 import { ensureRunning, exitWithError } from "./common";
-import { findAll, click, type, wait, hover, evaluate } from "../page";
+import { findAll, click, type, wait, hover, evaluate, scroll } from "../page";
 
 export const registerPageCommands: RegisterCommand = (program) => {
     program
@@ -62,5 +62,14 @@ export const registerPageCommands: RegisterCommand = (program) => {
             if (result !== undefined) {
                 console.log(typeof result === "object" ? JSON.stringify(result, null, 2) : result);
             }
+        });
+
+    program
+        .command("scroll <target>")
+        .description("Scroll to position (top, bottom) or element (CSS selector)")
+        .action(async (target) => {
+            await ensureRunning();
+            await scroll(target);
+            console.log(`Scrolled to: ${target}`);
         });
 };

@@ -4,10 +4,6 @@
 - now that viewport size is fullscreen by default, window size doesn't match it when opening in headed mode. making it look like the content is cut off the screen.
 - screenshots always seems to add .png etc to the end (well the agent always seems to) we should fix that in a good way:w
 
-## CLI bugs
-
-- No `scroll` command - need a way to scroll the page or within specific elements
-
 ## Documentation bugs
 
 - `wait` command syntax not documented in skill - agent guessed `--timeout` flag which doesn't exist

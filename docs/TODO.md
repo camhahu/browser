@@ -7,7 +7,6 @@
 
 ## Nice to have
 
-- `scroll <selector>` / `scroll top/bottom` - scroll into view or page position
 - `network` - wait for network idle, useful after actions
 
 ## Not doing
