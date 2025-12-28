@@ -32,8 +32,8 @@ browser open https://example.com
 # Discover clickable elements
 browser outline -i
 
-# Navigate using discovered selectors
-browser click "a.products-link"
+# Navigate by clicking (CSS selector or text)
+browser click "Products"
 browser wait ".product-list"
 
 browser click ".product-item:first-child"

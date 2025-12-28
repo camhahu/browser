@@ -60,7 +60,17 @@ main
 
 ## Selectors
 
-All commands use CSS selector syntax:
+The `click` and `find` commands support both CSS selectors and text matching:
+
+```bash
+browser click ".btn-primary"     # CSS selector
+browser click "Sign up"          # Text match (exact first, then partial)
+browser find "Submit"            # Find by button/link text
+```
+
+Text matching searches clickable elements (links, buttons, inputs) and prefers exact matches over partial.
+
+CSS selector syntax for all commands:
 
 ```
 #id                    Element with id

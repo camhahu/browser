@@ -58,8 +58,8 @@ browser open https://example.com
 # See what you can interact with
 browser outline -i
 
-# Click something from the outline
-browser click "a[href=/products]"
+# Click by text or CSS selector
+browser click "Products"
 
 # Read content
 browser text ".article-content"

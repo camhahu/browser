@@ -3,12 +3,12 @@
 ## Commands
 
 ```bash
-browser click <selector>              # Click buttons, links, checkboxes
-browser type <text> <selector>        # Type into input field
+browser click <selector>              # Click by CSS selector or text content
+browser type <text> <selector>        # Type into input field (CSS selector)
 browser type "Escape"                 # Send special key (Escape, Enter, Tab)
 browser type "ctrl+a"                 # Send key combination
-browser find <selector>               # Verify element exists
-browser wait <selector>               # Wait for element to appear
+browser find <selector>               # Find by CSS selector or text content
+browser wait <selector>               # Wait for element (CSS selector)
 browser eval <js>                     # Set values programmatically
 ```
 
@@ -24,7 +24,7 @@ browser outline -i
 # Fill form using discovered selectors
 browser type "user@example.com" "#email"
 browser type "password123" "#password"
-browser click "button[type=submit]"
+browser click "Log in"              # Click by button text
 
 # Wait for redirect/dashboard
 browser wait ".dashboard"
@@ -55,6 +55,7 @@ browser stop
 
 - Use `browser outline -i` to discover form fields and buttons
 - Use `wait` after `click` if the page changes or content loads
+- Click by text when button text is unique: `browser click "Submit"` or `browser click "Next"`
 - For dropdowns: `browser click "select#country"` then `browser click "option[value='US']"`
 - For checkboxes/radios: `browser click "input[name='agree']"`
 - Clear existing input: `browser eval "document.querySelector('#field').value = ''"`
