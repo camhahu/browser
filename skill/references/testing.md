@@ -9,6 +9,11 @@ browser viewport desktop              # 1920x1080
 browser viewport tablet               # 768x1024
 browser viewport mobile               # 375x667
 browser viewport set <width> <height> # Custom dimensions
+browser useragent macos               # macOS Chrome
+browser useragent windows             # Windows Chrome
+browser useragent iphone              # iPhone Safari
+browser useragent android             # Android Chrome
+browser useragent custom <string>     # Custom user agent
 browser find <selector>               # Verify element exists
 browser text <selector>               # Verify text content
 ```
@@ -25,6 +30,7 @@ browser viewport tablet
 browser screenshot homepage-tablet
 
 browser viewport mobile
+browser useragent iphone
 browser screenshot homepage-mobile
 
 browser stop
@@ -49,7 +55,8 @@ browser stop
 ## Tips
 
 - Screenshots capture the viewport, not the full page
-- Viewport changes apply to the active tab only
+- Viewport and user agent changes apply to the active tab only
 - Use descriptive screenshot names for easy comparison
 - `find` returns count - use to verify elements exist before screenshot
 - Mobile/tablet viewports set `mobile: true` for proper touch emulation
+- Pair `viewport mobile` with `useragent iphone` for accurate mobile testing
