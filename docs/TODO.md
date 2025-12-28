@@ -7,6 +7,7 @@
 ## Nice to have
 
 - `network` - wait for network idle, useful after actions
+- `scroll --by <pixels>` - scroll by pixel amount, not just to selector/top/bottom
 
 ## Not doing
 

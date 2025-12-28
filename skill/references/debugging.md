@@ -65,6 +65,28 @@ browser storage "authToken"
 browser stop
 ```
 
+## Workflow: Finding Selectors
+
+When `click` fails or you need to find the right selector for dynamic elements:
+
+```bash
+# 1. See interactive elements first
+browser outline -i
+
+# 2. Drill into specific area
+browser outline "table"
+browser outline ".calendar"
+
+# 3. Get raw HTML to find actual attributes
+browser html "table" | head -50
+
+# Example: calendar date picker
+browser html "table"
+# Output shows: <span data-date="2025-12-01" ...>
+# Now you can click:
+browser click "span[data-date='2025-12-15']"
+```
+
 ## Tips
 
 - Network capture starts automatically when browser launches
@@ -72,3 +94,4 @@ browser stop
 - `console` streams live - run in background with `browser console > log.txt &`
 - `eval` can access anything in page context: `browser eval "localStorage.getItem('key')"`
 - Filter network by type: xhr, fetch, document, script, stylesheet, image, font, websocket
+- When text matching fails (e.g. "15" matches multiple elements), use `html` to find unique attributes
