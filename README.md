@@ -1,8 +1,8 @@
-# browser
+<h1 align="center"><b>browser</b></h1>
 
-The fastest, most token-efficient way for AI agents to control Chrome.
+<p align="center">The fastest, most token-efficient way for AI agents to control Chrome.</p>
 
-<p>
+<p align="center">
   <a href="https://github.com/camhahu/browser/releases/latest"><img alt="Release" src="https://img.shields.io/github/v/release/camhahu/browser?style=flat-square" /></a>
   <a href="https://github.com/camhahu/browser/actions/workflows/release.yml"><img alt="Build status" src="https://img.shields.io/github/actions/workflow/status/camhahu/browser/release.yml?style=flat-square" /></a>
   <a href="https://github.com/camhahu/browser/blob/main/LICENSE"><img alt="License" src="https://img.shields.io/github/license/camhahu/browser?style=flat-square" /></a>
