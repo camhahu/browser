@@ -18,6 +18,10 @@ browser eval <js>                     # Set values programmatically
 browser start --headless
 browser open https://example.com/login
 
+# Discover form fields
+browser outline -i
+
+# Fill form using discovered selectors
 browser type "user@example.com" "#email"
 browser type "password123" "#password"
 browser click "button[type=submit]"
@@ -49,6 +53,7 @@ browser stop
 
 ## Tips
 
+- Use `browser outline -i` to discover form fields and buttons
 - Use `wait` after `click` if the page changes or content loads
 - For dropdowns: `browser click "select#country"` then `browser click "option[value='US']"`
 - For checkboxes/radios: `browser click "input[name='agree']"`

@@ -20,21 +20,43 @@ curl -fsSL https://raw.githubusercontent.com/camhahu/browser/main/install.sh | b
 ```bash
 browser start --headless
 browser open https://example.com
-browser text "h1"
+browser outline -i              # See interactive elements
+browser click "a.products"      # Click using selector from outline
+browser text ".content"         # Extract text
 browser stop
 ```
 
 Always use `--headless` for automation. Always run `browser stop` when finished.
 
+## Page Discovery
+
+Use `outline` to understand page structure before interacting:
+
+```bash
+browser outline -i          # Interactive elements only (links, buttons, inputs)
+browser outline -d 4        # Full structure at depth 4
+```
+
+Output shows selectors, text content, and attributes you can use:
+```
+header
+  nav
+    a "Products" [href=/products]
+    a "About" [href=/about]
+main
+  button "Sign up" [aria-label="Create account"]
+  input [type=email] [placeholder="Email"]
+```
+
 ## Use Cases
 
 | Task | Reference |
 |------|-----------|
-| Extract text, HTML, structured data from pages | [scraping.md](references/scraping.md) |
+| Understanding page structure, extracting content | [reading.md](references/reading.md) |
 | Fill forms, login, submit data | [forms.md](references/forms.md) |
-| Screenshots, responsive testing, visual verification | [testing.md](references/testing.md) |
-| Inspect network requests, cookies, storage, console | [debugging.md](references/debugging.md) |
 | Multi-page flows, tabs, history navigation | [navigation.md](references/navigation.md) |
+| Screenshots, visual verification | [testing.md](references/testing.md) |
+| Network requests, cookies, storage, console | [debugging.md](references/debugging.md) |
 
 ## Selectors
 

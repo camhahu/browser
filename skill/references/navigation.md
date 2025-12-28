@@ -29,6 +29,10 @@ browser active                # Get active tab ID
 browser start --headless
 browser open https://example.com
 
+# Discover clickable elements
+browser outline -i
+
+# Navigate using discovered selectors
 browser click "a.products-link"
 browser wait ".product-list"
 
@@ -69,6 +73,7 @@ browser stop
 
 ## Tips
 
+- Use `browser outline -i` to discover links and buttons before clicking
 - `open` creates a new tab; `navigate` reuses current tab
 - Navigation commands wait for page load before returning
 - Tab IDs are short (4 chars) - use `browser tabs` to see them
