@@ -7,7 +7,7 @@ const SOCKET_PATH = "/tmp/browser-network.sock";
 const STATE_FILE = "/tmp/browser-network-daemon.json";
 const HEALTH_CHECK_MS = 60_000;
 
-export interface NetworkRequest {
+interface NetworkRequest {
   id: number;
   tabId: string;
   url: string;
