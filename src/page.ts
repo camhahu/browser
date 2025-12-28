@@ -333,7 +333,9 @@ export async function hover(selector: string): Promise<void> {
             returnByValue: true,
         });
         if (exceptionDetails) {
-            throw new Error(exceptionDetails.exception?.description ?? `Element not found: ${selector}`);
+            const desc = exceptionDetails.exception?.description ?? "";
+            const message = desc.split("\n")[0]?.replace(/^Error:\s*/, "") || `Element not found: ${selector}`;
+            throw new Error(message);
         }
         const { x, y } = result.value as { x: number; y: number };
         await client.Input.dispatchMouseEvent({ type: "mouseMoved", x, y });
