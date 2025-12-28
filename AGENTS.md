@@ -13,3 +13,4 @@
 - Run `bun test` after changes (always runs headless)
 - After completing a new feature, manually test it and add integration test coverage
 - When fixing a bug, first add a test case that reproduces the issue, then fix the bug
+- Never stage or commit files unless explicitly asked
