@@ -272,16 +272,26 @@ export async function text(selector = "body", limit = DEFAULT_LIMIT, visibleOnly
       return visible;
     }
 
-    const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
-    const texts = [];
+    function isBlock(el) {
+      const display = getComputedStyle(el).display;
+      return display === 'block' || display === 'flex' || display === 'grid' ||
+             display === 'list-item' || display === 'table' || display === 'table-row';
+    }
+
+    let result = '';
+    const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT | NodeFilter.SHOW_ELEMENT);
     while (walker.nextNode()) {
       const node = walker.currentNode;
-      if (isVisible(node.parentElement)) {
-        const t = node.textContent;
-        if (t && t.trim()) texts.push(t);
+      if (node.nodeType === Node.ELEMENT_NODE) {
+        if (isBlock(node) && result.length > 0 && !result.endsWith('\\n')) {
+          result += '\\n';
+        }
+      } else if (isVisible(node.parentElement)) {
+        const t = node.textContent.trim();
+        if (t) result += t;
       }
     }
-    return texts.join('');
+    return result;
   })()`
         : `document.querySelector(${escapedSelector})?.innerText ?? (() => { throw new Error("Element not found: " + ${escapedSelector}) })()`;
     const content = await evaluate(expression);
