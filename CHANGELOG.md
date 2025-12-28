@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.2.1] - 2025-12-28
+
+### Added
+- `outline -i` interactive mode showing only clickable elements within landmarks
+- `click` and `find` commands now support text-based element selection (e.g. `browser click "Submit"`)
+
+### Changed
+- `open` command now starts browser in headless mode by default (use `start` for headed debugging)
+
 ## [0.2.0] - 2025-12-27
 
 ### Added
