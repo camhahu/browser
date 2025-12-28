@@ -14,6 +14,7 @@ import { registerSkillCommand } from "./commands/skill";
 import { registerUpdateCommand } from "./commands/update";
 import { registerScreenshotCommand } from "./commands/screenshot";
 import { registerViewportCommand } from "./commands/viewport";
+import { registerUseragentCommand } from "./commands/useragent";
 
 const program = new Command();
 
@@ -35,6 +36,7 @@ registerSkillCommand(program);
 registerUpdateCommand(program);
 registerScreenshotCommand(program);
 registerViewportCommand(program);
+registerUseragentCommand(program);
 
 program.parseAsync(process.argv).catch((err) => {
     console.error(err.message);
