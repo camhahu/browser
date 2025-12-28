@@ -28,6 +28,8 @@ browser text ".product-list"      # 4. Read content
 browser stop                      # Always stop when finished
 ```
 
+**Prefer `outline` and `text` over screenshots.** These commands return structured text that's faster to process and more reliable for understanding page content. Use screenshots only when visual layout matters (debugging CSS, capturing evidence, visual regression).
+
 ## Commands
 
 ```bash

@@ -7,4 +7,3 @@
 ## Documentation bugs
 
 - `wait` command syntax not documented in skill - agent guessed `--timeout` flag which doesn't exist
-- Skill doesn't guide agent to prefer `outline`/`text` over screenshots for understanding page structure
