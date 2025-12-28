@@ -85,6 +85,18 @@ CSS selector reference:
 [attr=value]     parent > child   ancestor descendant
 ```
 
+## Chaining Commands
+
+Commands can be chained with `&&`. No sleep needed - navigation commands wait for page load:
+
+```bash
+browser open https://example.com && browser click "Products" && browser text ".product-list"
+```
+
+```bash
+browser navigate https://example.com && browser scroll bottom && browser screenshot
+```
+
 ## Use Cases
 
 | Task                           | Reference                                 |
