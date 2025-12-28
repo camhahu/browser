@@ -1,5 +1,5 @@
 import type { RegisterCommand } from "./common";
-import { launch, close, getActiveTabId } from "../cdp";
+import { launch, close, getActiveTabId, toShortId } from "../cdp";
 import { exitWithError } from "./common";
 
 export const registerBrowserCommands: RegisterCommand = (program) => {
@@ -9,7 +9,7 @@ export const registerBrowserCommands: RegisterCommand = (program) => {
     .option("--headless", "Run in headless mode")
     .action(async (options) => {
       const tabId = await launch({ headless: options.headless });
-      console.log(`Started Chromium. Active tab: ${tabId}`);
+      console.log(`Started Chromium. Active tab: ${toShortId(tabId)}`);
     });
 
   program
@@ -26,7 +26,7 @@ export const registerBrowserCommands: RegisterCommand = (program) => {
     .action(async () => {
       const tabId = await getActiveTabId();
       if (tabId !== null) {
-        console.log(tabId);
+        console.log(toShortId(tabId));
       } else {
         exitWithError("No browser session");
       }
