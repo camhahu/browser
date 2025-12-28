@@ -28,7 +28,7 @@ export const registerScreenshotCommand: RegisterCommand = (program) => {
                 throw new Error(`Invalid format: ${format}. Must be png, jpeg, or webp`);
             }
 
-            const name = filename || generateFilename();
+            const name = filename?.replace(/\.(png|jpe?g|webp)$/i, "") || generateFilename();
             const relativePath = `${SCREENSHOTS_DIR}/${name}.${format}`;
 
             await Bun.$`mkdir -p ${SCREENSHOTS_DIR}`.quiet();
