@@ -1,6 +1,6 @@
 import { beforeAll, afterAll } from "bun:test";
 
-export const BROWSER = "./dist/browser";
+const BROWSER = "./dist/browser";
 export const TEST_URL = "https://camhahu.com";
 
 export async function run(args: string): Promise<{ stdout: string; stderr: string; exitCode: number }> {
