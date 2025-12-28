@@ -13,6 +13,7 @@ browser navigate <url>    # Navigate current tab
 browser back / forward    # History navigation
 browser refresh           # Reload current page
 browser url / title       # Get current URL or title
+browser scroll <target>   # Scroll to top, bottom, or CSS selector
 
 # Tabs
 browser tabs              # List all tabs

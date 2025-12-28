@@ -40,6 +40,7 @@ browser text [selector]           # Extract text content
 browser click <selector>          # Click (CSS selector or text content)
 browser type <text> <selector>    # Type into input
 browser wait <selector>           # Wait for element
+browser scroll <target>           # Scroll to top, bottom, or selector
 
 # Navigate
 browser open <url>                # Open URL (starts headless if needed)
