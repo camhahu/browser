@@ -69,7 +69,7 @@ async function isDaemonRunning(): Promise<boolean> {
   }
 }
 
-export async function startDaemon(): Promise<void> {
+async function startDaemon(): Promise<void> {
   if (await isDaemonRunning()) return;
 
   spawn(process.execPath, ["_network-daemon"], {
@@ -83,7 +83,7 @@ export async function startDaemon(): Promise<void> {
   }
 }
 
-export async function stopDaemon(): Promise<void> {
+async function stopDaemon(): Promise<void> {
   const state = await readDaemonState();
   if (state) {
     try {

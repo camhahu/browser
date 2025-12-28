@@ -29,11 +29,11 @@ async function clearState(): Promise<void> {
   await Bun.$`rm -f ${STATE_FILE}`.quiet();
 }
 
-export async function listTargets(): Promise<CDP.Target[]> {
+async function listTargets(): Promise<CDP.Target[]> {
   return CDP.List({ port: CDP_PORT });
 }
 
-export async function isRunning(): Promise<boolean> {
+async function isRunning(): Promise<boolean> {
   try {
     await listTargets();
     return true;
