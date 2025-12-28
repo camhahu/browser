@@ -19,4 +19,12 @@ describe("content", () => {
     expect(outline).toContain("body");
     expect(outline).toContain("nav");
   });
+
+  test("outline -i", async () => {
+    const outline = await browser("outline -i");
+    expect(outline).toContain("header");
+    expect(outline).toContain("main");
+    expect(outline).toContain("[href=");
+    expect(outline).not.toContain("div");
+  });
 });

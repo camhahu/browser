@@ -6,7 +6,6 @@
 ## CLI bugs
 - `click` command doesn't work with text content (e.g. `browser click "Submit"` fails) - should support text-based selection like `browser click "text=Submit"`
 - No `scroll` command - need a way to scroll the page or within specific elements
-- `outline` command output isn't detailed enough - shows generic structure but no text content or useful selectors to help identify clickable elements
 
 ## Documentation bugs
 - `wait` command syntax not documented in skill - agent guessed `--timeout` flag which doesn't exist

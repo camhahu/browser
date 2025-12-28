@@ -279,15 +279,60 @@ export async function hover(selector: string): Promise<void> {
   });
 }
 
+const OUTLINE_HELPERS = `
+  const SKIP_TAGS = new Set(['SCRIPT', 'STYLE', 'NOSCRIPT', 'SVG', 'PATH', 'BR', 'HR', 'META', 'LINK']);
+
+  function truncate(text, maxLen) {
+    text = text.trim().replace(/\\s+/g, ' ');
+    return text.length > maxLen ? text.slice(0, maxLen) + '...' : text;
+  }
+
+  function getAttributes(el, getText) {
+    const attrs = [];
+    const tag = el.tagName;
+    const text = getText(el);
+    if (text) attrs.push('"' + text + '"');
+    if (tag === 'A') {
+      const href = el.getAttribute('href');
+      if (href) attrs.push('[href=' + href.slice(0, 50) + ']');
+    }
+    if (tag === 'IMG') {
+      const alt = el.getAttribute('alt');
+      attrs.push(alt ? '[alt="' + alt.slice(0, 30) + '"]' : '[img]');
+    }
+    if (tag === 'INPUT') {
+      attrs.push('[type=' + (el.getAttribute('type') || 'text') + ']');
+      const placeholder = el.getAttribute('placeholder');
+      if (placeholder) attrs.push('[placeholder="' + placeholder + '"]');
+    }
+    if (tag === 'TEXTAREA') {
+      const placeholder = el.getAttribute('placeholder');
+      if (placeholder) attrs.push('[placeholder="' + placeholder + '"]');
+    }
+    if (tag === 'SELECT') attrs.push('(' + el.options.length + ' options)');
+    const role = el.getAttribute('role');
+    if (role) attrs.push('[role=' + role + ']');
+    const ariaLabel = el.getAttribute('aria-label');
+    if (ariaLabel) attrs.push('[aria-label="' + ariaLabel.slice(0, 30) + '"]');
+    const name = el.getAttribute('name');
+    if (name) attrs.push('[name=' + name + ']');
+    return attrs.join(' ');
+  }
+
+  function formatLine(el, getId, getText, indent) {
+    const attrs = getAttributes(el, getText);
+    return indent + getId(el) + (attrs ? ' ' + attrs : '');
+  }
+`;
+
 export async function outline(selector = "body", maxDepth = 6): Promise<string> {
   const escapedSelector = JSON.stringify(selector);
   const result = await evaluate(`(() => {
     const root = document.querySelector(${escapedSelector});
     if (!root) throw new Error("Element not found: " + ${escapedSelector});
+    ${OUTLINE_HELPERS}
 
-    const SKIP_TAGS = new Set(['SCRIPT', 'STYLE', 'NOSCRIPT', 'SVG', 'PATH', 'BR', 'HR', 'META', 'LINK']);
-
-    function getIdentifier(el) {
+    function getId(el) {
       let id = el.tagName.toLowerCase();
       if (el.id) id += '#' + el.id;
       else if (el.className && typeof el.className === 'string') {
@@ -297,41 +342,25 @@ export async function outline(selector = "body", maxDepth = 6): Promise<string> 
       return id;
     }
 
-    function getTextPreview(el, maxLen = 50) {
+    function getText(el) {
       let text = '';
       for (const child of el.childNodes) {
         if (child.nodeType === Node.TEXT_NODE) text += child.textContent;
       }
-      text = text.trim().replace(/\\s+/g, ' ');
-      if (text.length > maxLen) return '"' + text.slice(0, maxLen) + '..."';
-      if (text.length > 0) return '"' + text + '"';
-      return '';
+      return truncate(text, 50);
     }
 
-    function getElementInfo(el) {
-      const tag = el.tagName;
-      if (tag === 'A') return el.getAttribute('href') ? '[href]' : '';
-      if (tag === 'IMG') {
-        const alt = el.getAttribute('alt');
-        return alt ? '"' + alt.slice(0, 30) + '"' : '[img]';
-      }
-      if (tag === 'INPUT') {
-        const type = el.getAttribute('type') || 'text';
-        const placeholder = el.getAttribute('placeholder');
-        return '[' + type + ']' + (placeholder ? ' "' + placeholder + '"' : '');
-      }
-      if (tag === 'BUTTON') return getTextPreview(el, 30);
-      if (tag === 'SELECT') return '(' + el.options.length + ' options)';
-      return '';
+    function getSignature(el) {
+      return getId(el) + ' ' + getText(el);
     }
 
     function findRepeatedGroups(children) {
       const groups = [];
       let i = 0;
       while (i < children.length) {
-        const sig = getIdentifier(children[i]);
+        const sig = getSignature(children[i]);
         let count = 1;
-        while (i + count < children.length && getIdentifier(children[i + count]) === sig) count++;
+        while (i + count < children.length && getSignature(children[i + count]) === sig) count++;
         groups.push({ start: i, count });
         i += count;
       }
@@ -339,21 +368,13 @@ export async function outline(selector = "body", maxDepth = 6): Promise<string> 
     }
 
     function walk(el, depth) {
-      if (depth > ${maxDepth}) return '  '.repeat(depth) + '...\\n';
       if (SKIP_TAGS.has(el.tagName)) return '';
-
       const indent = '  '.repeat(depth);
-      const info = getElementInfo(el);
-      let line = indent + getIdentifier(el);
-      if (info) line += ' ' + info;
-      else {
-        const preview = getTextPreview(el);
-        if (preview) line += ' ' + preview;
-      }
-      line += '\\n';
-
+      let line = formatLine(el, getId, getText, indent);
       const children = Array.from(el.children).filter(c => !SKIP_TAGS.has(c.tagName));
-      if (children.length === 0) return line;
+      if (depth >= ${maxDepth} && children.length > 0) line += ' ... (' + children.length + ')';
+      line += '\\n';
+      if (depth >= ${maxDepth} || children.length === 0) return line;
 
       for (const { start, count } of findRepeatedGroups(children)) {
         if (count > 2) {
@@ -370,6 +391,73 @@ export async function outline(selector = "body", maxDepth = 6): Promise<string> 
     }
 
     return walk(root, 0);
+  })()`);
+  return (result as string).trimEnd();
+}
+
+export async function interactiveOutline(selector = "body"): Promise<string> {
+  const escapedSelector = JSON.stringify(selector);
+  const result = await evaluate(`(() => {
+    const root = document.querySelector(${escapedSelector});
+    if (!root) throw new Error("Element not found: " + ${escapedSelector});
+    ${OUTLINE_HELPERS}
+
+    const INTERACTIVE = new Set(['A', 'BUTTON', 'INPUT', 'SELECT', 'TEXTAREA']);
+    const LANDMARKS = new Set(['HEADER', 'NAV', 'MAIN', 'FOOTER', 'ASIDE', 'SECTION', 'FORM', 'DIALOG']);
+    const LANDMARK_ROLES = new Set(['banner', 'navigation', 'main', 'contentinfo', 'complementary', 'region', 'form', 'search', 'dialog']);
+
+    function isInteractive(el) {
+      return INTERACTIVE.has(el.tagName) ||
+        el.getAttribute('role') === 'button' ||
+        el.getAttribute('onclick') ||
+        el.getAttribute('tabindex') === '0';
+    }
+
+    function isLandmark(el) {
+      return LANDMARKS.has(el.tagName) || LANDMARK_ROLES.has(el.getAttribute('role'));
+    }
+
+    function getId(el) {
+      let id = el.tagName.toLowerCase();
+      if (el.id) id += '#' + el.id;
+      return id;
+    }
+
+    function getText(el) {
+      return truncate(el.innerText || '', 50);
+    }
+
+    function buildTree(el) {
+      if (SKIP_TAGS.has(el.tagName)) return null;
+      if (isInteractive(el)) return { el, children: [] };
+
+      const childTrees = [];
+      for (const child of el.children) {
+        const tree = buildTree(child);
+        if (tree) childTrees.push(tree);
+      }
+
+      if (isLandmark(el) && childTrees.length > 0) return { el, children: childTrees };
+      if (childTrees.length === 1) return childTrees[0];
+      if (childTrees.length > 1) return { el: null, children: childTrees };
+      return null;
+    }
+
+    function render(node, depth = 0) {
+      if (!node) return '';
+      const indent = '  '.repeat(depth);
+      if (node.el) {
+        let output = formatLine(node.el, getId, getText, indent) + '\\n';
+        for (const child of node.children) output += render(child, depth + 1);
+        return output;
+      }
+      let output = '';
+      for (const child of node.children) output += render(child, depth);
+      return output;
+    }
+
+    const tree = buildTree(root);
+    return tree ? render(tree) : '';
   })()`);
   return (result as string).trimEnd();
 }
