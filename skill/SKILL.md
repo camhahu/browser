@@ -86,10 +86,10 @@ CSS selector reference:
 
 ## Use Cases
 
-| Task | Reference |
-|------|-----------|
-| Reading and extracting content | [reading.md](references/reading.md) |
-| Forms and authentication | [forms.md](references/forms.md) |
-| Multi-page flows and tabs | [navigation.md](references/navigation.md) |
-| Screenshots and visual testing | [testing.md](references/testing.md) |
-| Network, cookies, storage | [debugging.md](references/debugging.md) |
+| Task                           | Reference                                 |
+| ------------------------------ | ----------------------------------------- |
+| Reading and extracting content | [reading.md](references/reading.md)       |
+| Forms and authentication       | [forms.md](references/forms.md)           |
+| Multi-page flows and tabs      | [navigation.md](references/navigation.md) |
+| Screenshots and visual testing | [testing.md](references/testing.md)       |
+| Network, cookies, storage      | [debugging.md](references/debugging.md)   |

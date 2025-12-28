@@ -18,9 +18,9 @@ import { registerViewportCommand } from "./commands/viewport";
 const program = new Command();
 
 program
-  .name("browser")
-  .description("CLI tool for controlling a Chromium browser via CDP")
-  .version(process.env.VERSION ?? "0.0.0-dev");
+    .name("browser")
+    .description("CLI tool for controlling a Chromium browser via CDP")
+    .version(process.env.VERSION ?? "0.0.0-dev");
 
 registerBrowserCommands(program);
 registerTabCommands(program);
@@ -37,6 +37,6 @@ registerScreenshotCommand(program);
 registerViewportCommand(program);
 
 program.parseAsync(process.argv).catch((err) => {
-  console.error(err.message);
-  process.exit(1);
+    console.error(err.message);
+    process.exit(1);
 });
