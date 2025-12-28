@@ -10,6 +10,8 @@
 
 https://github.com/user-attachments/assets/9d551f3f-0dda-42f7-8b2d-d0e068842d3a
 
+> **Experimental**: Commands are stable, but their output format is subject to change as we optimize for AI agent effectiveness.
+
 ## Install
 
 ```bash
