@@ -34,6 +34,4 @@ export async function setViewport(presetOrDimensions: ViewportPreset | ViewportD
   await withActivePage((client) => applyViewport(client, config));
 }
 
-export async function setViewportForClient(client: CDP.Client, preset: ViewportPreset): Promise<void> {
-  await applyViewport(client, VIEWPORT_PRESETS[preset]);
-}
+
