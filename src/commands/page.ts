@@ -1,24 +1,25 @@
 import type { RegisterCommand } from "./common";
-import { ensureRunning } from "./common";
-import { find, click, type, wait, hover, evaluate } from "../page";
+import { ensureRunning, exitWithError } from "./common";
+import { findAll, click, type, wait, hover, evaluate } from "../page";
 
 export const registerPageCommands: RegisterCommand = (program) => {
   program
     .command("find <selector>")
-    .description("Find elements matching a CSS selector")
+    .description("Find elements matching a selector (CSS or text content)")
     .action(async (selector) => {
       await ensureRunning();
-      const count = await find(selector);
-      console.log(`Found ${count} match${count === 1 ? "" : "es"} for: ${selector}`);
+      const { count, matchType } = await findAll(selector);
+      if (count === 0) exitWithError(`No elements found for: ${selector}`);
+      console.log(`Found ${count} match${count === 1 ? "" : "es"} (${matchType}): ${selector}`);
     });
 
   program
     .command("click <selector>")
-    .description("Click an element matching a CSS selector")
+    .description("Click an element matching a selector (CSS or text content)")
     .action(async (selector) => {
       await ensureRunning();
-      await click(selector);
-      console.log(`Clicked: ${selector}`);
+      const { matchType } = await click(selector);
+      console.log(`Clicked (${matchType}): ${selector}`);
     });
 
   program

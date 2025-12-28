@@ -2,6 +2,32 @@ import CDP from "chrome-remote-interface";
 import { CDP_PORT, getActiveTarget, withActivePage, withNavigation } from "./cdp";
 export { navigate } from "./cdp";
 
+export type MatchType = "css" | "exact" | "partial";
+
+const RESOLVE_SELECTOR = `
+  const CLICKABLE = 'a, button, input[type="submit"], input[type="button"], [role="button"], [onclick], [tabindex="0"]';
+  
+  function findByText(selector, exact) {
+    const lower = selector.toLowerCase();
+    const matches = [];
+    for (const el of document.querySelectorAll(CLICKABLE)) {
+      const text = (el.innerText || el.textContent || '').trim().toLowerCase();
+      if (exact ? text === lower : text.includes(lower)) matches.push(el);
+    }
+    return matches;
+  }
+  
+  function resolve(selector) {
+    try {
+      const css = document.querySelectorAll(selector);
+      if (css.length > 0) return { matchType: 'css', elements: Array.from(css) };
+    } catch {}
+    const exact = findByText(selector, true);
+    if (exact.length > 0) return { matchType: 'exact', elements: exact };
+    return { matchType: 'partial', elements: findByText(selector, false) };
+  }
+`;
+
 export async function find(selector: string): Promise<number> {
   return withActivePage(async (client) => {
     await client.DOM.enable();
@@ -11,20 +37,51 @@ export async function find(selector: string): Promise<number> {
   });
 }
 
-export async function click(selector: string): Promise<void> {
+export type FindResult = { count: number; matchType: MatchType };
+
+export async function findAll(selector: string): Promise<FindResult> {
   return withActivePage(async (client) => {
     await client.Runtime.enable();
+    const { result } = await client.Runtime.evaluate({
+      expression: `(() => {
+        ${RESOLVE_SELECTOR}
+        const { matchType, elements } = resolve(${JSON.stringify(selector)});
+        return { matchType, count: elements.length };
+      })()`,
+      returnByValue: true,
+    });
+    return result.value as FindResult;
+  });
+}
+
+export type ClickResult = { matchType: MatchType };
+
+export async function click(selector: string): Promise<ClickResult> {
+  return withActivePage(async (client) => {
+    await client.Runtime.enable();
+    const { result } = await client.Runtime.evaluate({
+      expression: `(() => {
+        ${RESOLVE_SELECTOR}
+        const { matchType, elements } = resolve(${JSON.stringify(selector)});
+        return { matchType, count: elements.length };
+      })()`,
+      returnByValue: true,
+    });
+    const { matchType, count } = result.value as { matchType: MatchType; count: number };
+    if (count === 0) throw new Error(`No elements found for: ${selector}`);
+    if (count > 1) throw new Error(`Found ${count} elements (${matchType}) for: ${selector}. Be more specific.`);
+
     await withNavigation(client, async () => {
-      const { result } = await client.Runtime.evaluate({
+      await client.Runtime.evaluate({
         expression: `(() => {
-          const el = document.querySelector(${JSON.stringify(selector)});
-          if (!el) throw new Error("Element not found");
-          el.click();
+          ${RESOLVE_SELECTOR}
+          resolve(${JSON.stringify(selector)}).elements[0].click();
         })()`,
         awaitPromise: true,
       });
-      if (result.subtype === "error") throw new Error(`Element not found: ${selector}`);
     });
+
+    return { matchType };
   });
 }
 

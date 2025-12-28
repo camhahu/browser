@@ -4,7 +4,6 @@
 - screenshots always seems to add .png etc to the end (well the agent always seems to) we should fix that in a good way:w
 - Started Chromium. Active tab: 539AB8B0A580CB8937AD015EF4DF1BC2 (should be new tabIds)
 ## CLI bugs
-- `click` command doesn't work with text content (e.g. `browser click "Submit"` fails) - should support text-based selection like `browser click "text=Submit"`
 - No `scroll` command - need a way to scroll the page or within specific elements
 
 ## Documentation bugs
