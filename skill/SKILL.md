@@ -41,7 +41,7 @@ browser text [selector]           # Extract text content
 # Interact
 browser click <selector>          # Click (CSS selector or text content)
 browser type <text> <selector>    # Type into input
-browser wait <selector>           # Wait for element
+browser wait <selector>           # Wait for element (15s timeout, CSS only)
 browser scroll <target>           # Scroll to top, bottom, or selector
 
 # Navigate
