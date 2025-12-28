@@ -16,7 +16,6 @@ browser text <selector>               # Verify text content
 ## Workflow: Responsive Testing
 
 ```bash
-browser start --headless
 browser open https://example.com
 
 browser viewport desktop
@@ -34,22 +33,16 @@ browser stop
 ## Workflow: Visual Verification
 
 ```bash
-browser start --headless
 browser open https://example.com
 
-# Verify elements render
 browser find ".hero-image"
 browser find ".navigation"
-
-# Check text content
 browser text "h1"
 
-# Capture for comparison
 browser screenshot before-change
-
 # ... make changes ...
-
 browser screenshot after-change
+
 browser stop
 ```
 

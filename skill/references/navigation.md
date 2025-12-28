@@ -4,35 +4,28 @@
 
 ```bash
 # Lifecycle
-browser start [--headless]    # Start browser (use --headless for automation)
-browser stop                  # Close browser and all tabs
+browser start             # Start headed browser (for debugging)
+browser stop              # Close browser and all tabs
 
 # Navigation
-browser open <url>            # Open URL in NEW tab (switches to it)
-browser navigate <url>        # Navigate CURRENT tab to URL
-browser refresh               # Reload current page
-browser back                  # Go back in history
-browser forward               # Go forward in history
-browser url                   # Get current URL
-browser title                 # Get page title
+browser open <url>        # Open URL (starts headless if needed)
+browser navigate <url>    # Navigate current tab
+browser back / forward    # History navigation
+browser refresh           # Reload current page
+browser url / title       # Get current URL or title
 
 # Tabs
-browser tabs                  # List all tabs with IDs
-browser use <tab-id>          # Switch to tab
-browser close [tab-id]        # Close tab (default: active)
-browser active                # Get active tab ID
+browser tabs              # List all tabs
+browser use <tab-id>      # Switch to tab
+browser close [tab-id]    # Close tab (default: active)
 ```
 
 ## Workflow: Multi-page Flow
 
 ```bash
-browser start --headless
 browser open https://example.com
-
-# Discover clickable elements
 browser outline -i
 
-# Navigate by clicking (CSS selector or text)
 browser click "Products"
 browser wait ".product-list"
 
@@ -48,34 +41,25 @@ browser stop
 ## Workflow: Multiple Tabs
 
 ```bash
-browser start --headless
-
-# Open multiple pages
 browser open https://example.com/page1
 browser open https://example.com/page2
 browser open https://example.com/page3
 
-# List tabs
 browser tabs
-
-# Switch between them
 browser use abc1
 browser text "h1"
 
 browser use def2
 browser text "h1"
 
-# Close specific tab
 browser close def2
-
 browser stop
 ```
 
 ## Tips
 
-- Use `browser outline -i` to discover links and buttons before clicking
+- `open` starts headless automatically; use `start` for headed debugging
 - `open` creates a new tab; `navigate` reuses current tab
 - Navigation commands wait for page load before returning
 - Tab IDs are short (4 chars) - use `browser tabs` to see them
-- Always `browser stop` when finished to clean up
-- `--headless` is faster and works in CI environments
+- Always `browser stop` when finished

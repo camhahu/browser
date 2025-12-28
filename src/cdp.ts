@@ -111,7 +111,7 @@ async function navigateWithPageLoad(client: CDP.Client, url: string): Promise<vo
 
 export async function ensureRunning(): Promise<void> {
   if (!await isRunning()) {
-    await launch({});
+    await launch({ headless: true });
   }
 }
 

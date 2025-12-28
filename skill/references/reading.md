@@ -52,16 +52,10 @@ browser outline -d 4
 ## Workflow
 
 ```bash
-browser start --headless
 browser open https://example.com
-
-# See what you can interact with
 browser outline -i
 
-# Click by text or CSS selector
 browser click "Products"
-
-# Read content
 browser text ".article-content"
 
 browser stop

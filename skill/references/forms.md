@@ -15,18 +15,13 @@ browser eval <js>                     # Set values programmatically
 ## Workflow: Login
 
 ```bash
-browser start --headless
 browser open https://example.com/login
-
-# Discover form fields
 browser outline -i
 
-# Fill form using discovered selectors
 browser type "user@example.com" "#email"
 browser type "password123" "#password"
-browser click "Log in"              # Click by button text
+browser click "Log in"
 
-# Wait for redirect/dashboard
 browser wait ".dashboard"
 browser stop
 ```
@@ -34,18 +29,15 @@ browser stop
 ## Workflow: Multi-step Form
 
 ```bash
-browser start --headless
 browser open https://example.com/signup
 
-# Step 1
 browser type "John" "#first-name"
 browser type "Doe" "#last-name"
-browser click ".next-button"
+browser click "Next"
 
-# Step 2 - wait for next page
 browser wait "#address"
 browser type "123 Main St" "#address"
-browser click ".submit-button"
+browser click "Submit"
 
 browser wait ".confirmation"
 browser stop

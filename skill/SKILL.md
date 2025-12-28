@@ -15,69 +15,81 @@ Control a Chromium browser via CDP. Install: https://github.com/camhahu/browser
 curl -fsSL https://raw.githubusercontent.com/camhahu/browser/main/install.sh | bash
 ```
 
-## Quick Start
+## Core Loop
 
 ```bash
-browser start --headless
-browser open https://example.com
-browser outline -i              # See interactive elements
-browser click "a.products"      # Click using selector from outline
-browser text ".content"         # Extract text
-browser stop
+browser open https://example.com  # Starts headless browser if needed
+
+browser outline -i                # 1. See interactive elements
+browser click "Products"          # 2. Click by text or CSS selector
+browser wait ".product-list"      # 3. Wait for content to load
+browser text ".product-list"      # 4. Read content
+
+browser stop                      # Always stop when finished
 ```
 
-Always use `--headless` for automation. Always run `browser stop` when finished.
-
-## Page Discovery
-
-Use `outline` to understand page structure before interacting:
+## Commands
 
 ```bash
-browser outline -i          # Interactive elements only (links, buttons, inputs)
-browser outline -d 4        # Full structure at depth 4
+# See the page
+browser outline -i                # Interactive elements (links, buttons, inputs)
+browser outline                   # Full page structure
+browser text [selector]           # Extract text content
+
+# Interact
+browser click <selector>          # Click (CSS selector or text content)
+browser type <text> <selector>    # Type into input
+browser wait <selector>           # Wait for element
+
+# Navigate
+browser open <url>                # Open URL (starts headless if needed)
+browser navigate <url>            # Navigate current tab
+browser back / forward / refresh
 ```
 
-Output shows selectors, text content, and attributes you can use:
+## Outline
+
+Use `outline` to see what you can interact with before clicking:
+
+```bash
+browser outline -i
 ```
-header
-  nav
-    a "Products" [href=/products]
-    a "About" [href=/about]
+
+```
+nav
+  a "Products" [href=/products]
+  a "About" [href=/about]
 main
-  button "Sign up" [aria-label="Create account"]
+  button "Sign up"
   input [type=email] [placeholder="Email"]
+```
+
+Click elements by their text content or build a CSS selector from the output.
+
+## Selectors
+
+`click` and `find` support CSS selectors and text matching:
+
+```bash
+browser click "Sign up"          # Text match (exact first, then partial)
+browser click ".btn-primary"     # CSS selector
+```
+
+Text matching searches clickable elements (links, buttons, inputs).
+
+CSS selector reference:
+
+```
+#id              .class           tag
+[attr=value]     parent > child   ancestor descendant
 ```
 
 ## Use Cases
 
 | Task | Reference |
 |------|-----------|
-| Understanding page structure, extracting content | [reading.md](references/reading.md) |
-| Fill forms, login, submit data | [forms.md](references/forms.md) |
-| Multi-page flows, tabs, history navigation | [navigation.md](references/navigation.md) |
-| Screenshots, visual verification | [testing.md](references/testing.md) |
-| Network requests, cookies, storage, console | [debugging.md](references/debugging.md) |
-
-## Selectors
-
-The `click` and `find` commands support both CSS selectors and text matching:
-
-```bash
-browser click ".btn-primary"     # CSS selector
-browser click "Sign up"          # Text match (exact first, then partial)
-browser find "Submit"            # Find by button/link text
-```
-
-Text matching searches clickable elements (links, buttons, inputs) and prefers exact matches over partial.
-
-CSS selector syntax for all commands:
-
-```
-#id                    Element with id
-.class                 Elements with class
-tag                    Elements by tag name
-[attr=value]           Attribute selector
-parent > child         Direct child
-ancestor descendant    Any descendant
-:nth-child(n)          Position-based
-```
+| Reading and extracting content | [reading.md](references/reading.md) |
+| Forms and authentication | [forms.md](references/forms.md) |
+| Multi-page flows and tabs | [navigation.md](references/navigation.md) |
+| Screenshots and visual testing | [testing.md](references/testing.md) |
+| Network, cookies, storage | [debugging.md](references/debugging.md) |

@@ -35,14 +35,11 @@ browser eval <js>                     # Run JavaScript in page context
 ## Workflow: Debug API Calls
 
 ```bash
-browser start --headless
 browser open https://example.com
 
-# Trigger action that makes API call
-browser click "#load-data"
+browser click "Load Data"
 browser wait ".data-loaded"
 
-# Inspect the request
 browser network -f "api"
 browser network abc123 --body
 
@@ -52,20 +49,16 @@ browser stop
 ## Workflow: Debug Authentication
 
 ```bash
-browser start --headless
 browser open https://example.com/login
 
-# Check initial state
 browser cookies
 browser storage
 
-# Login
 browser type "user@example.com" "#email"
 browser type "password" "#password"
-browser click "#submit"
+browser click "Log in"
 browser wait ".dashboard"
 
-# Verify auth tokens
 browser cookies
 browser storage "authToken"
 
