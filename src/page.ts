@@ -28,7 +28,7 @@ const RESOLVE_SELECTOR = `
   }
 `;
 
-export async function find(selector: string): Promise<number> {
+async function find(selector: string): Promise<number> {
   return withActivePage(async (client) => {
     await client.DOM.enable();
     const { root } = await client.DOM.getDocument();
