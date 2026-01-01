@@ -14,7 +14,7 @@ export const registerSkillCommand: RegisterCommand = (program) => {
             }
 
             console.log(`Fetching skill files...`);
-            const files = await fetchSkillFiles();
+            const { files, failed } = await fetchSkillFiles();
 
             const fs = await import("fs");
             const path = await import("path");
@@ -27,9 +27,15 @@ export const registerSkillCommand: RegisterCommand = (program) => {
 
             fs.writeFileSync(path.join(skillDir, "SKILL.md"), files.skill);
             for (const name of REFERENCE_FILES) {
-                fs.writeFileSync(path.join(referencesDir, `${name}.md`), files.references[name]!);
+                const content = files.references[name];
+                if (content) {
+                    fs.writeFileSync(path.join(referencesDir, `${name}.md`), content);
+                }
             }
 
             console.log(`Installed browser skill to ${targetPath}/`);
+            if (failed.length > 0) {
+                console.log(`Failed to fetch: ${failed.join(", ")}`);
+            }
         });
 };

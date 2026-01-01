@@ -2,7 +2,7 @@ const REPO = "camhahu/browser";
 const BRANCH = "main";
 const BASE_URL = `https://raw.githubusercontent.com/${REPO}/${BRANCH}`;
 
-export const REFERENCE_FILES = ["scraping", "forms", "testing", "debugging", "navigation"] as const;
+export const REFERENCE_FILES = ["forms", "testing", "debugging", "navigation", "reading"] as const;
 
 type ReferenceName = (typeof REFERENCE_FILES)[number];
 
@@ -11,30 +11,48 @@ interface SkillFiles {
     references: Record<ReferenceName, string>;
 }
 
-export async function fetchSkillFiles(): Promise<SkillFiles> {
-    const urls = [
-        `${BASE_URL}/skill/SKILL.md`,
-        ...REFERENCE_FILES.map((name) => `${BASE_URL}/skill/references/${name}.md`),
-    ];
+export interface FetchResult {
+    files: SkillFiles;
+    failed: string[];
+}
 
-    const responses = await Promise.all(urls.map((url) => fetch(url)));
+export async function fetchSkillFiles(): Promise<FetchResult> {
+    const skillUrl = `${BASE_URL}/skill/SKILL.md`;
+    const referenceUrls = REFERENCE_FILES.map((name) => ({
+        name,
+        url: `${BASE_URL}/skill/references/${name}.md`,
+    }));
 
-    for (let i = 0; i < responses.length; i++) {
-        if (!responses[i]!.ok) {
-            throw new Error(`Failed to fetch ${urls[i]}: ${responses[i]!.status}`);
+    const failed: string[] = [];
+
+    const skillResponse = await fetch(skillUrl);
+    if (!skillResponse.ok) {
+        throw new Error(`Failed to fetch SKILL.md: ${skillResponse.status}`);
+    }
+    const skill = await skillResponse.text();
+
+    const references = {} as Record<ReferenceName, string>;
+    const referenceResults = await Promise.all(
+        referenceUrls.map(async ({ name, url }) => {
+            const response = await fetch(url);
+            if (!response.ok) {
+                return { name, content: null };
+            }
+            return { name, content: await response.text() };
+        })
+    );
+
+    for (const { name, content } of referenceResults) {
+        if (content === null) {
+            failed.push(`references/${name}.md`);
+        } else {
+            references[name] = content;
         }
     }
 
-    const texts = await Promise.all(responses.map((r) => r.text()));
-
-    const references = {} as Record<ReferenceName, string>;
-    for (let i = 0; i < REFERENCE_FILES.length; i++) {
-        references[REFERENCE_FILES[i]!] = texts[i + 1]!;
-    }
-
     return {
-        skill: texts[0]!,
-        references,
+        files: { skill, references },
+        failed,
     };
 }
 
