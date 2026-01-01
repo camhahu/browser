@@ -2,6 +2,22 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.2.2] - 2026-01-01
+
+### Added
+
+- `useragent` command for device spoofing
+- `select` command for dropdown elements
+- `scroll` command for page navigation
+
+### Fixed
+
+- `add-skill` command now continues when reference files fail to fetch
+- Screenshot filenames no longer include file extensions
+- `text` command now preserves block-level formatting
+- Cleaner error messages from browser script evaluation
+- Short tab IDs now used consistently in browser commands
+
 ## [0.2.1] - 2025-12-28
 
 ### Added
