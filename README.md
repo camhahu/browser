@@ -37,6 +37,14 @@ browser add-skill codex      # OpenAI Codex
 browser update
 ```
 
+## Example
+
+```bash
+browser open https://example.com && browser outline
+browser click "Products" && browser wait ".product-list" && browser text ".product-list"
+browser stop
+```
+
 ## Commands
 
 See [skill/SKILL.md](skill/SKILL.md) for full command reference.
