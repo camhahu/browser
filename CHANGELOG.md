@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.3.0] - 2026-01-03
+
+### Changed
+
+- `outline` command now shows interactive elements only by default (previously required `-i` flag)
+
 ## [0.2.2] - 2026-01-01
 
 ### Added
