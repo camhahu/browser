@@ -21,34 +21,19 @@ browser text <selector>               # Verify text content
 ## Workflow: Responsive Testing
 
 ```bash
-browser open https://example.com
-
-browser viewport desktop
-browser screenshot homepage-desktop
-
-browser viewport tablet
-browser screenshot homepage-tablet
-
-browser viewport mobile
-browser useragent iphone
-browser screenshot homepage-mobile
-
+browser open https://example.com && browser viewport desktop && browser screenshot homepage-desktop
+browser viewport tablet && browser screenshot homepage-tablet
+browser viewport mobile && browser useragent iphone && browser screenshot homepage-mobile
 browser stop
 ```
 
 ## Workflow: Visual Verification
 
 ```bash
-browser open https://example.com
-
-browser find ".hero-image"
-browser find ".navigation"
-browser text "h1"
-
+browser open https://example.com && browser find ".hero-image" && browser find ".navigation" && browser text "h1"
 browser screenshot before-change
 # ... make changes ...
 browser screenshot after-change
-
 browser stop
 ```
 

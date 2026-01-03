@@ -15,32 +15,17 @@ browser eval <js>                     # Set values programmatically
 ## Workflow: Login
 
 ```bash
-browser open https://example.com/login
-browser outline
-
-browser type "user@example.com" "#email"
-browser type "password123" "#password"
-browser click "Log in"
-
-browser wait ".dashboard"
-browser stop
+browser open https://example.com/login && browser outline
+browser type "user@example.com" "#email" && browser type "password123" "#password" && browser click "Log in"
+browser wait ".dashboard" && browser stop
 ```
 
 ## Workflow: Multi-step Form
 
 ```bash
-browser open https://example.com/signup
-
-browser type "John" "#first-name"
-browser type "Doe" "#last-name"
-browser click "Next"
-
-browser wait "#address"
-browser type "123 Main St" "#address"
-browser click "Submit"
-
-browser wait ".confirmation"
-browser stop
+browser open https://example.com/signup && browser type "John" "#first-name" && browser type "Doe" "#last-name" && browser click "Next"
+browser wait "#address" && browser type "123 Main St" "#address" && browser click "Submit"
+browser wait ".confirmation" && browser stop
 ```
 
 ## Tips

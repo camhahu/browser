@@ -24,37 +24,20 @@ browser close [tab-id]    # Close tab (default: active)
 ## Workflow: Multi-page Flow
 
 ```bash
-browser open https://example.com
-browser outline
-
-browser click "Products"
-browser wait ".product-list"
-
-browser click ".product-item:first-child"
-browser wait ".product-details"
-
-browser back
-browser wait ".product-list"
-
+browser open https://example.com && browser outline
+browser click "Products" && browser wait ".product-list"
+browser click ".product-item:first-child" && browser wait ".product-details"
+browser back && browser wait ".product-list"
 browser stop
 ```
 
 ## Workflow: Multiple Tabs
 
 ```bash
-browser open https://example.com/page1
-browser open https://example.com/page2
-browser open https://example.com/page3
-
-browser tabs
-browser use abc1
-browser text "h1"
-
-browser use def2
-browser text "h1"
-
-browser close def2
-browser stop
+browser open https://example.com/page1 && browser open https://example.com/page2 && browser open https://example.com/page3
+browser tabs && browser use abc1 && browser text "h1"
+browser use def2 && browser text "h1"
+browser close def2 && browser stop
 ```
 
 ## Tips

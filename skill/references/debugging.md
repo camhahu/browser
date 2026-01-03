@@ -35,33 +35,18 @@ browser eval <js>                     # Run JavaScript in page context
 ## Workflow: Debug API Calls
 
 ```bash
-browser open https://example.com
-
-browser click "Load Data"
-browser wait ".data-loaded"
-
+browser open https://example.com && browser click "Load Data" && browser wait ".data-loaded"
 browser network -f "api"
 browser network abc123 --body
-
 browser stop
 ```
 
 ## Workflow: Debug Authentication
 
 ```bash
-browser open https://example.com/login
-
-browser cookies
-browser storage
-
-browser type "user@example.com" "#email"
-browser type "password" "#password"
-browser click "Log in"
-browser wait ".dashboard"
-
-browser cookies
-browser storage "authToken"
-
+browser open https://example.com/login && browser cookies && browser storage
+browser type "user@example.com" "#email" && browser type "password" "#password" && browser click "Log in" && browser wait ".dashboard"
+browser cookies && browser storage "authToken"
 browser stop
 ```
 
@@ -70,21 +55,14 @@ browser stop
 When `click` fails or you need to find the right selector for dynamic elements:
 
 ```bash
-# 1. See interactive elements first
-browser outline
+# See interactive elements, then drill into specific area
+browser outline && browser outline "table" && browser outline ".calendar"
 
-# 2. Drill into specific area
-browser outline "table"
-browser outline ".calendar"
-
-# 3. Get raw HTML to find actual attributes
+# Get raw HTML to find actual attributes
 browser html "table" | head -50
 
-# Example: calendar date picker
-browser html "table"
-# Output shows: <span data-date="2025-12-01" ...>
-# Now you can click:
-browser click "span[data-date='2025-12-15']"
+# Example: calendar date picker - output shows: <span data-date="2025-12-01" ...>
+browser html "table" && browser click "span[data-date='2025-12-15']"
 ```
 
 ## Tips

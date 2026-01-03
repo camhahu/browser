@@ -54,12 +54,8 @@ browser outline -a 4
 ## Workflow
 
 ```bash
-browser open https://example.com
-browser outline
-
-browser click "Products"
-browser text ".article-content"
-
+browser open https://example.com && browser outline
+browser click "Products" && browser text ".article-content"
 browser stop
 ```
 
