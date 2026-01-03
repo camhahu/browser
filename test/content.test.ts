@@ -14,17 +14,17 @@ describe("content", () => {
         expect(await browser("html nav -l 100")).toContain("<nav");
     });
 
-    test("outline", async () => {
+    test("outline (interactive by default)", async () => {
         const outline = await browser("outline");
-        expect(outline).toContain("body");
-        expect(outline).toContain("nav");
-    });
-
-    test("outline -i", async () => {
-        const outline = await browser("outline -i");
         expect(outline).toContain("header");
         expect(outline).toContain("main");
         expect(outline).toContain("[href=");
         expect(outline).not.toContain("div");
+    });
+
+    test("outline -a (all elements)", async () => {
+        const outline = await browser("outline -a");
+        expect(outline).toContain("body");
+        expect(outline).toContain("nav");
     });
 });

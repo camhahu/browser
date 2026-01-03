@@ -16,7 +16,7 @@ browser eval <js>                     # Set values programmatically
 
 ```bash
 browser open https://example.com/login
-browser outline -i
+browser outline
 
 browser type "user@example.com" "#email"
 browser type "password123" "#password"
@@ -45,7 +45,7 @@ browser stop
 
 ## Tips
 
-- Use `browser outline -i` to discover form fields and buttons
+- Use `browser outline` to discover form fields and buttons
 - Use `wait` after `click` if the page changes or content loads
 - Click by text when button text is unique: `browser click "Submit"` or `browser click "Next"`
 - For dropdowns: `browser click "select#country"` then `browser click "option[value='US']"`

@@ -52,17 +52,16 @@ export const registerContentCommands: RegisterCommand = (program) => {
 
     program
         .command("outline [selector]")
-        .description("Get structural outline of the page (default: body)")
-        .option("-d, --depth <levels>", "Maximum depth", "6")
-        .option("-i, --interactive", "Show only interactive elements (links, buttons, inputs) within landmarks")
+        .description("Get structural outline of the page (default: body, interactive elements only)")
+        .option("-a, --all [depth]", "Show all elements with optional depth (default: 6)")
         .action(async (selector = "body", options) => {
             await ensureRunning();
-            if (options.interactive) {
-                const result = await interactiveOutline(selector);
+            if (options.all !== undefined) {
+                const depth = options.all === true ? 6 : parseInt(options.all, 10);
+                const result = await outline(selector, depth);
                 console.log(result);
             } else {
-                const depth = parseInt(options.depth, 10);
-                const result = await outline(selector, depth);
+                const result = await interactiveOutline(selector);
                 console.log(result);
             }
         });

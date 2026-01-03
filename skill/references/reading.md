@@ -5,8 +5,10 @@ Use `outline` as your primary way to see and understand pages.
 ## Commands
 
 ```bash
-browser outline -i                # Interactive elements (links, buttons, inputs)
-browser outline -d 4              # Full structure at depth 4
+browser outline                   # Interactive elements (links, buttons, inputs)
+browser outline ".sidebar"        # Interactive elements within .sidebar
+browser outline -a 4              # Full structure at depth 4
+browser outline -a 4 ".sidebar"   # Full structure of .sidebar at depth 4
 browser text [selector]           # Get visible text content
 browser text -l 5000 ".article"   # Increase character limit
 browser html [selector]           # Get raw HTML
@@ -16,10 +18,10 @@ browser wait <selector>           # Wait for element to appear
 
 ## Outline
 
-`outline -i` shows what you can interact with:
+`outline` shows what you can interact with:
 
 ```bash
-browser outline -i
+browser outline
 
 # header
 #   nav
@@ -33,10 +35,10 @@ browser outline -i
 #   button "Sign up"
 ```
 
-`outline -d N` shows full page structure:
+`outline -a [depth]` shows full page structure:
 
 ```bash
-browser outline -d 4
+browser outline -a 4
 
 # header
 #   nav
@@ -53,7 +55,7 @@ browser outline -d 4
 
 ```bash
 browser open https://example.com
-browser outline -i
+browser outline
 
 browser click "Products"
 browser text ".article-content"
@@ -63,7 +65,7 @@ browser stop
 
 ## Tips
 
-- Use `outline -i` before clicking or typing - it shows available actions
-- Use `outline -d N` to understand page layout and find content
+- Use `outline` before clicking or typing - it shows available actions
+- Use `outline -a [depth]` to understand page layout and find content
 - `text` returns only visible text; use `html` for hidden content
 - `wait` before `text` if content loads dynamically

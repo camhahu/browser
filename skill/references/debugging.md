@@ -71,7 +71,7 @@ When `click` fails or you need to find the right selector for dynamic elements:
 
 ```bash
 # 1. See interactive elements first
-browser outline -i
+browser outline
 
 # 2. Drill into specific area
 browser outline "table"

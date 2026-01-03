@@ -25,7 +25,7 @@ browser close [tab-id]    # Close tab (default: active)
 
 ```bash
 browser open https://example.com
-browser outline -i
+browser outline
 
 browser click "Products"
 browser wait ".product-list"

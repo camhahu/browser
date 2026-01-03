@@ -20,7 +20,7 @@ curl -fsSL https://raw.githubusercontent.com/camhahu/browser/main/install.sh | b
 ```bash
 browser open https://example.com  # Starts headless browser if needed
 
-browser outline -i                # 1. See interactive elements
+browser outline                   # 1. See interactive elements
 browser click "Products"          # 2. Click by text or CSS selector
 browser wait ".product-list"      # 3. Wait for content to load
 browser text ".product-list"      # 4. Read content
@@ -34,8 +34,8 @@ browser stop                      # Always stop when finished
 
 ```bash
 # See the page
-browser outline -i                # Interactive elements (links, buttons, inputs)
-browser outline                   # Full page structure
+browser outline                   # Interactive elements (links, buttons, inputs)
+browser outline -a [depth]        # Full page structure (default depth: 6)
 browser text [selector]           # Extract text content
 
 # Interact
@@ -55,7 +55,7 @@ browser back / forward / refresh
 Use `outline` to see what you can interact with before clicking:
 
 ```bash
-browser outline -i
+browser outline
 ```
 
 ```
