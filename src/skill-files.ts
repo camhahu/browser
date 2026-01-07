@@ -61,7 +61,7 @@ export const AGENT_TARGETS: Record<string, string> = {
     cursor: ".cursor/skills/browser",
     claude: ".claude/skills/browser",
     "claude-code": ".claude/skills/browser",
-    amp: ".amp/skills/browser",
+    amp: ".agents/skills/browser",
     goose: ".goose/skills/browser",
     github: ".github/skills/browser",
     vscode: ".vscode/skills/browser",
