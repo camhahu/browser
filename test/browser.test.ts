@@ -25,3 +25,11 @@ describe("browser", () => {
         expect(exitCode).toBe(1);
     });
 });
+
+describe("add-skill", () => {
+    test("global install unsupported target", async () => {
+        const { exitCode, stderr } = await run("add-skill --global cursor");
+        expect(exitCode).toBe(1);
+        expect(stderr).toContain("not supported");
+    });
+});
