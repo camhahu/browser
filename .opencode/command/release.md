@@ -28,16 +28,18 @@ The bump type is: $ARGUMENTS.
 - Changes to skill files (skill/SKILL.md, skill/references/COMMANDS.md) are customer-facing and should be included
 - Exclude internal changes like: CI/CD, tests, refactoring, docs, build scripts, code cleanup, dependency updates
 - Group changes into categories: Added, Changed, Fixed, Removed (only include categories that have entries)
+- For each change, credit the contributor using their GitHub username with `@username` format
+- Get the GitHub username from the commit author (use `git log --format='%an'` to get author names, then look up their GitHub username if different)
 - Format as a new section at the top of CHANGELOG.md (after the header):
 
 ```markdown
 ## [{version}] - {YYYY-MM-DD}
 
 ### Added
-- Feature description
+- Feature description - @username
 
 ### Fixed
-- Bug fix description
+- Bug fix description - @contributor
 ```
 
 6. Update the version in package.json using: `bun pm pkg set version={version}`
