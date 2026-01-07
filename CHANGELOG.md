@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.3.3] - 2026-01-07
+
+### Added
+
+- `screenshot --output` flag for saving screenshots to arbitrary paths with format detection from extension
+
 ## [0.3.2] - 2026-01-07
 
 ### Added
