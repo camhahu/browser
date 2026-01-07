@@ -3,8 +3,10 @@
 ## Commands
 
 ```bash
-browser screenshot [name]             # Save to .screenshots/<name>.png
+browser screenshot [name]             # Save to .screenshots/<name>.png (returns absolute path)
 browser screenshot -f jpeg            # Use jpeg or webp format
+browser screenshot -o /tmp/foo.png    # Save to specific path (format from extension)
+browser screenshot -o ./shots/foo     # No extension = .png
 browser viewport desktop              # 1920x1080
 browser viewport tablet               # 768x1024
 browser viewport mobile               # 375x667

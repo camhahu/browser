@@ -21,6 +21,14 @@ export async function browser(args: string): Promise<string> {
     return stdout;
 }
 
+export async function browserFails(args: string): Promise<string> {
+    const { stdout, stderr, exitCode } = await run(args);
+    if (exitCode === 0) {
+        throw new Error(`browser ${args} was expected to fail but succeeded: ${stdout}`);
+    }
+    return stderr || stdout;
+}
+
 export function setupBrowser() {
     beforeAll(async () => {
         await run("stop").catch(() => {});

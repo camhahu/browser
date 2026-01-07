@@ -1,5 +1,6 @@
+import path from "node:path";
 import type { RegisterCommand } from "./common";
-import { ensureRunning } from "./common";
+import { ensureRunning, exitWithError } from "./common";
 import { captureScreenshot, type ScreenshotFormat } from "../cdp";
 
 const SCREENSHOTS_DIR = ".screenshots";
@@ -15,28 +16,54 @@ function generateFilename(): string {
     return `${year}-${month}-${day}-${hours}-${minutes}-${seconds}`;
 }
 
+function parseFormat(ext: string): ScreenshotFormat | null {
+    if (ext === "jpg" || ext === "jpeg") return "jpeg";
+    if (ext === "png") return "png";
+    if (ext === "webp") return "webp";
+    return null;
+}
+
 export const registerScreenshotCommand: RegisterCommand = (program) => {
     program
-        .command("screenshot [filename]")
-        .description("Capture a screenshot of the active tab (saves to .screenshots/<filename>.<format>)")
+        .command("screenshot [name]")
+        .description("Capture a screenshot of the active tab")
         .option("-f, --format <format>", "Image format: png, jpeg, webp", "png")
-        .action(async (filename, options) => {
+        .option("-o, --output <path>", "Output path (format detected from extension)")
+        .action(async (name, options) => {
             await ensureRunning();
 
-            const format = options.format as ScreenshotFormat;
-            if (!["png", "jpeg", "webp"].includes(format)) {
-                throw new Error(`Invalid format: ${format}. Must be png, jpeg, or webp`);
+            if (name && options.output) {
+                exitWithError("Cannot use both [name] and --output");
             }
 
-            const name = filename?.replace(/\.(png|jpe?g|webp)$/i, "") || generateFilename();
-            const relativePath = `${SCREENSHOTS_DIR}/${name}.${format}`;
+            if (options.output && options.format !== "png") {
+                exitWithError("Cannot use --format with --output");
+            }
 
-            await Bun.$`mkdir -p ${SCREENSHOTS_DIR}`.quiet();
+            let outputPath: string;
+            let format: ScreenshotFormat;
+
+            if (options.output) {
+                const ext = path.extname(options.output).slice(1).toLowerCase();
+                if (ext) {
+                    format = parseFormat(ext) ?? exitWithError(`Unsupported format: .${ext}`);
+                    outputPath = path.resolve(options.output);
+                } else {
+                    format = "png";
+                    outputPath = path.resolve(`${options.output}.png`);
+                }
+                await Bun.$`mkdir -p ${path.dirname(outputPath)}`.quiet();
+            } else {
+                format = parseFormat(options.format) ?? exitWithError(`Invalid format: ${options.format}`);
+                const filename = name?.replace(/\.(png|jpe?g|webp)$/i, "") || generateFilename();
+                outputPath = path.resolve(`${SCREENSHOTS_DIR}/${filename}.${format}`);
+                await Bun.$`mkdir -p ${SCREENSHOTS_DIR}`.quiet();
+            }
 
             const base64Data = await captureScreenshot(format);
             const buffer = Buffer.from(base64Data, "base64");
-            await Bun.write(relativePath, buffer);
+            await Bun.write(outputPath, buffer);
 
-            console.log(relativePath);
+            console.log(outputPath);
         });
 };
