@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.3.1] - 2026-01-07
+
+### Changed
+
+- `console` command now shows buffered messages instead of streaming indefinitely
+
+### Added
+
+- `console --clear` to clear captured messages
+- `console -t <types>` to filter by message type (log, info, warning, error, debug)
+- `console -l <count>` to limit number of messages shown (default: 50)
+
 ## [0.3.0] - 2026-01-03
 
 ### Changed
