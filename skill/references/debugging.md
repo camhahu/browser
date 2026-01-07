@@ -14,7 +14,10 @@ browser network <id> --request-body   # Include request body
 browser network --clear               # Clear captured requests
 
 # Console
-browser console                       # Stream console output (Ctrl+C to stop)
+browser console                       # Show captured console output
+browser console -l 100                # Show last 100 messages (default: 50)
+browser console -t error,warning      # Filter by type
+browser console --clear               # Clear captured messages
 
 # Storage
 browser cookies                       # List all cookies
@@ -67,9 +70,9 @@ browser html "table" && browser click "span[data-date='2025-12-15']"
 
 ## Tips
 
-- Network capture starts automatically when browser launches
-- Use `network --clear` between test runs
-- `console` streams live - run in background with `browser console > log.txt &`
+- Network and console capture start automatically when browser launches
+- Use `network --clear` and `console --clear` between test runs
 - `eval` can access anything in page context: `browser eval "localStorage.getItem('key')"`
 - Filter network by type: xhr, fetch, document, script, stylesheet, image, font, websocket
+- Filter console by type: log, info, warning, error, debug
 - When text matching fails (e.g. "15" matches multiple elements), use `html` to find unique attributes

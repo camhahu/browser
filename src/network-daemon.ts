@@ -66,7 +66,6 @@ async function enableNetworkForSession(sessionId: string, targetId: string): Pro
 async function setupAutoAttach(): Promise<void> {
     if (!client) return;
 
-    // Attach to existing targets
     const { targetInfos } = await client.Target.getTargets();
     for (const target of targetInfos) {
         if (target.type === "page") {
@@ -78,7 +77,6 @@ async function setupAutoAttach(): Promise<void> {
         }
     }
 
-    // Handle new targets (from createTarget calls)
     client.on("Target.targetCreated", async (params) => {
         if (params.targetInfo.type === "page" && !isAttached(params.targetInfo.targetId)) {
             try {
@@ -91,10 +89,7 @@ async function setupAutoAttach(): Promise<void> {
         }
     });
 
-    // Enable target discovery
     await client.Target.setDiscoverTargets({ discover: true });
-
-    // Auto-attach for child tabs (links opened in new tab)
     await client.Target.setAutoAttach({
         autoAttach: true,
         waitForDebuggerOnStart: false,
@@ -198,7 +193,6 @@ function setupNetworkHandlers(): void {
     client.on("Target.attachedToTarget", async (params) => {
         if (params.targetInfo.type === "page") {
             await enableNetworkForSession(params.sessionId, params.targetInfo.targetId);
-            // Resume target if paused by waitForDebuggerOnStart
             await client!.send("Runtime.runIfWaitingForDebugger", undefined, params.sessionId).catch(() => {});
         }
     });

@@ -124,15 +124,15 @@ export async function ensureRunning(): Promise<void> {
 export type OnLaunchCallback = () => Promise<void>;
 export type OnCloseCallback = () => Promise<void>;
 
-let onLaunchCallback: OnLaunchCallback | null = null;
-let onCloseCallback: OnCloseCallback | null = null;
+const onLaunchCallbacks: OnLaunchCallback[] = [];
+const onCloseCallbacks: OnCloseCallback[] = [];
 
-export function setOnLaunch(cb: OnLaunchCallback): void {
-    onLaunchCallback = cb;
+export function addOnLaunch(cb: OnLaunchCallback): void {
+    onLaunchCallbacks.push(cb);
 }
 
-export function setOnClose(cb: OnCloseCallback): void {
-    onCloseCallback = cb;
+export function addOnClose(cb: OnCloseCallback): void {
+    onCloseCallbacks.push(cb);
 }
 
 export async function launch(options: { headless?: boolean }): Promise<string> {
@@ -173,7 +173,7 @@ export async function launch(options: { headless?: boolean }): Promise<string> {
                     mobile: false,
                 });
                 await client.close();
-                if (onLaunchCallback) await onLaunchCallback();
+                for (const cb of onLaunchCallbacks) await cb();
                 return page.id;
             }
         }
@@ -183,7 +183,7 @@ export async function launch(options: { headless?: boolean }): Promise<string> {
 }
 
 export async function close(): Promise<void> {
-    if (onCloseCallback) await onCloseCallback();
+    for (const cb of onCloseCallbacks) await cb();
     const targets = await listTargets().catch(() => []);
     if (targets.length > 0) {
         const client = await CDP({ port: CDP_PORT, target: targets[0] });

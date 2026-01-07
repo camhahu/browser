@@ -1,36 +1,23 @@
 import { spawn } from "node:child_process";
 import { getActiveTarget, addOnLaunch, addOnClose } from "./cdp";
 
-const DAEMON_STATE_FILE = "/tmp/browser-network-daemon.json";
-const DAEMON_SOCKET_PATH = "/tmp/browser-network.sock";
+const DAEMON_STATE_FILE = "/tmp/browser-console-daemon.json";
+const DAEMON_SOCKET_PATH = "/tmp/browser-console.sock";
 
-export interface NetworkRequest {
+export interface ConsoleMessage {
     id: number;
     tabId: string;
-    url: string;
-    method: string;
-    status?: number;
-    statusText?: string;
     type: string;
-    startTime: number;
-    endTime?: number;
-    duration?: number;
-    requestHeaders: Record<string, string>;
-    responseHeaders?: Record<string, string>;
-    requestBody?: string;
-    responseBody?: string;
-    error?: string;
-    failed: boolean;
+    args: string[];
+    timestamp: number;
 }
 
-export interface NetworkFilter {
-    pattern?: string;
+export interface ConsoleFilter {
     type?: string[];
-    failed?: boolean;
 }
 
-export interface NetworkListResult {
-    requests: NetworkRequest[];
+export interface ConsoleListResult {
+    messages: ConsoleMessage[];
 }
 
 interface DaemonState {
@@ -39,9 +26,8 @@ interface DaemonState {
 }
 
 interface IPCRequest {
-    type: "list" | "get" | "clear";
+    type: "list" | "clear";
     tabId?: string;
-    requestId?: number;
 }
 
 interface IPCResponse {
@@ -72,7 +58,7 @@ async function isDaemonRunning(): Promise<boolean> {
 async function startDaemon(): Promise<void> {
     if (await isDaemonRunning()) return;
 
-    spawn(process.execPath, ["_network-daemon"], {
+    spawn(process.execPath, ["_console-daemon"], {
         detached: true,
         stdio: "ignore",
     }).unref();
@@ -90,7 +76,7 @@ async function stopDaemon(): Promise<void> {
             process.kill(state.pid, "SIGTERM");
         } catch {}
     }
-    await Bun.$`pkill -f "network-daemon" 2>/dev/null || true`.quiet();
+    await Bun.$`pkill -f "console-daemon" 2>/dev/null || true`.quiet();
     await Bun.$`rm -f ${DAEMON_STATE_FILE} ${DAEMON_SOCKET_PATH}`.quiet();
 }
 
@@ -103,7 +89,7 @@ async function sendDaemonRequest(req: IPCRequest): Promise<IPCResponse> {
     return res.json() as Promise<IPCResponse>;
 }
 
-export async function network(filter?: NetworkFilter): Promise<NetworkListResult> {
+export async function consoleMessages(filter?: ConsoleFilter): Promise<ConsoleListResult> {
     const target = await getActiveTarget();
     if (!target) throw new Error("No active tab");
 
@@ -113,43 +99,22 @@ export async function network(filter?: NetworkFilter): Promise<NetworkListResult
 
     try {
         const response = await sendDaemonRequest({ type: "list", tabId: target.id });
-        if (!response.success) return { requests: [] };
+        if (!response.success) return { messages: [] };
 
-        let requests = response.data as NetworkRequest[];
+        let messages = response.data as ConsoleMessage[];
 
-        if (filter?.pattern) {
-            const pattern = filter.pattern.toLowerCase();
-            requests = requests.filter((r) => r.url.toLowerCase().includes(pattern));
-        }
         if (filter?.type && filter.type.length > 0) {
             const types = new Set(filter.type.map((t) => t.toLowerCase()));
-            requests = requests.filter((r) => types.has(r.type.toLowerCase()));
-        }
-        if (filter?.failed) {
-            requests = requests.filter((r) => r.failed);
+            messages = messages.filter((m) => types.has(m.type.toLowerCase()));
         }
 
-        return { requests };
+        return { messages };
     } catch {
-        return { requests: [] };
+        return { messages: [] };
     }
 }
 
-export async function networkRequest(id: number): Promise<NetworkRequest | null> {
-    const target = await getActiveTarget();
-    if (!target) throw new Error("No active tab");
-    if (!(await isDaemonRunning())) return null;
-
-    try {
-        const response = await sendDaemonRequest({ type: "get", tabId: target.id, requestId: id });
-        if (!response.success) return null;
-        return response.data as NetworkRequest;
-    } catch {
-        return null;
-    }
-}
-
-export async function clearNetwork(): Promise<void> {
+export async function clearConsole(): Promise<void> {
     const target = await getActiveTarget();
     if (!target) throw new Error("No active tab");
     if (!(await isDaemonRunning())) return;

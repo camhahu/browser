@@ -4,6 +4,21 @@ import { browser, setupBrowser, TEST_URL } from "./helpers";
 describe("content", () => {
     setupBrowser();
 
+    test("console", async () => {
+        await browser(`open ${TEST_URL}`);
+        await browser("console --clear");
+        await browser('eval "console.log(\'test message\'); console.warn(\'test warning\');"');
+        const output = await browser("console");
+        expect(output).toContain("test message");
+        expect(output).toContain("[warning] test warning");
+    });
+
+    test("console --type filter", async () => {
+        const output = await browser("console -t warning");
+        expect(output).not.toContain("test message");
+        expect(output).toContain("[warning] test warning");
+    });
+
     test("text", async () => {
         await browser(`open ${TEST_URL}`);
         expect(await browser("text nav")).toContain("Cameron");

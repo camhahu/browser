@@ -1,25 +1,48 @@
 import type { RegisterCommand } from "./common";
 import { ensureRunning } from "./common";
-import { console as browserConsole, html, text, outline, interactiveOutline } from "../page";
+import { html, text, outline, interactiveOutline } from "../page";
+import { consoleMessages, clearConsole, type ConsoleFilter } from "../console";
+import { runDaemon } from "../console-daemon";
 
 export const registerContentCommands: RegisterCommand = (program) => {
     program
         .command("console")
-        .description(
-            "Stream console output from the active tab (tip: run detached with `browser console > /tmp/console.log 2>&1 &`)",
-        )
-        .action(async () => {
+        .description("Show console output from the active tab")
+        .option("-l, --limit <count>", "Maximum number of messages to show", "50")
+        .option("-t, --type <types>", "Filter by type (comma-separated: log,warn,error,info,debug)")
+        .option("--clear", "Clear captured console messages for active tab")
+        .action(async (options) => {
             await ensureRunning();
-            const stop = await browserConsole((t, args) => {
-                const prefix = t === "log" ? "" : `[${t}] `;
-                console.log(`${prefix}${args.join(" ")}`);
-            });
-            process.on("SIGINT", async () => {
-                await stop();
-                process.exit(0);
-            });
-            console.error("Listening for console output... (Ctrl+C to stop)");
+
+            if (options.clear) {
+                await clearConsole();
+                console.log("Console messages cleared");
+                return;
+            }
+
+            const filter: ConsoleFilter = {};
+            if (options.type) filter.type = options.type.split(",");
+
+            const { messages } = await consoleMessages(filter);
+
+            if (messages.length === 0) {
+                console.log("No console messages captured");
+                return;
+            }
+
+            const limit = parseInt(options.limit, 10);
+            const toShow = messages.slice(-limit);
+            if (messages.length > limit) {
+                console.log(`[showing last ${limit} of ${messages.length} messages]`);
+            }
+
+            for (const msg of toShow) {
+                const prefix = msg.type === "log" ? "" : `[${msg.type}] `;
+                console.log(`${prefix}${msg.args.join(" ")}`);
+            }
         });
+
+    program.command("_console-daemon", { hidden: true }).action(runDaemon);
 
     program
         .command("html [selector]")
