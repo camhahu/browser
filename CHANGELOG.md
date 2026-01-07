@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.3.2] - 2026-01-07
+
+### Added
+
+- `add-skill --global` flag for installing skills to user-level directories
+
+### Fixed
+
+- Amp skill install path now correctly uses `.agents/skills/` (thanks @toolmantim)
+
 ## [0.3.1] - 2026-01-07
 
 ### Changed
