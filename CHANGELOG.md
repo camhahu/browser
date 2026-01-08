@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.3.4] - 2026-01-08
+
+### Added
+
+- Persistent Chrome profiles to preserve logins, cookies, and browsing data across sessions
+- `config clear-profile` command to reset profile data
+
 ## [0.3.3] - 2026-01-07
 
 ### Added
