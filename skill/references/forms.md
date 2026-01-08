@@ -28,6 +28,23 @@ browser wait "#address" && browser type "123 Main St" "#address" && browser clic
 browser wait ".confirmation" && browser stop
 ```
 
+## Persistent Login
+
+To preserve logins across browser sessions, enable persistent profiles:
+
+```bash
+browser config set persistentProfile true
+browser start                          # Login manually in headed mode
+browser stop                           # Session saved
+browser start --headless               # Still logged in
+```
+
+To clear the profile (logout, reset all cookies):
+
+```bash
+browser config clear-profile
+```
+
 ## Tips
 
 - Use `browser outline` to discover form fields and buttons

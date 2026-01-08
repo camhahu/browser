@@ -1,6 +1,6 @@
 import type { RegisterCommand } from "./common";
 import { exitWithError } from "./common";
-import { getConfig, setConfig, unsetConfig, type Config } from "../config";
+import { getConfig, setConfig, unsetConfig, clearProfile, type Config } from "../config";
 
 export const registerConfigCommand: RegisterCommand = (program) => {
     const configCmd = program
@@ -29,8 +29,14 @@ export const registerConfigCommand: RegisterCommand = (program) => {
         .command("set <key> <value>")
         .description("Set a config value")
         .action(async (key, value) => {
-            await setConfig(key as keyof Config, value);
-            console.log(`Set ${key}: ${value}`);
+            let parsedValue: string | boolean = value;
+            if (key === "persistentProfile") {
+                if (value === "true") parsedValue = true;
+                else if (value === "false") parsedValue = false;
+                else exitWithError("persistentProfile must be 'true' or 'false'");
+            }
+            await setConfig(key as keyof Config, parsedValue);
+            console.log(`Set ${key}: ${parsedValue}`);
         });
 
     configCmd
@@ -39,5 +45,13 @@ export const registerConfigCommand: RegisterCommand = (program) => {
         .action(async (key) => {
             await unsetConfig(key as keyof Config);
             console.log(`Unset ${key}`);
+        });
+
+    configCmd
+        .command("clear-profile")
+        .description("Delete the browser profile directory (clears cookies, logins, cache)")
+        .action(async () => {
+            const dir = await clearProfile();
+            console.log(`Cleared profile: ${dir}`);
         });
 };

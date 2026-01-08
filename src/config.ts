@@ -25,6 +25,8 @@ const CHROME_PATHS: Record<string, string[]> = {
 
 export interface Config {
     browserPath?: string;
+    persistentProfile?: boolean;
+    profileDir?: string;
 }
 
 export async function getConfig(): Promise<Config> {
@@ -35,9 +37,12 @@ export async function getConfig(): Promise<Config> {
     }
 }
 
-export async function setConfig(key: keyof Config, value: string): Promise<void> {
-    if (key === "browserPath" && !existsSync(value)) {
+export async function setConfig<K extends keyof Config>(key: K, value: Config[K]): Promise<void> {
+    if (key === "browserPath" && !existsSync(value as string)) {
         throw new Error(`Browser path does not exist: ${value}`);
+    }
+    if (key === "profileDir" && !existsSync(value as string)) {
+        throw new Error(`Profile directory does not exist: ${value}`);
     }
     const config = await getConfig();
     config[key] = value;
@@ -62,4 +67,21 @@ export async function getBrowserPath(): Promise<string> {
     throw new Error(
         "Chrome not found. Install Google Chrome or set a custom browser path:\n  browser config set browserPath /path/to/browser",
     );
+}
+
+const PERSISTENT_PROFILE_DIR = join(homedir(), ".browser", "profile");
+const TEMP_PROFILE_DIR = "/tmp/browser-cli-profile";
+
+export async function getProfileDir(): Promise<{ dir: string; persistent: boolean }> {
+    const config = await getConfig();
+    if (config.persistentProfile) {
+        return { dir: config.profileDir ?? PERSISTENT_PROFILE_DIR, persistent: true };
+    }
+    return { dir: TEMP_PROFILE_DIR, persistent: false };
+}
+
+export async function clearProfile(): Promise<string> {
+    const { dir } = await getProfileDir();
+    await Bun.$`rm -rf ${dir}`.quiet();
+    return dir;
 }

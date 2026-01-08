@@ -1,9 +1,8 @@
 import CDP from "chrome-remote-interface";
 import { spawn } from "node:child_process";
-import { getBrowserPath } from "./config";
+import { getBrowserPath, getProfileDir } from "./config";
 
 const STATE_FILE = "/tmp/browser-cli.json";
-const PROFILE_DIR = "/tmp/browser-cli-profile";
 export const CDP_PORT = 9222;
 const LAUNCH_TIMEOUT_MS = 5000;
 const LAUNCH_POLL_INTERVAL_MS = 100;
@@ -141,12 +140,13 @@ export async function launch(options: { headless?: boolean }): Promise<string> {
         return state?.activeTabId ?? "1";
     }
 
-    await Bun.$`mkdir -p ${PROFILE_DIR}`.quiet();
+    const { dir: profileDir } = await getProfileDir();
+    await Bun.$`mkdir -p ${profileDir}`.quiet();
 
     const browserPath = await getBrowserPath();
     const args = [
         `--remote-debugging-port=${CDP_PORT}`,
-        `--user-data-dir=${PROFILE_DIR}`,
+        `--user-data-dir=${profileDir}`,
         "--no-first-run",
         "--no-default-browser-check",
     ];
@@ -188,9 +188,13 @@ export async function close(): Promise<void> {
     if (targets.length > 0) {
         const client = await CDP({ port: CDP_PORT, target: targets[0] });
         await client.Browser.close();
+        await Bun.sleep(100);
     }
     await clearState();
-    await Bun.$`rm -rf ${PROFILE_DIR}`.quiet();
+    const { dir: profileDir, persistent } = await getProfileDir();
+    if (!persistent) {
+        await Bun.$`rm -rf ${profileDir}`.quiet();
+    }
 }
 
 export async function openTab(url: string): Promise<{ tabId: string; url: string }> {
