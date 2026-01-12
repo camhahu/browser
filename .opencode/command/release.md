@@ -28,7 +28,7 @@ The bump type is: $ARGUMENTS.
 - Changes to skill files (skill/SKILL.md, skill/references/COMMANDS.md) are customer-facing and should be included
 - Exclude internal changes like: CI/CD, tests, refactoring, docs, build scripts, code cleanup, dependency updates
 - Group changes into categories: Added, Changed, Fixed, Removed (only include categories that have entries)
-- For each change, credit the contributor using their GitHub username with `@username` format
+- For each change, credit the contributor using their GitHub username with `@username` format (except for @camhahu - do not attribute the repo owner)
 - Get the GitHub username from the commit author (use `git log --format='%an'` to get author names, then look up their GitHub username if different)
 - Format as a new section at the top of CHANGELOG.md (after the header):
 
@@ -37,6 +37,7 @@ The bump type is: $ARGUMENTS.
 
 ### Added
 - Feature description - @username
+- Feature by repo owner (no attribution)
 
 ### Fixed
 - Bug fix description - @contributor
