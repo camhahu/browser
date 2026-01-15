@@ -32,24 +32,27 @@ browser stop                      # Always stop when finished
 ## Commands
 
 ```bash
-browser open <url>                # Open URL, shows outline (starts headless browser)
-browser click <selector>          # Click by label, text, or CSS (shows outline)
+browser open <url>                # Open URL (auto-starts headless browser if needed)
+browser click <selector>          # Click by label, text, or CSS
 browser type <text> <selector>    # Type into input (special keys: Enter, Escape, Tab)
 browser wait <selector>           # Wait for element (15s timeout)
 browser text [selector]           # Extract text content
 browser scroll <target>           # Scroll to top, bottom, or selector
-browser navigate <url>            # Navigate current tab (shows outline)
-browser back / forward / refresh  # History navigation (shows outline)
+browser navigate <url>            # Navigate current tab
+browser back / forward / refresh  # History navigation
 browser outline                   # Show outline again (or use -a for full structure)
-browser start                     # Start headed browser (for debugging)
 browser stop                      # Close browser
 ```
 
-Run `browser --help` for full command list, `browser <command> --help` for options.
+Navigation commands (`open`, `click`, `navigate`, `back`, `forward`, `refresh`) show an outline after completing.
+
+For debugging or user intervention, start a headed browser with `browser start --headed`.
+
+Run `browser --help` for full command list.
 
 ## Outline
 
-Navigation commands (`open`, `click`, `navigate`, `back`, `forward`, `refresh`) automatically show an outline of interactive elements with labels:
+Outline shows interactive elements with labels:
 
 ```
 [l1] link "Products" [href=/products]
