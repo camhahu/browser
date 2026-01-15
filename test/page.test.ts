@@ -60,4 +60,14 @@ describe("page", () => {
         const result = await browser('select "#color" "Red"');
         expect(result).toBe("Selected: r");
     });
+
+    test("click with accessibility label", async () => {
+        await browser(`navigate ${TEST_URL}`);
+        const outline = await browser("outline");
+        expect(outline).toContain("[l1]");
+        expect(outline).toContain("[l2]");
+        await browser("click l2");
+        const url = await browser("url");
+        expect(url).toContain("/blog");
+    });
 });

@@ -2,7 +2,22 @@ import CDP from "chrome-remote-interface";
 import { CDP_PORT, getActiveTarget, withActivePage, withNavigation } from "./cdp";
 export { navigate } from "./cdp";
 
-export type MatchType = "css" | "exact" | "partial";
+export type MatchType = "css" | "exact" | "partial" | "label";
+
+const LABEL_STATE_FILE = "/tmp/browser-cli-labels.json";
+
+async function readLabelMap(): Promise<Map<string, number>> {
+    try {
+        const data = await Bun.file(LABEL_STATE_FILE).json();
+        return new Map(Object.entries(data));
+    } catch {
+        return new Map();
+    }
+}
+
+async function writeLabelMap(map: Map<string, number>): Promise<void> {
+    await Bun.write(LABEL_STATE_FILE, JSON.stringify(Object.fromEntries(map)));
+}
 
 const RESOLVE_SELECTOR = `
   const CLICKABLE = 'a, button, input[type="submit"], input[type="button"], [role="button"], [onclick], [tabindex="0"]';
@@ -56,7 +71,27 @@ export async function findAll(selector: string): Promise<FindResult> {
 
 export type ClickResult = { matchType: MatchType };
 
+const LABEL_PATTERN = /^[a-z]\d+$/;
+
 export async function click(selector: string): Promise<ClickResult> {
+    if (LABEL_PATTERN.test(selector)) {
+        const labelMap = await readLabelMap();
+        const backendNodeId = labelMap.get(selector);
+        if (backendNodeId) {
+            return withActivePage(async (client) => {
+                await client.DOM.enable();
+                const { object } = await client.DOM.resolveNode({ backendNodeId });
+                await withNavigation(client, async () => {
+                    await client.Runtime.callFunctionOn({
+                        objectId: object.objectId,
+                        functionDeclaration: "function() { this.click(); }",
+                    });
+                });
+                return { matchType: "label" };
+            });
+        }
+    }
+
     return withActivePage(async (client) => {
         await client.Runtime.enable();
         const { result } = await client.Runtime.evaluate({
@@ -490,69 +525,164 @@ export async function select(selector: string, value: string): Promise<string[]>
     });
 }
 
+interface AXNode {
+    nodeId: string;
+    ignored: boolean;
+    role?: { value: string };
+    name?: { value: string };
+    properties?: Array<{ name: string; value: { value: unknown } }>;
+    parentId?: string;
+    childIds?: string[];
+    backendDOMNodeId?: number;
+}
+
+const INTERACTIVE_ROLES = new Set([
+    "link",
+    "button",
+    "textbox",
+    "searchbox",
+    "combobox",
+    "listbox",
+    "option",
+    "checkbox",
+    "radio",
+    "switch",
+    "slider",
+    "spinbutton",
+    "menuitem",
+    "menuitemcheckbox",
+    "menuitemradio",
+    "tab",
+]);
+
+const LANDMARK_ROLES = new Set([
+    "banner",
+    "navigation",
+    "main",
+    "contentinfo",
+    "complementary",
+    "region",
+    "form",
+    "search",
+]);
+
+const ROLE_PREFIXES: Record<string, string> = {
+    link: "l",
+    button: "b",
+    textbox: "i",
+    searchbox: "i",
+    combobox: "s",
+    listbox: "s",
+    checkbox: "c",
+    radio: "r",
+    switch: "c",
+    tab: "t",
+};
+
 export async function interactiveOutline(selector = "body"): Promise<string> {
-    const escapedSelector = JSON.stringify(selector);
-    const result = await evaluate(`(() => {
-    const root = document.querySelector(${escapedSelector});
-    if (!root) throw new Error("Element not found: " + ${escapedSelector});
-    ${OUTLINE_HELPERS}
+    return withActivePage(async (client) => {
+        await client.Accessibility.enable();
+        await client.DOM.enable();
 
-    const INTERACTIVE = new Set(['A', 'BUTTON', 'INPUT', 'SELECT', 'TEXTAREA']);
-    const LANDMARKS = new Set(['HEADER', 'NAV', 'MAIN', 'FOOTER', 'ASIDE', 'SECTION', 'FORM', 'DIALOG']);
-    const LANDMARK_ROLES = new Set(['banner', 'navigation', 'main', 'contentinfo', 'complementary', 'region', 'form', 'search', 'dialog']);
+        const { nodes } = (await client.Accessibility.getFullAXTree({})) as { nodes: AXNode[] };
 
-    function isInteractive(el) {
-      return INTERACTIVE.has(el.tagName) ||
-        el.getAttribute('role') === 'button' ||
-        el.getAttribute('onclick') ||
-        el.getAttribute('tabindex') === '0';
-    }
+        const nodeMap = new Map<string, AXNode>();
+        for (const node of nodes) {
+            nodeMap.set(node.nodeId, node);
+        }
 
-    function isLandmark(el) {
-      return LANDMARKS.has(el.tagName) || LANDMARK_ROLES.has(el.getAttribute('role'));
-    }
+        interface TreeNode {
+            axNode: AXNode;
+            children: TreeNode[];
+            label?: string;
+        }
 
-    function getId(el) {
-      let id = el.tagName.toLowerCase();
-      if (el.id) id += '#' + el.id;
-      return id;
-    }
+        const counters: Record<string, number> = {};
+        const newLabelMap = new Map<string, number>();
 
-    function getText(el) {
-      return truncate(el.innerText || '', 50);
-    }
+        function getLabel(role: string, backendNodeId: number): string {
+            const prefix = ROLE_PREFIXES[role] ?? "e";
+            counters[prefix] = (counters[prefix] ?? 0) + 1;
+            const label = `${prefix}${counters[prefix]}`;
+            newLabelMap.set(label, backendNodeId);
+            return label;
+        }
 
-    function buildTree(el) {
-      if (SKIP_TAGS.has(el.tagName)) return null;
-      if (isInteractive(el)) return { el, children: [] };
+        function isInteractive(node: AXNode): boolean {
+            if (node.ignored) return false;
+            const role = node.role?.value;
+            if (!role) return false;
+            return INTERACTIVE_ROLES.has(role);
+        }
 
-      const childTrees = [];
-      for (const child of el.children) {
-        const tree = buildTree(child);
-        if (tree) childTrees.push(tree);
-      }
+        function isLandmark(node: AXNode): boolean {
+            if (node.ignored) return false;
+            const role = node.role?.value;
+            return role ? LANDMARK_ROLES.has(role) : false;
+        }
 
-      if (isLandmark(el) && childTrees.length > 0) return { el, children: childTrees };
-      if (childTrees.length === 1) return childTrees[0];
-      if (childTrees.length > 1) return { el: null, children: childTrees };
-      return null;
-    }
+        function buildTree(axNode: AXNode): TreeNode | null {
+            if (axNode.ignored && !axNode.childIds?.length) return null;
 
-    function render(node, depth = 0) {
-      if (!node) return '';
-      const indent = '  '.repeat(depth);
-      if (node.el) {
-        let output = formatLine(node.el, getId, getText, indent) + '\\n';
-        for (const child of node.children) output += render(child, depth + 1);
-        return output;
-      }
-      let output = '';
-      for (const child of node.children) output += render(child, depth);
-      return output;
-    }
+            const childTrees: TreeNode[] = [];
+            for (const childId of axNode.childIds ?? []) {
+                const child = nodeMap.get(childId);
+                if (child) {
+                    const tree = buildTree(child);
+                    if (tree) childTrees.push(tree);
+                }
+            }
 
-    const tree = buildTree(root);
-    return tree ? render(tree) : '';
-  })()`);
-    return (result as string).trimEnd();
+            if (isInteractive(axNode) && axNode.backendDOMNodeId) {
+                const label = getLabel(axNode.role!.value, axNode.backendDOMNodeId);
+                return { axNode, children: [], label };
+            }
+
+            if (isLandmark(axNode) && childTrees.length > 0) {
+                return { axNode, children: childTrees };
+            }
+
+            if (childTrees.length === 1) return childTrees[0]!;
+            if (childTrees.length > 1) return { axNode: { nodeId: "", ignored: true }, children: childTrees };
+            return null;
+        }
+
+        function formatNode(node: AXNode, label?: string): string {
+            const role = node.role?.value ?? "unknown";
+            const name = node.name?.value ?? "";
+            const parts: string[] = [];
+
+            if (label) parts.push(`[${label}]`);
+            parts.push(role);
+            if (name) parts.push(`"${name.slice(0, 50)}${name.length > 50 ? "..." : ""}"`);
+
+            return parts.join(" ");
+        }
+
+        function render(node: TreeNode, depth = 0): string {
+            const indent = "  ".repeat(depth);
+            let output = "";
+
+            if (!node.axNode.ignored || node.label) {
+                output = indent + formatNode(node.axNode, node.label) + "\n";
+                for (const child of node.children) {
+                    output += render(child, depth + 1);
+                }
+            } else {
+                for (const child of node.children) {
+                    output += render(child, depth);
+                }
+            }
+
+            return output;
+        }
+
+        const rootNode = nodes.find((n) => !n.parentId);
+        if (!rootNode) return "";
+
+        const tree = buildTree(rootNode);
+        await writeLabelMap(newLabelMap);
+
+        return tree ? render(tree).trimEnd() : "";
+    });
 }

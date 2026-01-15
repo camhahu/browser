@@ -31,9 +31,10 @@ describe("content", () => {
 
     test("outline (interactive by default)", async () => {
         const outline = await browser("outline");
-        expect(outline).toContain("header");
+        expect(outline).toContain("banner");
         expect(outline).toContain("main");
-        expect(outline).toContain("[href=");
+        expect(outline).toContain("link");
+        expect(outline).toMatch(/\[l\d+\]/);
         expect(outline).not.toContain("div");
     });
 
