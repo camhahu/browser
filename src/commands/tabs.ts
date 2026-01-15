@@ -1,5 +1,5 @@
 import type { RegisterCommand } from "./common";
-import { ensureRunning, exitWithError } from "./common";
+import { ensureRunning, exitWithError, printOutline } from "./common";
 import { openTab, getTabs, useTab, closeTab, toShortId, resolveTabId } from "../cdp";
 
 export const registerTabCommands: RegisterCommand = (program) => {
@@ -9,7 +9,8 @@ export const registerTabCommands: RegisterCommand = (program) => {
         .action(async (url) => {
             await ensureRunning();
             const { tabId } = await openTab(url);
-            console.log(`Opened tab ${toShortId(tabId)}: ${url}`);
+            console.log(`Opened tab ${toShortId(tabId)}: ${url}\n`);
+            await printOutline();
         });
 
     program

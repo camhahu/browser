@@ -1,5 +1,5 @@
 import type { RegisterCommand } from "./common";
-import { ensureRunning, exitWithError } from "./common";
+import { ensureRunning, exitWithError, printOutline } from "./common";
 import { getUrl, getTitle } from "../cdp";
 import { back, forward, refresh, navigate } from "../page";
 
@@ -31,6 +31,7 @@ export const registerNavigationCommands: RegisterCommand = (program) => {
             if (!ok) {
                 exitWithError("No previous page");
             }
+            await printOutline();
         });
 
     program
@@ -42,6 +43,7 @@ export const registerNavigationCommands: RegisterCommand = (program) => {
             if (!ok) {
                 exitWithError("No next page");
             }
+            await printOutline();
         });
 
     program
@@ -50,6 +52,7 @@ export const registerNavigationCommands: RegisterCommand = (program) => {
         .action(async () => {
             await ensureRunning();
             await refresh();
+            await printOutline();
         });
 
     program
@@ -58,6 +61,7 @@ export const registerNavigationCommands: RegisterCommand = (program) => {
         .action(async (url) => {
             await ensureRunning();
             await navigate(url);
-            console.log(`Navigated to: ${url}`);
+            console.log(`Navigated to: ${url}\n`);
+            await printOutline();
         });
 };

@@ -4,9 +4,13 @@ import { browser, run, setupBrowser, TEST_URL } from "./helpers";
 describe("tabs", () => {
     setupBrowser();
 
-    test("open, tabs, active, close", async () => {
-        await browser(`open ${TEST_URL}`);
+    test("open outputs outline", async () => {
+        const output = await browser(`open ${TEST_URL}`);
+        expect(output).toContain("Opened tab");
+        expect(output).toMatch(/\[l\d+\] link/);
+    });
 
+    test("tabs, active, close", async () => {
         const tabs = await browser("tabs");
         expect(tabs.split("\n").length).toBeGreaterThan(2);
 

@@ -84,8 +84,9 @@ export const registerContentCommands: RegisterCommand = (program) => {
                 const result = await outline(selector, depth);
                 console.log(result);
             } else {
-                const result = await interactiveOutline(selector);
+                const { outline: result, timedOut } = await interactiveOutline(selector);
                 console.log(result);
+                if (timedOut) console.log("\n[timed out waiting for page to stabilize]");
             }
         });
 };

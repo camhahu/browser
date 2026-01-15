@@ -9,8 +9,10 @@ describe("page", () => {
         expect(await browser("find a")).toContain("Found");
     });
 
-    test("click with css", async () => {
-        await browser("click \"nav a[href='/blog']\"");
+    test("click outputs outline", async () => {
+        const output = await browser("click \"nav a[href='/blog']\"");
+        expect(output).toContain("Clicked");
+        expect(output).toMatch(/\[l\d+\] link/);
     });
 
     test("click with text", async () => {

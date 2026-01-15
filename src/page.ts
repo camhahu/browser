@@ -579,12 +579,55 @@ const ROLE_PREFIXES: Record<string, string> = {
     tab: "t",
 };
 
-export async function interactiveOutline(selector = "body"): Promise<string> {
-    return withActivePage(async (client) => {
-        await client.Accessibility.enable();
-        await client.DOM.enable();
+const STABLE_MS = 50;
+const STABLE_TIMEOUT_MS = 1000;
 
+interface StableTreeResult {
+    nodes: AXNode[];
+    timedOut: boolean;
+}
+
+async function getStableAccessibilityTree(client: CDP.Client): Promise<StableTreeResult> {
+    await client.Network.enable();
+    await client.Accessibility.enable();
+
+    let pending = 0;
+    client.Network.requestWillBeSent(() => pending++);
+    client.Network.loadingFinished(() => pending--);
+    client.Network.loadingFailed(() => pending--);
+
+    const start = Date.now();
+    let lastCount = -1;
+    let quietSince = 0;
+
+    while (Date.now() - start < STABLE_TIMEOUT_MS) {
         const { nodes } = (await client.Accessibility.getFullAXTree({})) as { nodes: AXNode[] };
+        const isQuiet = pending === 0;
+        const isStable = nodes.length === lastCount;
+
+        if (isQuiet && isStable) {
+            if (quietSince === 0) quietSince = Date.now();
+            if (Date.now() - quietSince >= STABLE_MS) return { nodes, timedOut: false };
+        } else {
+            quietSince = 0;
+        }
+
+        lastCount = nodes.length;
+        await Bun.sleep(STABLE_MS);
+    }
+
+    const { nodes } = (await client.Accessibility.getFullAXTree({})) as { nodes: AXNode[] };
+    return { nodes, timedOut: true };
+}
+
+export interface OutlineResult {
+    outline: string;
+    timedOut: boolean;
+}
+
+export async function interactiveOutline(selector = "body"): Promise<OutlineResult> {
+    return withActivePage(async (client) => {
+        const { nodes, timedOut } = await getStableAccessibilityTree(client);
 
         const nodeMap = new Map<string, AXNode>();
         for (const node of nodes) {
@@ -678,11 +721,12 @@ export async function interactiveOutline(selector = "body"): Promise<string> {
         }
 
         const rootNode = nodes.find((n) => !n.parentId);
-        if (!rootNode) return "";
+        if (!rootNode) return { outline: "", timedOut };
 
         const tree = buildTree(rootNode);
         await writeLabelMap(newLabelMap);
 
-        return tree ? render(tree).trimEnd() : "";
+        const outline = tree ? render(tree).trimEnd() : "";
+        return { outline, timedOut };
     });
 }

@@ -1,5 +1,5 @@
 import type { RegisterCommand } from "./common";
-import { ensureRunning, exitWithError } from "./common";
+import { ensureRunning, exitWithError, printOutline } from "./common";
 import { findAll, click, type, wait, hover, evaluate, scroll, select } from "../page";
 
 export const registerPageCommands: RegisterCommand = (program) => {
@@ -19,7 +19,8 @@ export const registerPageCommands: RegisterCommand = (program) => {
         .action(async (selector) => {
             await ensureRunning();
             const { matchType } = await click(selector);
-            console.log(`Clicked (${matchType}): ${selector}`);
+            console.log(`Clicked (${matchType}): ${selector}\n`);
+            await printOutline();
         });
 
     program

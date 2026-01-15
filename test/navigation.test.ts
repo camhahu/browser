@@ -10,25 +10,29 @@ describe("navigation", () => {
         expect(await browser("title")).toBe("Cameron Harder-Hutton");
     });
 
-    test("navigate", async () => {
-        await browser(`navigate ${TEST_URL}/blog`);
-        await browser('wait "main ul"');
+    test("navigate outputs outline", async () => {
+        const output = await browser(`navigate ${TEST_URL}/blog`);
+        expect(output).toContain("Navigated to:");
+        expect(output).toMatch(/\[l\d+\] link/);
         expect(await browser("url")).toContain("/blog");
     });
 
-    test("back, forward, refresh", async () => {
+    test("back outputs outline", async () => {
         await browser(`navigate ${TEST_URL}`);
-        await browser('wait "main p"');
-
-        await browser("back");
-        await browser('wait "main ul"');
+        const output = await browser("back");
+        expect(output).toMatch(/\[l\d+\] link/);
         expect(await browser("url")).toContain("/blog");
+    });
 
-        await browser("forward");
-        await browser('wait "main p"');
+    test("forward outputs outline", async () => {
+        const output = await browser("forward");
+        expect(output).toMatch(/\[l\d+\] link/);
         expect(await browser("url")).toBe("https://camhahu.com/");
+    });
 
-        await browser("refresh");
+    test("refresh outputs outline", async () => {
+        const output = await browser("refresh");
+        expect(output).toMatch(/\[l\d+\] link/);
         expect(await browser("url")).toBe("https://camhahu.com/");
     });
 });
