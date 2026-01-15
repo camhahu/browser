@@ -32,16 +32,34 @@ browser stop                      # Always stop when finished
 ## Commands
 
 ```bash
+# Navigation
 browser open <url>                # Open URL (auto-starts headless browser if needed)
-browser click <selector>          # Click by label, text, or CSS
-browser type <text> <selector>    # Type into input (special keys: Enter, Escape, Tab)
-browser wait <selector>           # Wait for element (15s timeout)
-browser text [selector]           # Extract text content
-browser scroll <target>           # Scroll to top, bottom, or selector
 browser navigate <url>            # Navigate current tab
 browser back / forward / refresh  # History navigation
-browser outline                   # Show outline again (or use -a for full structure)
 browser stop                      # Close browser
+
+# Interaction
+browser click <selector>          # Click by label, text, or CSS
+browser type <text> [selector]    # Type into input (special keys: Enter, Escape, Tab)
+browser hover <selector>          # Move mouse to element
+browser select <selector> <value> # Select dropdown option
+browser scroll <target>           # Scroll to top, bottom, or selector
+browser wait <selector>           # Wait for element (15s timeout)
+
+# Content
+browser outline                   # Show outline again (or use -a for full structure)
+browser text [selector]           # Extract text content
+browser screenshot [name]         # Capture screenshot (use when layout matters)
+
+# Tabs
+browser tabs                      # List all open tabs
+browser use <tab-id>              # Switch to tab
+browser close [tab-id]            # Close tab
+
+# Debugging
+browser console                   # Show console output
+browser network                   # List network requests
+browser eval <js>                 # Run JavaScript
 ```
 
 Navigation commands (`open`, `click`, `navigate`, `back`, `forward`, `refresh`) show an outline after completing.
