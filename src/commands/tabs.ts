@@ -37,7 +37,8 @@ export const registerTabCommands: RegisterCommand = (program) => {
             }
             const ok = await useTab(fullId);
             if (ok) {
-                console.log(`Active tab is now ${toShortId(fullId)}`);
+                console.log(`Active tab is now ${toShortId(fullId)}\n`);
+                await printOutline();
             } else {
                 exitWithError(`No such tab: ${shortId}`);
             }
