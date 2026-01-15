@@ -27,7 +27,7 @@ browser text ".product-list"      # 3. Read content
 browser stop                      # Always stop when finished
 ```
 
-**Prefer `outline` and `text` over screenshots.** These commands return structured text that's faster to process and more reliable for understanding page content. Use screenshots only when visual layout matters (debugging CSS, capturing evidence, visual regression).
+**Prefer `outline` and `text` over screenshots.** These return structured text that's faster and more reliable. Use screenshots only when visual layout matters.
 
 ## Commands
 
@@ -39,7 +39,7 @@ browser text [selector]           # Extract text content
 
 # Interact
 browser click <selector>          # Click by label, CSS selector, or text content
-browser type <text> <selector>    # Type into input
+browser type <text> <selector>    # Type into input (supports special keys: Enter, Escape, Tab)
 browser wait <selector>           # Wait for element (15s timeout, CSS only)
 browser scroll <target>           # Scroll to top, bottom, or selector
 
@@ -47,11 +47,17 @@ browser scroll <target>           # Scroll to top, bottom, or selector
 browser open <url>                # Open URL (starts headless, shows outline)
 browser navigate <url>            # Navigate current tab (shows outline)
 browser back / forward / refresh  # History navigation (shows outline)
+
+# Lifecycle
+browser start                     # Start headed browser (for debugging)
+browser stop                      # Close browser and all tabs
 ```
+
+Run `browser --help` for full command list, `browser <command> --help` for options.
 
 ## Outline
 
-Navigation commands (`open`, `navigate`, `back`, `forward`, `refresh`, `click`) automatically show an outline of interactive elements. Each element has a label like `[l1]` (link), `[b2]` (button), `[i3]` (input):
+Navigation commands automatically show an outline of interactive elements. Each element has a label like `[l1]` (link), `[b2]` (button), `[i3]` (input):
 
 ```
 [l1] link "Products" [href=/products]
@@ -84,41 +90,14 @@ CSS selector reference:
 Commands can be chained with `&&`. No sleep needed - navigation commands wait for page load:
 
 ```bash
-browser open https://example.com && browser click "Products" && browser text ".product-list"
-```
-
-```bash
-browser navigate https://example.com && browser scroll bottom && browser screenshot
+browser open https://example.com && browser click l2 && browser text ".product-list"
 ```
 
 ## Persistent Profile
 
-Browser sessions are persistent by default - logins, cookies, and browsing data are preserved across sessions in `~/.browser/profile/`.
-
-To clear the profile (logout, reset cookies):
+Logins, cookies, and browsing data are preserved across sessions in `~/.browser/profile/`.
 
 ```bash
-browser config clear-profile
+browser config clear-profile              # Logout, reset cookies
+browser config set persistentProfile false # Disable persistence
 ```
-
-To disable persistent profiles (ephemeral sessions):
-
-```bash
-browser config set persistentProfile false
-```
-
-To use a custom profile location:
-
-```bash
-browser config set profileDir /path/to/profile
-```
-
-## Use Cases
-
-| Task                           | Reference                                 |
-| ------------------------------ | ----------------------------------------- |
-| Reading and extracting content | [reading.md](references/reading.md)       |
-| Forms and authentication       | [forms.md](references/forms.md)           |
-| Multi-page flows and tabs      | [navigation.md](references/navigation.md) |
-| Screenshots and visual testing | [testing.md](references/testing.md)       |
-| Network, cookies, storage      | [debugging.md](references/debugging.md)   |
