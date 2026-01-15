@@ -593,8 +593,8 @@ async function getStableAccessibilityTree(client: CDP.Client): Promise<StableTre
 
     let pending = 0;
     client.Network.requestWillBeSent(() => pending++);
-    client.Network.loadingFinished(() => pending--);
-    client.Network.loadingFailed(() => pending--);
+    client.Network.loadingFinished(() => (pending = Math.max(0, pending - 1)));
+    client.Network.loadingFailed(() => (pending = Math.max(0, pending - 1)));
 
     const start = Date.now();
     let lastCount = -1;
