@@ -2,58 +2,13 @@ const REPO = "camhahu/browser";
 const BRANCH = "main";
 const BASE_URL = `https://raw.githubusercontent.com/${REPO}/${BRANCH}`;
 
-export const REFERENCE_FILES = ["forms", "testing", "debugging", "navigation", "reading"] as const;
-
-type ReferenceName = (typeof REFERENCE_FILES)[number];
-
-interface SkillFiles {
-    skill: string;
-    references: Record<ReferenceName, string>;
-}
-
-export interface FetchResult {
-    files: SkillFiles;
-    failed: string[];
-}
-
-export async function fetchSkillFiles(): Promise<FetchResult> {
+export async function fetchSkillFile(): Promise<string> {
     const skillUrl = `${BASE_URL}/skill/SKILL.md`;
-    const referenceUrls = REFERENCE_FILES.map((name) => ({
-        name,
-        url: `${BASE_URL}/skill/references/${name}.md`,
-    }));
-
-    const failed: string[] = [];
-
-    const skillResponse = await fetch(skillUrl);
-    if (!skillResponse.ok) {
-        throw new Error(`Failed to fetch SKILL.md: ${skillResponse.status}`);
+    const response = await fetch(skillUrl);
+    if (!response.ok) {
+        throw new Error(`Failed to fetch SKILL.md: ${response.status}`);
     }
-    const skill = await skillResponse.text();
-
-    const references = {} as Record<ReferenceName, string>;
-    const referenceResults = await Promise.all(
-        referenceUrls.map(async ({ name, url }) => {
-            const response = await fetch(url);
-            if (!response.ok) {
-                return { name, content: null };
-            }
-            return { name, content: await response.text() };
-        })
-    );
-
-    for (const { name, content } of referenceResults) {
-        if (content === null) {
-            failed.push(`references/${name}.md`);
-        } else {
-            references[name] = content;
-        }
-    }
-
-    return {
-        files: { skill, references },
-        failed,
-    };
+    return response.text();
 }
 
 export const AGENT_TARGETS: Record<string, string> = {

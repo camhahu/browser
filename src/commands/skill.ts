@@ -1,10 +1,9 @@
 import type { RegisterCommand } from "./common";
 import { exitWithError } from "./common";
 import {
-    fetchSkillFiles,
+    fetchSkillFile,
     AGENT_TARGETS,
     SUPPORTED_TARGETS,
-    REFERENCE_FILES,
     getGlobalSkillPath,
 } from "../skill-files";
 
@@ -38,25 +37,14 @@ export const registerSkillCommand: RegisterCommand = (program) => {
                 displayPath = targetPath + "/";
             }
 
-            console.log(`Fetching skill files...`);
-            const { files, failed } = await fetchSkillFiles();
-
-            const referencesDir = path.join(skillDir, "references");
+            console.log(`Fetching skill file...`);
+            const skill = await fetchSkillFile();
 
             fs.rmSync(skillDir, { recursive: true, force: true });
-            fs.mkdirSync(referencesDir, { recursive: true });
+            fs.mkdirSync(skillDir, { recursive: true });
 
-            fs.writeFileSync(path.join(skillDir, "SKILL.md"), files.skill);
-            for (const name of REFERENCE_FILES) {
-                const content = files.references[name];
-                if (content) {
-                    fs.writeFileSync(path.join(referencesDir, `${name}.md`), content);
-                }
-            }
+            fs.writeFileSync(path.join(skillDir, "SKILL.md"), skill);
 
             console.log(`Installed browser skill to ${displayPath}`);
-            if (failed.length > 0) {
-                console.log(`Failed to fetch: ${failed.join(", ")}`);
-            }
         });
 };
