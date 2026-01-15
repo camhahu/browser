@@ -23,14 +23,16 @@ curl -fsSL https://raw.githubusercontent.com/camhahu/browser/main/install.sh | b
 Point your agent to the [skill file](skill/SKILL.md) to get started, or install it directly:
 
 ```bash
-browser add-skill opencode   # OpenCode
+browser add-skill opencode            # Add to current project
+browser add-skill --global opencode   # Add globally
+
+browser add-skill amp        # Amp
+browser add-skill codex      # OpenAI Codex
 browser add-skill claude     # Claude Code
 browser add-skill cursor     # Cursor
-browser add-skill amp        # Amp
 browser add-skill goose      # Goose
 browser add-skill github     # GitHub Copilot
 browser add-skill vscode     # VS Code
-browser add-skill codex      # OpenAI Codex
 ```
 
 ## Update
