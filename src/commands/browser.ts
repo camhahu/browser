@@ -7,7 +7,11 @@ export const registerBrowserCommands: RegisterCommand = (program) => {
         .command("start")
         .description("Start the browser")
         .option("--headless", "Run in headless mode")
+        .option("--headed", "Run in headed mode (default)")
         .action(async (options) => {
+            if (options.headless && options.headed) {
+                exitWithError("Cannot use both --headless and --headed");
+            }
             const tabId = await launch({ headless: options.headless });
             console.log(`Started Chromium. Active tab: ${toShortId(tabId)}`);
         });
