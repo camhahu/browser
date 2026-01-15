@@ -18,12 +18,11 @@ curl -fsSL https://raw.githubusercontent.com/camhahu/browser/main/install.sh | b
 ## Core Loop
 
 ```bash
-browser open https://example.com  # Starts headless browser if needed
+browser open https://example.com  # Starts headless browser, shows outline
 
-browser outline                   # 1. See interactive elements
-browser click "Products"          # 2. Click by text or CSS selector
-browser wait ".product-list"      # 3. Wait for content to load
-browser text ".product-list"      # 4. Read content
+browser click l3                  # 1. Click by label from outline
+browser wait ".product-list"      # 2. Wait for content to load
+browser text ".product-list"      # 3. Read content
 
 browser stop                      # Always stop when finished
 ```
@@ -34,51 +33,44 @@ browser stop                      # Always stop when finished
 
 ```bash
 # See the page
-browser outline                   # Interactive elements (links, buttons, inputs)
+browser outline                   # Interactive elements with labels [l1], [b2], etc.
 browser outline -a [depth]        # Full page structure (default depth: 6)
 browser text [selector]           # Extract text content
 
 # Interact
-browser click <selector>          # Click (CSS selector or text content)
+browser click <selector>          # Click by label, CSS selector, or text content
 browser type <text> <selector>    # Type into input
 browser wait <selector>           # Wait for element (15s timeout, CSS only)
 browser scroll <target>           # Scroll to top, bottom, or selector
 
 # Navigate
-browser open <url>                # Open URL (starts headless if needed)
-browser navigate <url>            # Navigate current tab
-browser back / forward / refresh
+browser open <url>                # Open URL (starts headless, shows outline)
+browser navigate <url>            # Navigate current tab (shows outline)
+browser back / forward / refresh  # History navigation (shows outline)
 ```
 
 ## Outline
 
-Use `outline` to see what you can interact with before clicking:
-
-```bash
-browser outline
-```
+Navigation commands (`open`, `navigate`, `back`, `forward`, `refresh`, `click`) automatically show an outline of interactive elements. Each element has a label like `[l1]` (link), `[b2]` (button), `[i3]` (input):
 
 ```
-nav
-  a "Products" [href=/products]
-  a "About" [href=/about]
-main
-  button "Sign up"
-  input [type=email] [placeholder="Email"]
+[l1] link "Products" [href=/products]
+[l2] link "About" [href=/about]
+[b3] button "Sign up"
+[i4] input [type=email] [placeholder="Email"]
 ```
 
-Click elements by their text content or build a CSS selector from the output.
+Click elements by their label, text content, or CSS selector.
 
 ## Selectors
 
-`click` and `find` support CSS selectors and text matching:
+`click` supports labels, text matching, and CSS selectors:
 
 ```bash
+browser click l3                 # Label from outline (fastest)
 browser click "Sign up"          # Text match (exact first, then partial)
 browser click ".btn-primary"     # CSS selector
 ```
-
-Text matching searches clickable elements (links, buttons, inputs).
 
 CSS selector reference:
 

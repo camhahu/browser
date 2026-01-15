@@ -5,9 +5,10 @@
 ```bash
 # Lifecycle
 browser start             # Start headed browser (for debugging)
+browser start --headless  # Start headless browser explicitly
 browser stop              # Close browser and all tabs
 
-# Navigation
+# Navigation (all show outline automatically)
 browser open <url>        # Open URL (starts headless if needed)
 browser navigate <url>    # Navigate current tab
 browser back / forward    # History navigation
@@ -24,9 +25,9 @@ browser close [tab-id]    # Close tab (default: active)
 ## Workflow: Multi-page Flow
 
 ```bash
-browser open https://example.com && browser outline
-browser click "Products" && browser wait ".product-list"
-browser click ".product-item:first-child" && browser wait ".product-details"
+browser open https://example.com        # Shows outline with labels
+browser click l3 && browser wait ".product-list"
+browser click l1 && browser wait ".product-details"
 browser back && browser wait ".product-list"
 browser stop
 ```
@@ -42,8 +43,8 @@ browser close def2 && browser stop
 
 ## Tips
 
-- `open` starts headless automatically; use `start` for headed debugging
+- `open` starts headless automatically; use `start` or `start --headed` for debugging
 - `open` creates a new tab; `navigate` reuses current tab
-- Navigation commands wait for page load before returning
+- Navigation commands show outline automatically after page loads
 - Tab IDs are short (4 chars) - use `browser tabs` to see them
 - Always `browser stop` when finished
