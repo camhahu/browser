@@ -72,4 +72,47 @@ describe("page", () => {
         const url = await browser("url");
         expect(url).toContain("/blog");
     });
+
+    test("type with accessibility label", async () => {
+        await browser(`navigate ${TEST_URL}`);
+        await browser(`eval "document.body.innerHTML = '<input type=text placeholder=Name>'"`);
+        const outline = await browser("outline");
+        const match = outline.match(/\[(i\d+)\] textbox/);
+        expect(match).not.toBeNull();
+        await browser(`type "Test User" ${match![1]}`);
+        const value = await browser(`eval "document.querySelector('input').value"`);
+        expect(value).toBe("Test User");
+    });
+
+    test("scroll with accessibility label", async () => {
+        await browser(`navigate ${TEST_URL}`);
+        const outline = await browser("outline");
+        const match = outline.match(/\[(l\d+)\] link "Blog"/);
+        expect(match).not.toBeNull();
+        await browser(`scroll ${match![1]}`);
+    });
+
+    test("hover with accessibility label", async () => {
+        await browser(`navigate ${TEST_URL}`);
+        const outline = await browser("outline");
+        const match = outline.match(/\[(l\d+)\] link/);
+        expect(match).not.toBeNull();
+        await browser(`hover ${match![1]}`);
+    });
+
+    test("wait with accessibility label", async () => {
+        await browser(`navigate ${TEST_URL}`);
+        const outline = await browser("outline");
+        const match = outline.match(/\[(l\d+)\] link/);
+        expect(match).not.toBeNull();
+        await browser(`wait ${match![1]}`);
+    });
+
+    test("find with accessibility label", async () => {
+        await browser(`navigate ${TEST_URL}`);
+        await browser("outline");
+        const result = await browser("find l1");
+        expect(result).toContain("Found 1");
+        expect(result).toContain("(label)");
+    });
 });

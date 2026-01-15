@@ -5,6 +5,7 @@ export { navigate } from "./cdp";
 export type MatchType = "css" | "exact" | "partial" | "label";
 
 const LABEL_STATE_FILE = "/tmp/browser-cli-labels.json";
+const LABEL_PATTERN = /^[a-z]\d+$/;
 
 async function readLabelMap(): Promise<Map<string, number>> {
     try {
@@ -17,6 +18,50 @@ async function readLabelMap(): Promise<Map<string, number>> {
 
 async function writeLabelMap(map: Map<string, number>): Promise<void> {
     await Bun.write(LABEL_STATE_FILE, JSON.stringify(Object.fromEntries(map)));
+}
+
+async function resolveLabel(selector: string): Promise<number | undefined> {
+    if (!LABEL_PATTERN.test(selector)) return undefined;
+    const labelMap = await readLabelMap();
+    return labelMap.get(selector);
+}
+
+async function resolveElement(
+    client: CDP.Client,
+    selector: string,
+): Promise<{ objectId: string; matchType: MatchType }> {
+    const backendNodeId = await resolveLabel(selector);
+    if (backendNodeId) {
+        await client.DOM.enable();
+        const { object } = await client.DOM.resolveNode({ backendNodeId });
+        return { objectId: object.objectId!, matchType: "label" };
+    }
+
+    await client.Runtime.enable();
+    const { result, exceptionDetails } = await client.Runtime.evaluate({
+        expression: `(() => {
+      ${RESOLVE_SELECTOR}
+      const { matchType, elements } = resolve(${JSON.stringify(selector)});
+      if (elements.length === 0) throw new Error("Element not found: " + ${JSON.stringify(selector)});
+      if (elements.length > 1) throw new Error("Found " + elements.length + " elements (" + matchType + ") for: " + ${JSON.stringify(selector)} + ". Be more specific.");
+      return matchType;
+    })()`,
+        returnByValue: true,
+    });
+    if (exceptionDetails) {
+        const desc = exceptionDetails.exception?.description ?? "";
+        const message = desc.split("\n")[0]?.replace(/^Error:\s*/, "") || `Element not found: ${selector}`;
+        throw new Error(message);
+    }
+    const matchType = result.value as MatchType;
+
+    const { result: elResult } = await client.Runtime.evaluate({
+        expression: `(() => {
+      ${RESOLVE_SELECTOR}
+      return resolve(${JSON.stringify(selector)}).elements[0];
+    })()`,
+    });
+    return { objectId: elResult.objectId!, matchType };
 }
 
 const RESOLVE_SELECTOR = `
@@ -43,18 +88,14 @@ const RESOLVE_SELECTOR = `
   }
 `;
 
-async function find(selector: string): Promise<number> {
-    return withActivePage(async (client) => {
-        await client.DOM.enable();
-        const { root } = await client.DOM.getDocument();
-        const { nodeIds } = await client.DOM.querySelectorAll({ nodeId: root.nodeId, selector });
-        return nodeIds.length;
-    });
-}
-
 export type FindResult = { count: number; matchType: MatchType };
 
 export async function findAll(selector: string): Promise<FindResult> {
+    const backendNodeId = await resolveLabel(selector);
+    if (backendNodeId !== undefined) {
+        return { count: 1, matchType: "label" };
+    }
+
     return withActivePage(async (client) => {
         await client.Runtime.enable();
         const { result } = await client.Runtime.evaluate({
@@ -71,51 +112,15 @@ export async function findAll(selector: string): Promise<FindResult> {
 
 export type ClickResult = { matchType: MatchType };
 
-const LABEL_PATTERN = /^[a-z]\d+$/;
-
 export async function click(selector: string): Promise<ClickResult> {
-    if (LABEL_PATTERN.test(selector)) {
-        const labelMap = await readLabelMap();
-        const backendNodeId = labelMap.get(selector);
-        if (backendNodeId) {
-            return withActivePage(async (client) => {
-                await client.DOM.enable();
-                const { object } = await client.DOM.resolveNode({ backendNodeId });
-                await withNavigation(client, async () => {
-                    await client.Runtime.callFunctionOn({
-                        objectId: object.objectId,
-                        functionDeclaration: "function() { this.click(); }",
-                    });
-                });
-                return { matchType: "label" };
-            });
-        }
-    }
-
     return withActivePage(async (client) => {
-        await client.Runtime.enable();
-        const { result } = await client.Runtime.evaluate({
-            expression: `(() => {
-        ${RESOLVE_SELECTOR}
-        const { matchType, elements } = resolve(${JSON.stringify(selector)});
-        return { matchType, count: elements.length };
-      })()`,
-            returnByValue: true,
-        });
-        const { matchType, count } = result.value as { matchType: MatchType; count: number };
-        if (count === 0) throw new Error(`No elements found for: ${selector}`);
-        if (count > 1) throw new Error(`Found ${count} elements (${matchType}) for: ${selector}. Be more specific.`);
-
+        const { objectId, matchType } = await resolveElement(client, selector);
         await withNavigation(client, async () => {
-            await client.Runtime.evaluate({
-                expression: `(() => {
-          ${RESOLVE_SELECTOR}
-          resolve(${JSON.stringify(selector)}).elements[0].click();
-        })()`,
-                awaitPromise: true,
+            await client.Runtime.callFunctionOn({
+                objectId,
+                functionDeclaration: "function() { this.click(); }",
             });
         });
-
         return { matchType };
     });
 }
@@ -162,16 +167,14 @@ function parseKeyCombo(combo: string) {
 export async function type(text: string, selector?: string): Promise<void> {
     return withActivePage(async (client) => {
         if (selector) {
-            await client.Runtime.enable();
-            const escapedSelector = JSON.stringify(selector);
-            const { exceptionDetails } = await client.Runtime.evaluate({
-                expression: `(() => {
-          const el = document.querySelector(${escapedSelector});
-          if (!el) throw new Error("Element not found: " + ${escapedSelector});
-          el.focus();
-          el.click();
-          el.value = '';
-        })()`,
+            const { objectId } = await resolveElement(client, selector);
+            const { exceptionDetails } = await client.Runtime.callFunctionOn({
+                objectId,
+                functionDeclaration: `function() {
+                    this.focus();
+                    this.click();
+                    if ('value' in this) this.value = '';
+                }`,
             });
             if (exceptionDetails) {
                 throw new Error(exceptionDetails.exception?.description ?? `Element not found: ${selector}`);
@@ -205,7 +208,7 @@ export async function type(text: string, selector?: string): Promise<void> {
 export async function wait(selector: string, timeout = 15000): Promise<void> {
     const start = Date.now();
     while (Date.now() - start < timeout) {
-        const count = await find(selector);
+        const { count } = await findAll(selector);
         if (count > 0) return;
         await Bun.sleep(100);
     }
@@ -245,57 +248,65 @@ function truncate(content: string, limit: number): ContentResult {
 }
 
 export async function html(selector = "body", limit = DEFAULT_LIMIT): Promise<ContentResult> {
-    const escapedSelector = JSON.stringify(selector);
-    const content = await evaluate(
-        `document.querySelector(${escapedSelector})?.outerHTML ?? (() => { throw new Error("Element not found: " + ${escapedSelector}) })()`,
-    );
-    return truncate(content as string, limit);
+    const content = await withActivePage(async (client) => {
+        const { objectId } = await resolveElement(client, selector);
+        const { result } = await client.Runtime.callFunctionOn({
+            objectId,
+            functionDeclaration: `function() { return this.outerHTML; }`,
+            returnByValue: true,
+        });
+        return result.value as string;
+    });
+    return truncate(content, limit);
 }
 
 export async function text(selector = "body", limit = DEFAULT_LIMIT, visibleOnly = true): Promise<ContentResult> {
-    const escapedSelector = JSON.stringify(selector);
-    const expression = visibleOnly
-        ? `(() => {
-    const root = document.querySelector(${escapedSelector});
-    if (!root) throw new Error("Element not found: " + ${escapedSelector});
-
-    const cache = new Map();
-    function isVisible(el) {
-      if (!el || el === document.documentElement) return true;
-      if (cache.has(el)) return cache.get(el);
-      const style = getComputedStyle(el);
-      const visible = style.display !== 'none'
-        && style.visibility !== 'hidden' && style.visibility !== 'collapse'
-        && parseFloat(style.opacity) !== 0
-        && isVisible(el.parentElement);
-      cache.set(el, visible);
-      return visible;
-    }
-
-    function isBlock(el) {
-      const display = getComputedStyle(el).display;
-      return display === 'block' || display === 'flex' || display === 'grid' ||
-             display === 'list-item' || display === 'table' || display === 'table-row';
-    }
-
-    let result = '';
-    const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT | NodeFilter.SHOW_ELEMENT);
-    while (walker.nextNode()) {
-      const node = walker.currentNode;
-      if (node.nodeType === Node.ELEMENT_NODE) {
-        if (isBlock(node) && result.length > 0 && !result.endsWith('\\n')) {
-          result += '\\n';
-        }
-      } else if (isVisible(node.parentElement)) {
-        const t = node.textContent.trim();
-        if (t) result += t;
-      }
-    }
-    return result;
-  })()`
-        : `document.querySelector(${escapedSelector})?.innerText ?? (() => { throw new Error("Element not found: " + ${escapedSelector}) })()`;
-    const content = await evaluate(expression);
-    return truncate(content as string, limit);
+    const content = await withActivePage(async (client) => {
+        const { objectId } = await resolveElement(client, selector);
+        const fn = visibleOnly
+            ? `function() {
+                const root = this;
+                const cache = new Map();
+                function isVisible(el) {
+                    if (!el || el === document.documentElement) return true;
+                    if (cache.has(el)) return cache.get(el);
+                    const style = getComputedStyle(el);
+                    const visible = style.display !== 'none'
+                        && style.visibility !== 'hidden' && style.visibility !== 'collapse'
+                        && parseFloat(style.opacity) !== 0
+                        && isVisible(el.parentElement);
+                    cache.set(el, visible);
+                    return visible;
+                }
+                function isBlock(el) {
+                    const display = getComputedStyle(el).display;
+                    return display === 'block' || display === 'flex' || display === 'grid' ||
+                           display === 'list-item' || display === 'table' || display === 'table-row';
+                }
+                let result = '';
+                const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT | NodeFilter.SHOW_ELEMENT);
+                while (walker.nextNode()) {
+                    const node = walker.currentNode;
+                    if (node.nodeType === Node.ELEMENT_NODE) {
+                        if (isBlock(node) && result.length > 0 && !result.endsWith('\\n')) {
+                            result += '\\n';
+                        }
+                    } else if (isVisible(node.parentElement)) {
+                        const t = node.textContent.trim();
+                        if (t) result += t;
+                    }
+                }
+                return result;
+            }`
+            : `function() { return this.innerText; }`;
+        const { result } = await client.Runtime.callFunctionOn({
+            objectId,
+            functionDeclaration: fn,
+            returnByValue: true,
+        });
+        return result.value as string;
+    });
+    return truncate(content, limit);
 }
 
 export async function back(): Promise<boolean> {
@@ -330,16 +341,14 @@ export async function refresh(): Promise<void> {
 
 export async function hover(selector: string): Promise<void> {
     return withActivePage(async (client) => {
-        await client.Runtime.enable();
-        const escapedSelector = JSON.stringify(selector);
-        const { result, exceptionDetails } = await client.Runtime.evaluate({
-            expression: `(() => {
-        const el = document.querySelector(${escapedSelector});
-        if (!el) throw new Error("Element not found: " + ${escapedSelector});
-        el.scrollIntoView({ block: "center", inline: "center" });
-        const rect = el.getBoundingClientRect();
-        return { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
-      })()`,
+        const { objectId } = await resolveElement(client, selector);
+        const { result, exceptionDetails } = await client.Runtime.callFunctionOn({
+            objectId,
+            functionDeclaration: `function() {
+                this.scrollIntoView({ block: "center", inline: "center" });
+                const rect = this.getBoundingClientRect();
+                return { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
+            }`,
             returnByValue: true,
         });
         if (exceptionDetails) {
@@ -399,126 +408,127 @@ const OUTLINE_HELPERS = `
 `;
 
 export async function outline(selector = "body", maxDepth = 6): Promise<string> {
-    const escapedSelector = JSON.stringify(selector);
-    const result = await evaluate(`(() => {
-    const root = document.querySelector(${escapedSelector});
-    if (!root) throw new Error("Element not found: " + ${escapedSelector});
-    ${OUTLINE_HELPERS}
+    const result = await withActivePage(async (client) => {
+        const { objectId } = await resolveElement(client, selector);
+        const { result } = await client.Runtime.callFunctionOn({
+            objectId,
+            functionDeclaration: `function() {
+                const root = this;
+                ${OUTLINE_HELPERS}
 
-    function getId(el) {
-      let id = el.tagName.toLowerCase();
-      if (el.id) id += '#' + el.id;
-      else if (el.className && typeof el.className === 'string') {
-        const cls = el.className.trim().split(/\\s+/).slice(0, 2).join('.');
-        if (cls) id += '.' + cls;
-      }
-      return id;
-    }
+                function getId(el) {
+                    let id = el.tagName.toLowerCase();
+                    if (el.id) id += '#' + el.id;
+                    else if (el.className && typeof el.className === 'string') {
+                        const cls = el.className.trim().split(/\\s+/).slice(0, 2).join('.');
+                        if (cls) id += '.' + cls;
+                    }
+                    return id;
+                }
 
-    function getText(el) {
-      let text = '';
-      for (const child of el.childNodes) {
-        if (child.nodeType === Node.TEXT_NODE) text += child.textContent;
-      }
-      return truncate(text, 50);
-    }
+                function getText(el) {
+                    let text = '';
+                    for (const child of el.childNodes) {
+                        if (child.nodeType === Node.TEXT_NODE) text += child.textContent;
+                    }
+                    return truncate(text, 50);
+                }
 
-    function getSignature(el) {
-      return getId(el) + ' ' + getText(el);
-    }
+                function getSignature(el) {
+                    return getId(el) + ' ' + getText(el);
+                }
 
-    function findRepeatedGroups(children) {
-      const groups = [];
-      let i = 0;
-      while (i < children.length) {
-        const sig = getSignature(children[i]);
-        let count = 1;
-        while (i + count < children.length && getSignature(children[i + count]) === sig) count++;
-        groups.push({ start: i, count });
-        i += count;
-      }
-      return groups;
-    }
+                function findRepeatedGroups(children) {
+                    const groups = [];
+                    let i = 0;
+                    while (i < children.length) {
+                        const sig = getSignature(children[i]);
+                        let count = 1;
+                        while (i + count < children.length && getSignature(children[i + count]) === sig) count++;
+                        groups.push({ start: i, count });
+                        i += count;
+                    }
+                    return groups;
+                }
 
-    function walk(el, depth) {
-      if (SKIP_TAGS.has(el.tagName)) return '';
-      const indent = '  '.repeat(depth);
-      let line = formatLine(el, getId, getText, indent);
-      const children = Array.from(el.children).filter(c => !SKIP_TAGS.has(c.tagName));
-      if (depth >= ${maxDepth} && children.length > 0) line += ' ... (' + children.length + ')';
-      line += '\\n';
-      if (depth >= ${maxDepth} || children.length === 0) return line;
+                function walk(el, depth) {
+                    if (SKIP_TAGS.has(el.tagName)) return '';
+                    const indent = '  '.repeat(depth);
+                    let line = formatLine(el, getId, getText, indent);
+                    const children = Array.from(el.children).filter(c => !SKIP_TAGS.has(c.tagName));
+                    if (depth >= ${maxDepth} && children.length > 0) line += ' ... (' + children.length + ')';
+                    line += '\\n';
+                    if (depth >= ${maxDepth} || children.length === 0) return line;
 
-      for (const { start, count } of findRepeatedGroups(children)) {
-        if (count > 2) {
-          const childOutput = walk(children[start], depth + 1);
-          const firstLine = childOutput.split('\\n')[0];
-          line += firstLine + ' (×' + count + ')\\n';
-          const rest = childOutput.split('\\n').slice(1).join('\\n');
-          if (rest.trim()) line += rest;
-        } else {
-          for (let j = 0; j < count; j++) line += walk(children[start + j], depth + 1);
-        }
-      }
-      return line;
-    }
+                    for (const { start, count } of findRepeatedGroups(children)) {
+                        if (count > 2) {
+                            const childOutput = walk(children[start], depth + 1);
+                            const firstLine = childOutput.split('\\n')[0];
+                            line += firstLine + ' (×' + count + ')\\n';
+                            const rest = childOutput.split('\\n').slice(1).join('\\n');
+                            if (rest.trim()) line += rest;
+                        } else {
+                            for (let j = 0; j < count; j++) line += walk(children[start + j], depth + 1);
+                        }
+                    }
+                    return line;
+                }
 
-    return walk(root, 0);
-  })()`);
-    return (result as string).trimEnd();
+                return walk(root, 0);
+            }`,
+            returnByValue: true,
+        });
+        return result.value as string;
+    });
+    return result.trimEnd();
 }
 
 export async function scroll(target: string): Promise<void> {
     return withActivePage(async (client) => {
-        await client.Runtime.enable();
-        const escapedTarget = JSON.stringify(target);
-        const { exceptionDetails } = await client.Runtime.evaluate({
-            expression: `(() => {
-        const target = ${escapedTarget};
-        if (target === "top") return window.scrollTo({ top: 0, behavior: 'instant' });
-        if (target === "bottom") return window.scrollTo({ top: document.documentElement.scrollHeight, behavior: 'instant' });
-        const el = document.querySelector(target);
-        if (!el) throw new Error("Element not found: " + target);
-        el.scrollIntoView({ block: "center", behavior: "instant" });
-      })()`,
-        });
-        if (exceptionDetails) {
-            const desc = exceptionDetails.exception?.description ?? "";
-            const message = desc.split("\n")[0]?.replace(/^Error:\s*/, "") || `Element not found: ${target}`;
-            throw new Error(message);
+        if (target === "top" || target === "bottom") {
+            await client.Runtime.enable();
+            await client.Runtime.evaluate({
+                expression:
+                    target === "top"
+                        ? `window.scrollTo({ top: 0, behavior: 'instant' })`
+                        : `window.scrollTo({ top: document.documentElement.scrollHeight, behavior: 'instant' })`,
+            });
+            return;
         }
+        const { objectId } = await resolveElement(client, target);
+        await client.Runtime.callFunctionOn({
+            objectId,
+            functionDeclaration: `function() { this.scrollIntoView({ block: "center", behavior: "instant" }); }`,
+        });
     });
 }
 
 export async function select(selector: string, value: string): Promise<string[]> {
     return withActivePage(async (client) => {
-        await client.Runtime.enable();
-        const escapedSelector = JSON.stringify(selector);
-        const escapedValue = JSON.stringify(value);
-        const { result, exceptionDetails } = await client.Runtime.evaluate({
-            expression: `(() => {
-        const el = document.querySelector(${escapedSelector});
-        if (!el) throw new Error("Element not found: " + ${escapedSelector});
-        if (el.tagName !== 'SELECT') throw new Error("Element is not a <select>: " + ${escapedSelector});
-        const value = ${escapedValue};
-        const selected = [];
-        for (const option of el.options) {
-          if (option.value === value || option.label === value || option.textContent.trim() === value) {
-            option.selected = true;
-            selected.push(option.value);
-            if (!el.multiple) break;
-          }
-        }
-        if (selected.length === 0) throw new Error("No option matching: " + value);
-        el.dispatchEvent(new Event('input', { bubbles: true }));
-        el.dispatchEvent(new Event('change', { bubbles: true }));
-        return selected;
-      })()`,
+        const { objectId } = await resolveElement(client, selector);
+        const { result, exceptionDetails } = await client.Runtime.callFunctionOn({
+            objectId,
+            functionDeclaration: `function(value) {
+                if (this.tagName !== 'SELECT') throw new Error("Element is not a <select>");
+                const selected = [];
+                for (const option of this.options) {
+                    if (option.value === value || option.label === value || option.textContent.trim() === value) {
+                        option.selected = true;
+                        selected.push(option.value);
+                        if (!this.multiple) break;
+                    }
+                }
+                if (selected.length === 0) throw new Error("No option matching: " + value);
+                this.dispatchEvent(new Event('input', { bubbles: true }));
+                this.dispatchEvent(new Event('change', { bubbles: true }));
+                return selected;
+            }`,
+            arguments: [{ value }],
             returnByValue: true,
         });
         if (exceptionDetails) {
             const desc = exceptionDetails.exception?.description ?? "";
-            const message = desc.split("\n")[0]?.replace(/^Error:\s*/, "") || `Element not found: ${selector}`;
+            const message = desc.split("\n")[0]?.replace(/^Error:\s*/, "") || `Select failed: ${selector}`;
             throw new Error(message);
         }
         return result.value as string[];
