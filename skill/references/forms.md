@@ -30,19 +30,18 @@ browser wait ".confirmation" && browser stop
 
 ## Persistent Login
 
-To preserve logins across browser sessions, enable persistent profiles:
-
-```bash
-browser config set persistentProfile true
-browser start                          # Login manually in headed mode
-browser stop                           # Session saved
-browser start --headless               # Still logged in
-```
+Persistent profiles are enabled by default - logins, cookies, and browsing data are preserved across sessions in `~/.browser/profile/`.
 
 To clear the profile (logout, reset all cookies):
 
 ```bash
 browser config clear-profile
+```
+
+To disable persistent profiles (ephemeral sessions):
+
+```bash
+browser config set persistentProfile false
 ```
 
 ## Tips

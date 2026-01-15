@@ -41,22 +41,22 @@ describe("config", () => {
     });
 
     test("ephemeral profile is deleted on stop", async () => {
-        await run("config unset persistentProfile");
+        await browser("config set persistentProfile false");
         await browser("start --headless");
         expect(existsSync(TEMP_PROFILE_DIR)).toBe(true);
 
         await browser("stop");
         expect(existsSync(TEMP_PROFILE_DIR)).toBe(false);
+
+        await browser("config unset persistentProfile");
     });
 
-    test("persistent profile is preserved on stop", async () => {
-        await browser("config set persistentProfile true");
+    test("persistent profile is preserved on stop (default)", async () => {
+        await run("config unset persistentProfile");
         await browser("start --headless");
         expect(existsSync(PERSISTENT_PROFILE_DIR)).toBe(true);
 
         await browser("stop");
         expect(existsSync(PERSISTENT_PROFILE_DIR)).toBe(true);
-
-        await browser("config unset persistentProfile");
     });
 });

@@ -101,16 +101,18 @@ browser navigate https://example.com && browser scroll bottom && browser screens
 
 ## Persistent Profile
 
-By default, browser sessions are ephemeral - the profile is deleted on `browser stop`. Enable persistent profiles to preserve logins, cookies, and browsing data across sessions:
+Browser sessions are persistent by default - logins, cookies, and browsing data are preserved across sessions in `~/.browser/profile/`.
 
-```bash
-browser config set persistentProfile true
-```
-
-Profile is stored in `~/.browser/profile/`. To clear it (logout, reset cookies):
+To clear the profile (logout, reset cookies):
 
 ```bash
 browser config clear-profile
+```
+
+To disable persistent profiles (ephemeral sessions):
+
+```bash
+browser config set persistentProfile false
 ```
 
 To use a custom profile location:

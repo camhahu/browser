@@ -74,10 +74,10 @@ const TEMP_PROFILE_DIR = "/tmp/browser-cli-profile";
 
 export async function getProfileDir(): Promise<{ dir: string; persistent: boolean }> {
     const config = await getConfig();
-    if (config.persistentProfile) {
-        return { dir: config.profileDir ?? PERSISTENT_PROFILE_DIR, persistent: true };
+    if (config.persistentProfile === false) {
+        return { dir: TEMP_PROFILE_DIR, persistent: false };
     }
-    return { dir: TEMP_PROFILE_DIR, persistent: false };
+    return { dir: config.profileDir ?? PERSISTENT_PROFILE_DIR, persistent: true };
 }
 
 export async function clearProfile(): Promise<string> {
