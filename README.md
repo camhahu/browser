@@ -8,7 +8,9 @@
   <a href="https://github.com/camhahu/browser/blob/main/LICENSE"><img alt="License" src="https://img.shields.io/github/license/camhahu/browser?style=flat-square" /></a>
 </p>
 
-https://github.com/user-attachments/assets/9d551f3f-0dda-42f7-8b2d-d0e068842d3a
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/e35c3dfb-37b7-499f-8010-307ccfdb6457" alt="browser demo" width="800" />
+</p>
 
 > **Experimental**: Commands are stable, but their output format is subject to change as we optimize for AI agent effectiveness.
 
