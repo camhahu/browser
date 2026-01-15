@@ -2,6 +2,23 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.4.0] - 2026-01-15
+
+### Added
+
+- Accessibility labels in outline and click commands for easier element identification
+- Auto-outline after navigation commands to show page structure automatically
+- `--headed` flag to `browser start` command for debugging sessions
+- Accessibility labels shown in error messages for better debugging
+
+### Changed
+
+- Persistent browser profiles are now the default behavior
+
+### Fixed
+
+- Page stability timeout on cold start no longer causes failures
+
 ## [0.3.4] - 2026-01-08
 
 ### Added
