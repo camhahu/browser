@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.4.1] - 2026-01-15
+
+### Added
+
+- Page outline now displays automatically after switching tabs with `use` command
+
 ## [0.4.0] - 2026-01-15
 
 ### Added
