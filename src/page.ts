@@ -26,6 +26,20 @@ async function resolveLabel(selector: string): Promise<number | undefined> {
     return labelMap.get(selector);
 }
 
+function describeElement(el: { tag: string; id?: string; classes?: string; text?: string; label?: string }): string {
+    let desc = el.tag;
+    if (el.id) desc += "#" + el.id;
+    else if (el.classes) desc += "." + el.classes;
+    if (el.text) desc += ` "${el.text}"`;
+    return el.label ? `[${el.label}] ${desc}` : desc;
+}
+
+function formatElementList(elements: { tag: string; id?: string; classes?: string; text?: string; label?: string }[], limit = 5): string {
+    const lines = elements.slice(0, limit).map((el, i) => `  ${i + 1}. ${describeElement(el)}`);
+    if (elements.length > limit) lines.push(`  ... and ${elements.length - limit} more`);
+    return lines.join("\n");
+}
+
 async function resolveElement(
     client: CDP.Client,
     selector: string,
@@ -42,18 +56,50 @@ async function resolveElement(
         expression: `(() => {
       ${RESOLVE_SELECTOR}
       const { matchType, elements } = resolve(${JSON.stringify(selector)});
-      if (elements.length === 0) throw new Error("Element not found: " + ${JSON.stringify(selector)});
-      if (elements.length > 1) throw new Error("Found " + elements.length + " elements (" + matchType + ") for: " + ${JSON.stringify(selector)} + ". Be more specific.");
-      return matchType;
+      if (elements.length === 0) return { error: "not_found" };
+      if (elements.length > 1) return { error: "multiple", count: elements.length, elements: elements.slice(0, 5).map(el => {
+        const text = (el.innerText || el.textContent || '').trim().slice(0, 30);
+        return {
+          tag: el.tagName.toLowerCase(),
+          id: el.id || undefined,
+          classes: el.className && typeof el.className === 'string' ? el.className.trim().split(/\\s+/).slice(0, 2).join('.') || undefined : undefined,
+          text: text ? text + (text.length >= 30 ? '...' : '') : undefined
+        };
+      }), total: elements.length };
+      return { matchType };
     })()`,
         returnByValue: true,
     });
-    if (exceptionDetails) {
-        const desc = exceptionDetails.exception?.description ?? "";
-        const message = desc.split("\n")[0]?.replace(/^Error:\s*/, "") || `Element not found: ${selector}`;
-        throw new Error(message);
+    if (exceptionDetails) throw new Error(`Element not found: ${selector}`);
+
+    const data = result.value as
+        | { error: "not_found" }
+        | { error: "multiple"; count: number; elements: { tag: string; id?: string; classes?: string; text?: string }[]; total: number }
+        | { matchType: MatchType };
+
+    if ("error" in data) {
+        if (data.error === "not_found") throw new Error(`Element not found: ${selector}`);
+        const labelMap = await readLabelMap();
+        const nodeIdToLabel = new Map<number, string>();
+        for (const [label, nodeId] of labelMap) nodeIdToLabel.set(nodeId, label);
+
+        await client.DOM.enable();
+        const elementsWithLabels = await Promise.all(
+            data.elements.map(async (el) => {
+                const { result: elResult } = await client.Runtime.evaluate({
+                    expression: `(() => {
+              ${RESOLVE_SELECTOR}
+              return resolve(${JSON.stringify(selector)}).elements[${data.elements.indexOf(el)}];
+            })()`,
+                });
+                if (!elResult.objectId) return el;
+                const { node } = await client.DOM.describeNode({ objectId: elResult.objectId });
+                const label = nodeIdToLabel.get(node.backendNodeId);
+                return { ...el, label };
+            }),
+        );
+        throw new Error(`Found ${data.count} elements for: ${selector}\n${formatElementList(elementsWithLabels, 5)}`);
     }
-    const matchType = result.value as MatchType;
 
     const { result: elResult } = await client.Runtime.evaluate({
         expression: `(() => {
@@ -61,7 +107,7 @@ async function resolveElement(
       return resolve(${JSON.stringify(selector)}).elements[0];
     })()`,
     });
-    return { objectId: elResult.objectId!, matchType };
+    return { objectId: elResult.objectId!, matchType: data.matchType };
 }
 
 const RESOLVE_SELECTOR = `
