@@ -59,7 +59,7 @@ browser close [tab-id]            # Close tab
 # Debugging
 browser console                   # Show console output
 browser network                   # List network requests
-browser eval <js>                 # Run JavaScript
+browser eval <js>                 # Run JavaScript (shares scope between calls)
 ```
 
 Navigation commands (`open`, `click`, `navigate`, `back`, `forward`, `refresh`) show an outline after completing.
