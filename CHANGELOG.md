@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.4.2] - 2026-01-17
+
+### Fixed
+
+- `add-skill` command now handles remote path changes gracefully
+
 ## [0.4.1] - 2026-01-15
 
 ### Added
