@@ -19,7 +19,7 @@ jobs:
             - name: Validate version
               run: |
                   TAG_VERSION="${GITHUB_REF_NAME#v}"
-                  PKG_VERSION=$(bun pm pkg get version | tr -d '"')
+                  PKG_VERSION=$(cd packages/cli && bun pm pkg get version | tr -d '"')
                   if [ "$TAG_VERSION" != "$PKG_VERSION" ]; then
                     echo "Tag version ($TAG_VERSION) does not match package.json version ($PKG_VERSION)"
                     exit 1
