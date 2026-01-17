@@ -1,6 +1,42 @@
 import type { RegisterCommand } from "./common";
 import { exitWithError } from "./common";
 
+const DOWNLOAD_ATTRIBUTES = ["com.apple.provenance", "com.apple.quarantine"];
+
+type CommandResult = {
+    exitCode: number;
+    stdout: string;
+    stderr: string;
+};
+
+async function runCommand(args: string[]): Promise<CommandResult> {
+    const proc = Bun.spawn(args, { stdout: "pipe", stderr: "pipe" });
+    const [stdout, stderr, exitCode] = await Promise.all([
+        new Response(proc.stdout).text(),
+        new Response(proc.stderr).text(),
+        proc.exited,
+    ]);
+    return { exitCode, stdout: stdout.trim(), stderr: stderr.trim() };
+}
+
+export async function removeMacosDownloadAttributes(path: string): Promise<void> {
+    if (process.platform !== "darwin") {
+        return;
+    }
+
+    for (const attribute of DOWNLOAD_ATTRIBUTES) {
+        const check = await runCommand(["xattr", "-p", attribute, path]);
+        if (check.exitCode !== 0) {
+            continue;
+        }
+
+        const removal = await runCommand(["xattr", "-d", attribute, path]);
+        if (removal.exitCode !== 0) {
+            throw new Error(`Failed to remove ${attribute} from ${path}: ${removal.stderr || removal.stdout}`);
+        }
+    }
+}
+
 export const registerUpdateCommand: RegisterCommand = (program) => {
     program
         .command("update")
@@ -40,29 +76,38 @@ export const registerUpdateCommand: RegisterCommand = (program) => {
             const downloadUrl = `https://github.com/${repo}/releases/download/v${latestVersion}/${filename}`;
 
             // Get install location
+            if (!process.env.HOME) {
+                exitWithError("HOME environment variable is not set");
+            }
             const installDir = `${process.env.HOME}/.browser/bin`;
             const installPath = `${installDir}/browser${ext}`;
 
             console.log(`\nDownloading ${filename}...`);
 
-            const { spawnSync } = await import("child_process");
-            const fs = await import("fs");
+            const ensureDir = await runCommand(["mkdir", "-p", installDir]);
+            if (ensureDir.exitCode !== 0) {
+                exitWithError(`Failed to create install directory: ${ensureDir.stderr || ensureDir.stdout}`);
+            }
 
-            // Ensure install directory exists
-            fs.mkdirSync(installDir, { recursive: true });
-
-            // Download with curl (follows redirects, shows progress)
-            const result = spawnSync("curl", ["-fSL", downloadUrl, "-o", installPath], {
-                stdio: "inherit",
-            });
-
-            if (result.status !== 0) {
+            const download = await fetch(downloadUrl);
+            if (!download.ok) {
                 exitWithError("Download failed");
             }
 
-            // Make executable
+            const payload = new Uint8Array(await download.arrayBuffer());
+            await Bun.write(installPath, payload);
+
             if (platform !== "windows") {
-                fs.chmodSync(installPath, 0o755);
+                const chmod = await runCommand(["chmod", "+x", installPath]);
+                if (chmod.exitCode !== 0) {
+                    exitWithError(`Failed to set executable bit: ${chmod.stderr || chmod.stdout}`);
+                }
+            }
+
+            try {
+                await removeMacosDownloadAttributes(installPath);
+            } catch (error) {
+                exitWithError((error as Error).message);
             }
 
             console.log(`Updated to v${latestVersion}`);

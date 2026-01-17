@@ -1,4 +1,5 @@
 import { describe, test, expect, beforeAll, afterAll } from "bun:test";
+import { removeMacosDownloadAttributes } from "../src/commands/update";
 import { run, browser } from "./helpers";
 
 describe("browser", () => {
@@ -32,5 +33,21 @@ describe("add-skill", () => {
         const { exitCode, stderr } = await run("add-skill --global cursor");
         expect(exitCode).toBe(1);
         expect(stderr).toContain("not supported");
+    });
+});
+
+describe("update", () => {
+    test("removes macOS download attributes", async () => {
+        const target = Bun.fileURLToPath(new URL("../../../dist/browser-test", import.meta.url));
+        const content = await Bun.file(Bun.fileURLToPath(new URL("../../../dist/browser", import.meta.url))).arrayBuffer();
+        await Bun.write(target, content);
+        await Bun.spawn(["chmod", "+x", target]).exited;
+        await Bun.spawn(["xattr", "-w", "com.apple.provenance", "test", target]).exited;
+
+        await removeMacosDownloadAttributes(target);
+
+        const { exitCode, stdout } = await run("--version");
+        expect(exitCode).toBe(0);
+        expect(stdout).toBeTruthy();
     });
 });
