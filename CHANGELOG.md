@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.4.5] - 2026-01-17
+
+### Fixed
+
+- Update now clears macOS download metadata so the CLI runs immediately after updating
+
 ## [0.4.4] - 2026-01-17
 
 No customer-facing changes.
