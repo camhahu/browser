@@ -1,7 +1,7 @@
 import { describe, test, expect, beforeAll, afterAll } from "bun:test";
-import { existsSync } from "node:fs";
 import { homedir } from "node:os";
 import { join } from "node:path";
+import { existsSync } from "node:fs";
 import { run, browser, browserFails } from "./helpers";
 
 const PERSISTENT_PROFILE_DIR = join(homedir(), ".browser", "profile");

@@ -11,8 +11,9 @@ describe("browser", () => {
     });
 
     test("version", async () => {
-        const pkg = await Bun.file("package.json").json();
-        expect(await browser("--version")).toBe(pkg.version);
+        const pkg = await Bun.file(Bun.fileURLToPath(new URL("../package.json", import.meta.url))).json();
+        const version = typeof pkg.version === "string" ? pkg.version : "";
+        expect(await browser("--version")).toBe(version);
     });
 
     test("start and stop", async () => {

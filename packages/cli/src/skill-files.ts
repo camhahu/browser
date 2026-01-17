@@ -1,7 +1,7 @@
 const REPO = "camhahu/browser";
 const BRANCH = "main";
 const BASE_URL = `https://raw.githubusercontent.com/${REPO}/${BRANCH}`;
-const POINTER_PATH = "skill/PATH.json";
+const POINTER_PATH = "packages/cli/skill/PATH.json";
 
 type SkillPointer = {
     path: string;

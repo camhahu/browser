@@ -41,11 +41,11 @@ jobs:
 
             - name: Build all targets
               run: |
-                  bun run script/build.ts bun-darwin-arm64
-                  bun run script/build.ts bun-darwin-x64
-                  bun run script/build.ts bun-linux-x64
-                  bun run script/build.ts bun-linux-arm64
-                  bun run script/build.ts bun-windows-x64
+                  bun run packages/cli/script/build.ts bun-darwin-arm64
+                  bun run packages/cli/script/build.ts bun-darwin-x64
+                  bun run packages/cli/script/build.ts bun-linux-x64
+                  bun run packages/cli/script/build.ts bun-linux-arm64
+                  bun run packages/cli/script/build.ts bun-windows-x64
 
             - name: Create release
               uses: softprops/action-gh-release@v2

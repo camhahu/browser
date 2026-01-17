@@ -17,10 +17,10 @@
 ## Install
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/camhahu/browser/main/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/camhahu/browser/main/packages/cli/install.sh | bash
 ```
 
-Point your agent to the [skill file](skill/SKILL.md) to get started, or install it directly:
+Point your agent to the [skill file](packages/cli/skill/SKILL.md) to get started, or install it directly:
 
 ```bash
 browser add-skill opencode            # Add to current project
@@ -155,7 +155,7 @@ browser click ".btn-primary"  # CSS selector
 
 ## Skill File
 
-See [skill/SKILL.md](skill/SKILL.md) for the AI agent skill file with usage patterns.
+See [packages/cli/skill/SKILL.md](packages/cli/skill/SKILL.md) for the AI agent skill file with usage patterns.
 
 ## Contributing
 
@@ -164,7 +164,7 @@ See [docs/TODO.md](docs/TODO.md) for planned features and [docs/BUGS.md](docs/BU
 ```bash
 bun install
 bun run build
-bun test
+bun run test
 ```
 
 The build outputs to `./dist/browser`. You can symlink it for local testing:

@@ -1,12 +1,18 @@
 import { beforeAll, afterAll } from "bun:test";
 
-const BROWSER = "./dist/browser";
+const REPO_ROOT = Bun.fileURLToPath(new URL("../../..", import.meta.url));
+const BROWSER = Bun.fileURLToPath(new URL("../../../dist/browser", import.meta.url));
 export const TEST_URL = "https://camhahu.com";
 
 export async function run(args: string): Promise<{ stdout: string; stderr: string; exitCode: number }> {
     const proc = Bun.spawn(["sh", "-c", `${BROWSER} ${args}`], {
         stdout: "pipe",
         stderr: "pipe",
+        cwd: REPO_ROOT,
+        env: {
+            ...process.env,
+            PATH: `${REPO_ROOT}/dist:${process.env.PATH ?? ""}`,
+        },
     });
     const [stdout, stderr] = await Promise.all([new Response(proc.stdout).text(), new Response(proc.stderr).text()]);
     const exitCode = await proc.exited;

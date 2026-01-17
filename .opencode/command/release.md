@@ -25,7 +25,7 @@ The bump type is: $ARGUMENTS.
 
 - Look at commits since the last tag (or all commits if no tags exist)
 - Only include customer-facing changes (new features, bug fixes, behavior changes, removed functionality)
-- Changes to skill files (skill/SKILL.md, skill/references/COMMANDS.md) are customer-facing and should be included
+- Changes to skill files (packages/cli/skill/SKILL.md, packages/cli/skill/references/COMMANDS.md) are customer-facing and should be included
 - Exclude internal changes like: CI/CD, tests, refactoring, docs, build scripts, code cleanup, dependency updates
 - Group changes into categories: Added, Changed, Fixed, Removed (only include categories that have entries)
 - For each change, credit the contributor using their GitHub username with `@username` format (except for @camhahu - do not attribute the repo owner)

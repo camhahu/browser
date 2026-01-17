@@ -1,26 +1,13 @@
 {
     "name": "browser",
-    "version": "0.4.2",
     "private": true,
-    "license": "MIT",
-    "bin": {
-        "browser": "src/index.ts"
-    },
     "type": "module",
+    "workspaces": [
+        "packages/*"
+    ],
     "scripts": {
-        "build": "bun run script/build.ts",
-        "test": "bun test"
-    },
-    "dependencies": {
-        "chrome-remote-interface": "^0.33.3",
-        "commander": "^14.0.2"
-    },
-    "devDependencies": {
-        "@types/bun": "latest",
-        "@types/chrome-remote-interface": "^0.33.0",
-        "oxfmt": "^0.20.0"
-    },
-    "peerDependencies": {
-        "typescript": "^5"
+        "build": "bun run --filter ./packages/cli build",
+        "test": "bun run --filter ./packages/cli test",
+        "test:cli": "bun run --filter ./packages/cli test"
     }
 }

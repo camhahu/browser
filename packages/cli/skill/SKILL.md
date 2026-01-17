@@ -12,7 +12,7 @@ metadata:
 Control a Chromium browser via CDP. Install: https://github.com/camhahu/browser
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/camhahu/browser/main/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/camhahu/browser/main/packages/cli/install.sh | bash
 ```
 
 ## Core Loop
