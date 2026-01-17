@@ -13,7 +13,7 @@ The bump type is: $ARGUMENTS.
 
 2. Ensure there are no uncommitted changes, we are on branch `main` and it is in sync with remote.
 
-3. Get the current version from package.json using: `bun pm pkg get version`
+3. Get the current version from packages/cli/package.json using: `cd packages/cli && bun pm pkg get version`
 
 4. Calculate the new version based on bump type:
 
@@ -43,13 +43,14 @@ The bump type is: $ARGUMENTS.
 - Bug fix description - @contributor
 ```
 
-6. Update the version in package.json using: `bun pm pkg set version={version}`
+6. Update the version in packages/cli/package.json using: `cd packages/cli && bun pm pkg set version={version}`
 
 7. Stage the changes:
 
 ```
-git add package.json CHANGELOG.md
+ git add packages/cli/package.json CHANGELOG.md
 ```
+
 
 8. Create a commit with message: `release: v{version}`
 
