@@ -19,12 +19,7 @@ export async function fetchSkillFile(): Promise<string> {
         throw new Error(`Invalid ${POINTER_PATH} contents`);
     }
 
-    const baseUrl = pointerUrl.replace(`/${POINTER_PATH}`, "/");
-    const pointerBase = new URL(pointerUrl);
-    const skillPath = pointerBase.protocol === "file:" && pointer.path.startsWith("/")
-        ? pointer.path.slice(1)
-        : pointer.path;
-    const skillUrl = new URL(skillPath, baseUrl).toString();
+    const skillUrl = `${BASE_URL}/${pointer.path}`;
     const response = await fetch(skillUrl);
     if (!response.ok) {
         throw new Error(`Failed to fetch ${pointer.path}: ${response.status}`);
