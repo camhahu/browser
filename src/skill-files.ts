@@ -1,12 +1,33 @@
 const REPO = "camhahu/browser";
 const BRANCH = "main";
 const BASE_URL = `https://raw.githubusercontent.com/${REPO}/${BRANCH}`;
+const POINTER_PATH = "skill/PATH.json";
+
+type SkillPointer = {
+    path: string;
+};
 
 export async function fetchSkillFile(): Promise<string> {
-    const skillUrl = `${BASE_URL}/skill/SKILL.md`;
+    const pointerUrl = `${BASE_URL}/${POINTER_PATH}`;
+    const pointerResponse = await fetch(pointerUrl);
+    if (!pointerResponse.ok) {
+        throw new Error(`Failed to fetch ${POINTER_PATH}: ${pointerResponse.status}`);
+    }
+
+    const pointer = (await pointerResponse.json()) as SkillPointer;
+    if (!pointer.path || typeof pointer.path !== "string") {
+        throw new Error(`Invalid ${POINTER_PATH} contents`);
+    }
+
+    const baseUrl = pointerUrl.replace(`/${POINTER_PATH}`, "/");
+    const pointerBase = new URL(pointerUrl);
+    const skillPath = pointerBase.protocol === "file:" && pointer.path.startsWith("/")
+        ? pointer.path.slice(1)
+        : pointer.path;
+    const skillUrl = new URL(skillPath, baseUrl).toString();
     const response = await fetch(skillUrl);
     if (!response.ok) {
-        throw new Error(`Failed to fetch SKILL.md: ${response.status}`);
+        throw new Error(`Failed to fetch ${pointer.path}: ${response.status}`);
     }
     return response.text();
 }
@@ -43,10 +64,16 @@ export function getGlobalSkillPath(target: string): string | null {
         return null;
     }
 
-    const home = Bun.env.HOME || require("os").homedir();
+    const home = Bun.env.HOME;
+    if (!home) {
+        throw new Error("HOME is not set");
+    }
 
     if (target === "goose" && process.platform === "win32") {
-        const appdata = Bun.env.APPDATA || `${home}/AppData/Roaming`;
+        const appdata = Bun.env.APPDATA;
+        if (!appdata) {
+            throw new Error("APPDATA is not set");
+        }
         return `${appdata}/Block/goose/config/skills/browser`;
     }
 
