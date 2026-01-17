@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.4.3] - 2026-01-17
+
+### Fixed
+
+- `add-skill` command URL resolution for pointer file paths
+
 ## [0.4.2] - 2026-01-17
 
 ### Fixed
