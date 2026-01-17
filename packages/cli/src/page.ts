@@ -385,25 +385,57 @@ export async function refresh(): Promise<void> {
     });
 }
 
+interface ElementCenter {
+    x: number;
+    y: number;
+    matchType: MatchType;
+}
+
+async function getElementCenter(
+    client: CDP.Client,
+    selector: string,
+    options: { scrollIntoView?: boolean } = {},
+): Promise<ElementCenter> {
+    const { objectId, matchType } = await resolveElement(client, selector);
+    const { result, exceptionDetails } = await client.Runtime.callFunctionOn({
+        objectId,
+        functionDeclaration: `function(scroll) {
+            if (scroll) {
+                this.scrollIntoView({ block: "center", inline: "center" });
+            }
+            const rect = this.getBoundingClientRect();
+            return { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
+        }`,
+        arguments: [{ value: options.scrollIntoView ?? true }],
+        returnByValue: true,
+    });
+    if (exceptionDetails) {
+        const desc = exceptionDetails.exception?.description ?? "";
+        const message = desc.split("\n")[0]?.replace(/^Error:\s*/, "") || `Element not found: ${selector}`;
+        throw new Error(message);
+    }
+    const { x, y } = result.value as { x: number; y: number };
+    return { x, y, matchType };
+}
+
 export async function hover(selector: string): Promise<void> {
     return withActivePage(async (client) => {
-        const { objectId } = await resolveElement(client, selector);
-        const { result, exceptionDetails } = await client.Runtime.callFunctionOn({
-            objectId,
-            functionDeclaration: `function() {
-                this.scrollIntoView({ block: "center", inline: "center" });
-                const rect = this.getBoundingClientRect();
-                return { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
-            }`,
-            returnByValue: true,
-        });
-        if (exceptionDetails) {
-            const desc = exceptionDetails.exception?.description ?? "";
-            const message = desc.split("\n")[0]?.replace(/^Error:\s*/, "") || `Element not found: ${selector}`;
-            throw new Error(message);
-        }
-        const { x, y } = result.value as { x: number; y: number };
+        const { x, y } = await getElementCenter(client, selector);
         await client.Input.dispatchMouseEvent({ type: "mouseMoved", x, y });
+    });
+}
+
+export async function drag(source: string, target: string): Promise<ClickResult> {
+    return withActivePage(async (client) => {
+        const { x: startX, y: startY, matchType } = await getElementCenter(client, source);
+        const { x: endX, y: endY } = await getElementCenter(client, target, { scrollIntoView: false });
+
+        await client.Input.dispatchMouseEvent({ type: "mouseMoved", x: startX, y: startY });
+        await client.Input.dispatchMouseEvent({ type: "mousePressed", x: startX, y: startY, button: "left", clickCount: 1 });
+        await client.Input.dispatchMouseEvent({ type: "mouseMoved", x: endX, y: endY, button: "left" });
+        await client.Input.dispatchMouseEvent({ type: "mouseReleased", x: endX, y: endY, button: "left", clickCount: 1 });
+
+        return { matchType };
     });
 }
 

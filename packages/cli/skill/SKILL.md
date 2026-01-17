@@ -42,6 +42,7 @@ browser stop                      # Close browser
 browser click <selector>          # Click by label, text, or CSS
 browser type <text> [selector]    # Type into input (special keys: Enter, Escape, Tab)
 browser hover <selector>          # Move mouse to element
+browser drag <source> <target>    # Drag element to another element
 browser select <selector> <value> # Select dropdown option
 browser scroll <target>           # Scroll to top, bottom, or selector
 browser wait <selector>           # Wait for element (15s timeout)

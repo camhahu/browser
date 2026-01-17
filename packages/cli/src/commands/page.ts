@@ -1,6 +1,6 @@
 import type { RegisterCommand } from "./common";
 import { ensureRunning, exitWithError, printOutline } from "./common";
-import { findAll, click, type, wait, hover, evaluate, scroll, select } from "../page";
+import { findAll, click, type, wait, hover, evaluate, scroll, select, drag } from "../page";
 
 export const registerPageCommands: RegisterCommand = (program) => {
     program
@@ -52,6 +52,15 @@ export const registerPageCommands: RegisterCommand = (program) => {
             await ensureRunning();
             await hover(selector);
             console.log(`Hovered: ${selector}`);
+        });
+
+    program
+        .command("drag <source> <target>")
+        .description("Drag an element to another element (CSS or text content)")
+        .action(async (source, target) => {
+            await ensureRunning();
+            const { matchType } = await drag(source, target);
+            console.log(`Dragged (${matchType}): ${source} -> ${target}`);
         });
 
     program

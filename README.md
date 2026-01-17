@@ -84,6 +84,7 @@ browser stop
 | `click <selector>` | Click element (label, text, or CSS) |
 | `type <text> [selector]` | Type text or send keys (e.g. `Enter`, `ctrl+c`) |
 | `hover <selector>` | Move mouse to element |
+| `drag <source> <target>` | Drag element to another element |
 | `select <selector> <value>` | Select dropdown option |
 | `scroll <target>` | Scroll to `top`, `bottom`, or CSS selector |
 | `wait <selector>` | Wait for element (15s timeout) |

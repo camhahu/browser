@@ -63,6 +63,16 @@ describe("page", () => {
         expect(result).toBe("Selected: r");
     });
 
+    test("drag", async () => {
+        await browser(`navigate ${TEST_URL}`);
+        await browser(
+            `eval "document.body.innerHTML = '<style>body{margin:0;padding:40px;}#source,#target{width:120px;height:120px;display:inline-flex;align-items:center;justify-content:center;border:2px solid #111;background:#eee;}#target{margin-left:200px;background:#fafafa;}</style><div id=source>Source</div><div id=target>Target</div>';const source=document.querySelector('#source');const target=document.querySelector('#target');let dragging=false;target.dataset.dropped='false';source.addEventListener('mousedown',()=>{dragging=true;});document.addEventListener('mouseup',(event)=>{if(dragging&&target.contains(event.target)){target.dataset.dropped='true';}dragging=false;});"`,
+        );
+        await browser('drag "#source" "#target"');
+        const dropped = await browser(`eval "document.querySelector('#target').dataset.dropped"`);
+        expect(dropped).toBe("true");
+    });
+
     test("click with accessibility label", async () => {
         await browser(`navigate ${TEST_URL}`);
         const outline = await browser("outline");
