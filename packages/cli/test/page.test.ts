@@ -10,7 +10,7 @@ describe("page", () => {
     });
 
     test("click outputs outline", async () => {
-        const output = await browser("click \"nav a[href='/blog']\"");
+        const output = await browser("click \"nav a.test-link\"");
         expect(output).toContain("Clicked");
         expect(output).toMatch(/\[l\d+\] link/);
     });
@@ -18,6 +18,7 @@ describe("page", () => {
     test("click with text", async () => {
         await browser(`navigate ${TEST_URL}`);
         await browser('click "Blog"');
+        expect(await browser("url")).toContain("/test/page/blog");
     });
 
     test("wait", async () => {
@@ -31,7 +32,7 @@ describe("page", () => {
     });
 
     test("scroll top/bottom", async () => {
-        await browser(`navigate ${TEST_URL}/blog`);
+        await browser(`navigate ${TEST_URL.replace("/page", "/navigation")}/blog`);
         await browser("scroll bottom");
         const scrolledDown = await browser("eval \"window.scrollY > 0\"");
         expect(scrolledDown).toBe("true");
@@ -80,7 +81,7 @@ describe("page", () => {
         expect(outline).toContain("[l2]");
         await browser("click l2");
         const url = await browser("url");
-        expect(url).toContain("/blog");
+        expect(url).toContain("/test/page/blog");
     });
 
     test("type with accessibility label", async () => {

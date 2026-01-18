@@ -2,7 +2,7 @@ import { beforeAll, afterAll } from "bun:test";
 
 const REPO_ROOT = Bun.fileURLToPath(new URL("../../..", import.meta.url));
 const BROWSER = Bun.fileURLToPath(new URL("../../../dist/browser", import.meta.url));
-export const TEST_URL = "https://camhahu.com";
+export const TEST_URL = "http://localhost:5173/test/page";
 
 export async function run(args: string): Promise<{ stdout: string; stderr: string; exitCode: number }> {
     const proc = Bun.spawn(["sh", "-c", `${BROWSER} ${args}`], {

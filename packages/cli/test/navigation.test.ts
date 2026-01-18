@@ -6,33 +6,33 @@ describe("navigation", () => {
 
     test("url and title", async () => {
         await browser(`open ${TEST_URL}`);
-        expect(await browser("url")).toBe("https://camhahu.com/");
-        expect(await browser("title")).toBe("Cameron Harder-Hutton");
+        expect(await browser("url")).toBe(TEST_URL);
+        expect(await browser("title")).toBe("browser CLI benchmarks");
     });
 
     test("navigate outputs outline", async () => {
         const output = await browser(`navigate ${TEST_URL}/blog`);
         expect(output).toContain("Navigated to:");
         expect(output).toMatch(/\[l\d+\] link/);
-        expect(await browser("url")).toContain("/blog");
+        expect(await browser("url")).toContain("/test/page/blog");
     });
 
     test("back outputs outline", async () => {
-        await browser(`navigate ${TEST_URL}`);
+        await browser(`navigate ${TEST_URL}/blog`);
         const output = await browser("back");
         expect(output).toMatch(/\[l\d+\] link/);
-        expect(await browser("url")).toContain("/blog");
+        expect(await browser("url")).toBe(TEST_URL);
     });
 
     test("forward outputs outline", async () => {
         const output = await browser("forward");
         expect(output).toMatch(/\[l\d+\] link/);
-        expect(await browser("url")).toBe("https://camhahu.com/");
+        expect(await browser("url")).toBe("http://localhost:5173/test/page/blog");
     });
 
     test("refresh outputs outline", async () => {
         const output = await browser("refresh");
         expect(output).toMatch(/\[l\d+\] link/);
-        expect(await browser("url")).toBe("https://camhahu.com/");
+        expect(await browser("url")).toBe("http://localhost:5173/test/page/blog");
     });
 });

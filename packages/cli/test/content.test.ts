@@ -21,7 +21,7 @@ describe("content", () => {
 
     test("text", async () => {
         await browser(`open ${TEST_URL}`);
-        expect(await browser("text nav")).toContain("Cameron");
+        expect(await browser("text nav")).toContain("browser CLI");
         expect(await browser("text main")).toContain("Hey there");
     });
 

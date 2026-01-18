@@ -7,7 +7,7 @@ describe("network", () => {
     test("network requests", async () => {
         await browser(`open ${TEST_URL}`);
         const network = await browser("network");
-        expect(network).toContain("camhahu.com");
+        expect(network).toContain("localhost");
         expect(network).toContain("200");
     });
 });
