@@ -21,7 +21,6 @@ curl -fsSL https://raw.githubusercontent.com/camhahu/browser/main/packages/cli/i
 browser open https://example.com  # Starts headless browser, shows outline
 
 browser click l3                  # 1. Click by label from outline
-browser wait ".product-list"      # 2. Wait for content to load
 browser text ".product-list"      # 3. Read content
 
 browser stop                      # Always stop when finished
@@ -45,7 +44,6 @@ browser hover <selector>          # Move mouse to element
 browser drag <source> <target>    # Drag element to another element
 browser select <selector> <value> # Select dropdown option
 browser scroll <target>           # Scroll to top, bottom, or selector
-browser wait <selector>           # Wait for element (15s timeout)
 
 # Content
 browser outline                   # Show outline again (or use -a for full structure)
