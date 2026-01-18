@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.5.0] - 2026-01-18
+
+### Added
+
+- `drag` command for pointer-based drag interactions
+- Progressive disclosure in page outline for cleaner navigation of complex pages
+
 ## [0.4.5] - 2026-01-17
 
 ### Fixed
