@@ -185,14 +185,14 @@ const testPages: TestPage[] = [
 
 const containerClass = 'mx-auto w-full max-w-4xl'
 const sectionClass = `${containerClass} p-4`
-const panelClass = 'border border-zinc-900/20 bg-zinc-50 p-4'
+const panelClass = 'border border-zinc-900/20 p-4'
 const labelClass = 'text-zinc-600'
 const mutedClass = 'text-zinc-600'
-const buttonBase = 'border border-zinc-900/30 p-4'
+const buttonBase = 'border border-zinc-900/30 px-3 py-2'
 const buttonPrimary = `${buttonBase} bg-zinc-900 text-zinc-50`
 const buttonGhost = `${buttonBase} bg-transparent`
 const inputBase =
-  'w-full border border-zinc-900/30 bg-white p-4 text-zinc-900 outline outline-2 outline-transparent focus:outline-zinc-900'
+  'w-full border border-zinc-900/30 bg-white px-3 py-2 text-zinc-900 outline outline-2 outline-transparent focus:outline-zinc-900'
 
 function RootLayout() {
   return (
@@ -209,38 +209,35 @@ function HomePage() {
         <p className={labelClass}>browser CLI</p>
         <h1 className="font-semibold">Developer benchmark playground</h1>
         <p className={mutedClass}>
-          Use the mocked flows and test pages below to run realistic CLI and
-          evaluation benchmarks with zero external network calls.
+          Local pages that mirror common developer workflows for evaluation
+          benchmarks.
         </p>
         <div className="flex flex-wrap gap-4">
           <Link to="/benchmark/1" className={buttonPrimary}>
-            Open Benchmark 1
+            Benchmark 1
           </Link>
           <Link to="/test" className={buttonGhost}>
-            Browse test pages
+            Test pages
           </Link>
         </div>
       </div>
-      <div className="grid gap-4 sm:grid-cols-3">
-        <div className={panelClass}>
-          <p className={labelClass}>Flow 1</p>
-          <p className="font-semibold">Account setup + settings</p>
+      <div className="space-y-4">
+        <div className="border-t border-zinc-900/20 pt-4">
+          <p className="font-semibold">Benchmark 1 · Account setup</p>
           <p className={mutedClass}>
             Login, 2FA, profile, preferences, and async saves.
           </p>
         </div>
-        <div className={panelClass}>
-          <p className={labelClass}>Test pages</p>
-          <p className="font-semibold">CLI validation pages</p>
+        <div className="border-t border-zinc-900/20 pt-4">
+          <p className="font-semibold">Test pages</p>
           <p className={mutedClass}>
-            One route per test file to anchor your command coverage.
+            One route per test file to anchor CLI command coverage.
           </p>
         </div>
-        <div className={panelClass}>
-          <p className={labelClass}>Mocked</p>
-          <p className="font-semibold">No real network calls</p>
+        <div className="border-t border-zinc-900/20 pt-4">
+          <p className="font-semibold">Offline by design</p>
           <p className={mutedClass}>
-            All latency, auth, and data responses are simulated.
+            No external network calls. All latency is mocked.
           </p>
         </div>
       </div>
@@ -356,29 +353,24 @@ function LoginPage() {
       <div className="space-y-4">
         <div className="space-y-4">
           <p className={labelClass}>Benchmark 1 · Account setup</p>
-          <h1 className="font-semibold">
-            Sign in to configure browser CLI
-          </h1>
+          <h1 className="font-semibold">Sign in to configure browser CLI</h1>
           <p className={mutedClass}>
             A simulated login with two-factor verification and async handoff into
             account settings. All responses are mocked locally for evaluation
             benchmarks.
           </p>
         </div>
-        <div className="grid gap-4 sm:grid-cols-3">
-          <div className={panelClass}>
-            <p className={labelClass}>Challenge</p>
-            <p className="font-semibold">2FA prompt</p>
-            <p className={mutedClass}>Modal focus + validation rules.</p>
+        <div className="space-y-4">
+          <div className="border-t border-zinc-900/20 pt-4">
+            <p className="font-semibold">Challenge</p>
+            <p className={mutedClass}>2FA prompt with focus capture.</p>
           </div>
-          <div className={panelClass}>
-            <p className={labelClass}>Latency</p>
-            <p className="font-semibold">700ms</p>
-            <p className={mutedClass}>Simulated auth and session bootstrap.</p>
+          <div className="border-t border-zinc-900/20 pt-4">
+            <p className="font-semibold">Latency</p>
+            <p className={mutedClass}>700ms simulated auth handshake.</p>
           </div>
-          <div className={panelClass}>
-            <p className={labelClass}>Scope</p>
-            <p className="font-semibold">Forms</p>
+          <div className="border-t border-zinc-900/20 pt-4">
+            <p className="font-semibold">Scope</p>
             <p className={mutedClass}>Email, password, and device settings.</p>
           </div>
         </div>
@@ -428,15 +420,12 @@ function LoginPage() {
           </button>
           <p className={mutedClass}>{loginNote}</p>
         </form>
-        <div className="h-px bg-zinc-900/20" />
-        <div className="flex flex-wrap items-start gap-4">
-          <div className="space-y-4">
-            <p className="font-semibold">No network calls</p>
-            <p className={mutedClass}>
-              Every response and session token is generated in-memory for
-              benchmarking.
-            </p>
-          </div>
+        <div className="space-y-4 border-t border-zinc-900/20 pt-4">
+          <p className="font-semibold">No network calls</p>
+          <p className={mutedClass}>
+            Every response and session token is generated in-memory for
+            benchmarking.
+          </p>
           <button className={buttonGhost} type="button">
             Use passkey
           </button>
@@ -445,13 +434,13 @@ function LoginPage() {
       {showTwoFactor ? (
         <div className="fixed inset-0 flex items-center justify-center bg-black/40 p-4">
           <div
-            className="relative w-full max-w-md border border-zinc-900/20 bg-zinc-50 p-4"
+            className="relative w-full max-w-md border border-zinc-900/20 bg-white p-4"
             role="dialog"
             aria-modal="true"
             aria-labelledby="twofa-title"
           >
             <button
-              className="absolute right-4 top-4 h-8 w-8 border border-zinc-900/20 bg-zinc-50"
+              className="absolute right-4 top-4 h-8 w-8 border border-zinc-900/20 bg-white"
               type="button"
               onClick={handleCloseModal}
               aria-label="Close"
@@ -481,7 +470,7 @@ function LoginPage() {
                   required
                 />
                 {codeError ? (
-                  <span className=" text-red-700">{codeError}</span>
+                  <span className="text-red-700">{codeError}</span>
                 ) : null}
               </label>
               <div className="flex flex-wrap gap-4">
@@ -593,28 +582,21 @@ function SettingsPage() {
 
   return (
     <section className="space-y-4">
-      <div className="grid gap-4 md:grid-cols-[2fr_1fr]">
-        <div className="space-y-4">
-          <p className={labelClass}>Benchmark 1 · Account setup</p>
-          <h1 className="font-semibold">Profile & security settings</h1>
-          <p className={mutedClass}>
-            Complete the profile, update security preferences, and simulate an
-            async save cycle with client-side validation.
-          </p>
+      <div className="space-y-4">
+        <p className={labelClass}>Benchmark 1 · Account setup</p>
+        <h1 className="font-semibold">Profile & security settings</h1>
+        <p className={mutedClass}>
+          Complete the profile, update security preferences, and simulate an
+          async save cycle with client-side validation.
+        </p>
+        <div className="border-t border-zinc-900/20 pt-4">
+          <p className="font-semibold">Environment</p>
+          <p className={mutedClass}>Sandbox · latency target 450ms.</p>
         </div>
-        <div className="grid gap-4 sm:grid-cols-2">
-          <div className={panelClass}>
-            <p className={labelClass}>Environment</p>
-            <p className="font-semibold">Sandbox</p>
-            <p className={mutedClass}>Latency target: 450ms</p>
-          </div>
-          <div className={panelClass}>
-            <p className={labelClass}>Sync status</p>
-            <p className="font-semibold">
-              {saveState === 'saving' ? 'Syncing' : 'Idle'}
-            </p>
-            <p className={mutedClass}>{savedAt}</p>
-          </div>
+        <div className="border-t border-zinc-900/20 pt-4">
+          <p className="font-semibold">Sync status</p>
+          <p className={mutedClass}>{saveState === 'saving' ? 'Syncing' : 'Idle'}</p>
+          <p className={mutedClass}>{savedAt}</p>
         </div>
       </div>
       <div className="grid gap-4 md:grid-cols-2">
@@ -627,7 +609,7 @@ function SettingsPage() {
             <form className="space-y-4" onSubmit={handleSave}>
               <div className="grid gap-4 md:grid-cols-2">
                 <div className="space-y-4">
-                  <div className="flex h-20 w-20 items-center justify-center border border-zinc-900/20 bg-zinc-50 font-semibold">
+                  <div className="flex h-20 w-20 items-center justify-center border border-zinc-900/20 font-semibold">
                     {avatarPreview ? (
                       <img
                         src={avatarPreview}
@@ -672,9 +654,7 @@ function SettingsPage() {
                       required
                     />
                     {touched.fullName && errors.fullName ? (
-                      <span className=" text-red-700">
-                        {errors.fullName}
-                      </span>
+                      <span className="text-red-700">{errors.fullName}</span>
                     ) : null}
                   </label>
                   <label className="grid gap-4">
@@ -694,9 +674,7 @@ function SettingsPage() {
                       required
                     />
                     {touched.displayName && errors.displayName ? (
-                      <span className=" text-red-700">
-                        {errors.displayName}
-                      </span>
+                      <span className="text-red-700">{errors.displayName}</span>
                     ) : null}
                   </label>
                   <label className="grid gap-4">
@@ -714,7 +692,7 @@ function SettingsPage() {
                       required
                     />
                     {touched.email && errors.email ? (
-                      <span className=" text-red-700">{errors.email}</span>
+                      <span className="text-red-700">{errors.email}</span>
                     ) : null}
                   </label>
                   <label className="grid gap-4">
@@ -768,7 +746,7 @@ function SettingsPage() {
                   {profile.bio.length}/140 characters
                 </span>
                 {touched.bio && errors.bio ? (
-                  <span className=" text-red-700">{errors.bio}</span>
+                  <span className="text-red-700">{errors.bio}</span>
                 ) : null}
               </label>
               <div className="flex flex-wrap items-center gap-4">
@@ -780,7 +758,7 @@ function SettingsPage() {
                     {saveMessage}
                   </span>
                   {formNotice ? (
-                    <span className=" text-red-700">{formNotice}</span>
+                    <span className="text-red-700">{formNotice}</span>
                   ) : null}
                 </div>
               </div>
@@ -810,8 +788,8 @@ function SettingsPage() {
                     onClick={() => handleToggle(option.key)}
                   >
                     <span
-                      className={`block h-4 w-4 bg-zinc-50 ${
-                        preferences[option.key] ? 'translate-x-4 ' : ''
+                      className={`block h-4 w-4 bg-white ${
+                        preferences[option.key] ? 'translate-x-4' : ''
                       }`}
                     />
                   </button>
@@ -829,7 +807,7 @@ function SettingsPage() {
             <div className="space-y-4">
               {securitySignals.map((signal) => (
                 <div
-                  className="flex items-center justify-between gap-4 border border-zinc-900/20 p-4 "
+                  className="flex items-center justify-between gap-4 border border-zinc-900/20 p-4"
                   key={signal.title}
                 >
                   <div>
@@ -846,7 +824,7 @@ function SettingsPage() {
               <h2 className="font-semibold">Access log</h2>
               <p className={mutedClass}>Recent sessions and device posture.</p>
             </div>
-            <ul className=" space-y-4 ">
+            <ul className="space-y-4">
               <li className="flex items-center justify-between gap-4 border border-zinc-900/20 p-4">
                 <div>
                   <p className="font-semibold">MacBook Pro · SF, CA</p>
@@ -878,7 +856,6 @@ function SettingsPage() {
             <button className={buttonGhost} type="button">
               Export security report
             </button>
-
           </div>
         </div>
       </div>
@@ -894,7 +871,7 @@ function TestNav({ slug }: { slug: TestSlug }) {
   return (
     <header className="border-b border-zinc-900/20" role="banner">
       <nav
-        className={`${containerClass} flex items-center justify-between px-4 py-4 `}
+        className={`${containerClass} flex items-center justify-between px-4 py-4`}
         aria-label="Primary"
       >
         <Link to="/test/$slug" params={{ slug }} className="font-semibold">
@@ -922,13 +899,13 @@ function TestIndexPage() {
           Each route mirrors a CLI test file with stable selectors and content.
         </p>
       </div>
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="space-y-4">
         {testPages.map((page) => (
           <Link
             key={page.slug}
             to="/test/$slug"
             params={{ slug: page.slug }}
-            className="border border-zinc-900/20 bg-zinc-50 p-4"
+            className="block border-t border-zinc-900/20 pt-4"
           >
             <p className="font-semibold">{page.title}</p>
             <p className={mutedClass}>/test/{page.slug}</p>
@@ -998,56 +975,7 @@ function TestPage() {
             Trigger action
           </button>
         </div>
-        <div className="border border-dashed border-zinc-900/20 bg-zinc-50 p-4 min-h-[120vh]">
-          <p className="font-semibold">Scrollable content</p>
-          <p className={mutedClass}>
-            This block intentionally extends the page height so scroll commands
-            have a stable target to move the viewport.
-          </p>
-          <ul className="list-disc space-y-4 pl-4">
-            {Array.from({ length: 24 }).map((_, index) => (
-              <li key={index}>Row {index + 1}</li>
-            ))}
-          </ul>
-        </div>
-
-        <div className={panelClass}>
-          <label className="grid gap-4" htmlFor={inputId}>
-            <span className="font-semibold">Test input</span>
-            <input
-              id={inputId}
-              className={inputBase}
-              type="text"
-              placeholder="Type here"
-            />
-          </label>
-          <label className=" grid gap-4 " htmlFor={selectId}>
-            <span className="font-semibold">Test select</span>
-            <select id={selectId} className={inputBase} defaultValue="green">
-              <option value="red">Red</option>
-              <option value="green">Green</option>
-            </select>
-          </label>
-          <div className=" flex gap-4">
-            <div id={sourceId} className="border border-zinc-900/20 px-4 py-4">
-              Source
-            </div>
-            <div id={targetId} className="border border-zinc-900/20 px-4 py-4">
-              Target
-            </div>
-          </div>
-        </div>
-        <div className={panelClass}>
-          <h2 className="font-semibold">Selector targets</h2>
-          <p className={mutedClass}>
-            Use this area for text, html, and outline commands. The navigation
-            and blog links are stable anchors for click and find tests.
-          </p>
-          <button className={`${buttonGhost} `} type="button">
-            Trigger action
-          </button>
-        </div>
-        <div className="border border-dashed border-zinc-900/20 bg-zinc-50 p-4">
+        <div className="border border-dashed border-zinc-900/20 p-4 min-h-[120vh]">
           <p className="font-semibold">Scrollable content</p>
           <p className={mutedClass}>
             This block intentionally extends the page height so scroll commands
@@ -1087,7 +1015,7 @@ function TestBlogPage() {
             predictable while still providing semantic headings and paragraphs.
           </p>
         </div>
-        <div className="border border-dashed border-zinc-900/20 bg-zinc-50 p-4 min-h-[120vh]">
+        <div className="border border-dashed border-zinc-900/20 p-4 min-h-[120vh]">
           <p className="font-semibold">Additional notes</p>
           <p className={mutedClass}>
             Extra content to ensure the page scrolls for navigation tests.
