@@ -77,16 +77,18 @@ export const registerContentCommands: RegisterCommand = (program) => {
         .command("outline [selector]")
         .description("Get structural outline of the page (default: body, interactive elements only)")
         .option("-a, --all [depth]", "Show all elements with optional depth (default: 6)")
+        .option("--node <label>", "Show outline scoped to a labeled group node")
         .action(async (selector = "body", options) => {
             await ensureRunning();
             if (options.all !== undefined) {
                 const depth = options.all === true ? 6 : parseInt(options.all, 10);
                 const result = await outline(selector, depth);
                 console.log(result);
-            } else {
-                const { outline: result, timedOut } = await interactiveOutline(selector);
-                console.log(result);
-                if (timedOut) console.log("\n[timed out waiting for page to stabilize]");
+                return;
             }
+            const target = options.node ?? selector;
+            const { outline: result, timedOut } = await interactiveOutline(target);
+            console.log(result);
+            if (timedOut) console.log("\n[timed out waiting for page to stabilize]");
         });
 };

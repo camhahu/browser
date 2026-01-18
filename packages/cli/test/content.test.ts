@@ -35,7 +35,16 @@ describe("content", () => {
         expect(outline).toContain("main");
         expect(outline).toContain("link");
         expect(outline).toMatch(/\[l\d+\]/);
+        expect(outline).toMatch(/\[e\d+\]/);
         expect(outline).not.toContain("div");
+    });
+
+    test("outline --node expands a group", async () => {
+        const outline = await browser("outline");
+        const match = outline.match(/\[(e\d+)\]/);
+        expect(match).not.toBeNull();
+        const nodeOutline = await browser(`outline --node ${match?.[1] ?? ""}`);
+        expect(nodeOutline).toContain(`[${match?.[1]}]`);
     });
 
     test("outline -a (all elements)", async () => {

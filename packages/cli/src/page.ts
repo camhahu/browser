@@ -667,6 +667,11 @@ const ROLE_PREFIXES: Record<string, string> = {
     tab: "t",
 };
 
+const LIST_CONTAINER_ROLES = new Set(["list", "listitem", "group", "section", "region", "tabpanel", "tablist"]);
+const HEADING_ROLES = new Set(["heading"]);
+const MAX_GROUP_ITEMS = 3;
+const MAX_OUTLINE_DEPTH = 6;
+
 const STABLE_MS = 50;
 const STABLE_TIMEOUT_MS = 1000;
 
@@ -722,21 +727,42 @@ export async function interactiveOutline(selector = "body"): Promise<OutlineResu
             nodeMap.set(node.nodeId, node);
         }
 
+        type TreeNodeKind = "landmark" | "heading" | "group" | "interactive" | "text";
+
         interface TreeNode {
             axNode: AXNode;
             children: TreeNode[];
+            kind: TreeNodeKind;
             label?: string;
+            summary?: { total: number; shown: number };
         }
 
         const counters: Record<string, number> = {};
         const newLabelMap = new Map<string, number>();
 
-        function getLabel(role: string, backendNodeId: number): string {
-            const prefix = ROLE_PREFIXES[role] ?? "e";
+        function nextLabel(prefix: string): string {
             counters[prefix] = (counters[prefix] ?? 0) + 1;
-            const label = `${prefix}${counters[prefix]}`;
-            newLabelMap.set(label, backendNodeId);
-            return label;
+            return `${prefix}${counters[prefix]}`;
+        }
+
+        function getInteractiveLabel(node: AXNode): string | undefined {
+            const role = node.role?.value;
+            if (!role) return undefined;
+            const prefix = ROLE_PREFIXES[role];
+            if (!prefix) return undefined;
+            return nextLabel(prefix);
+        }
+
+        function getGroupLabel(): string {
+            return nextLabel("e");
+        }
+
+        function getRole(node: AXNode): string {
+            return node.role?.value ?? "unknown";
+        }
+
+        function getName(node: AXNode): string {
+            return node.name?.value ?? "";
         }
 
         function isInteractive(node: AXNode): boolean {
@@ -752,40 +778,114 @@ export async function interactiveOutline(selector = "body"): Promise<OutlineResu
             return role ? LANDMARK_ROLES.has(role) : false;
         }
 
-        function buildTree(axNode: AXNode): TreeNode | null {
+        function isHeading(node: AXNode): boolean {
+            if (node.ignored) return false;
+            const role = node.role?.value;
+            return role ? HEADING_ROLES.has(role) : false;
+        }
+
+        function isListContainer(node: AXNode): boolean {
+            if (node.ignored) return false;
+            const role = node.role?.value;
+            return role ? LIST_CONTAINER_ROLES.has(role) : false;
+        }
+
+        function isTextNode(node: AXNode): boolean {
+            if (node.ignored) return false;
+            const role = node.role?.value;
+            return role === "text" || role === "statictext";
+        }
+
+        function getSignature(node: AXNode): string {
+            return `${getRole(node)}|${getName(node)}`;
+        }
+
+        function findRepeatedGroups(children: TreeNode[]): Array<{ start: number; count: number }> {
+            const groups: Array<{ start: number; count: number }> = [];
+            let i = 0;
+            while (i < children.length) {
+                const current = children[i];
+                if (!current) break;
+                const sig = getSignature(current.axNode);
+                let count = 1;
+                while (i + count < children.length) {
+                    const next = children[i + count];
+                    if (!next) break;
+                    if (getSignature(next.axNode) !== sig) break;
+                    count++;
+                }
+                groups.push({ start: i, count });
+                i += count;
+            }
+            return groups;
+        }
+
+        function shouldPreserveNode(node: AXNode, children: TreeNode[]): boolean {
+            if (isLandmark(node) || isHeading(node) || isListContainer(node)) return true;
+            if (isInteractive(node)) return true;
+            if (children.length > 1) return true;
+            return false;
+        }
+
+        function shouldLabelGroup(node: AXNode, kind: TreeNodeKind, children: TreeNode[]): boolean {
+            if (!node.backendDOMNodeId) return false;
+            if (kind === "landmark" || kind === "heading") return true;
+            if (kind === "group") return children.length > 0;
+            return false;
+        }
+
+        function buildTree(axNode: AXNode, depth: number): TreeNode | null {
             if (axNode.ignored && !axNode.childIds?.length) return null;
 
             const childTrees: TreeNode[] = [];
             for (const childId of axNode.childIds ?? []) {
                 const child = nodeMap.get(childId);
                 if (child) {
-                    const tree = buildTree(child);
+                    const tree = buildTree(child, depth + 1);
                     if (tree) childTrees.push(tree);
                 }
             }
 
-            if (isInteractive(axNode) && axNode.backendDOMNodeId) {
-                const label = getLabel(axNode.role!.value, axNode.backendDOMNodeId);
-                return { axNode, children: [], label };
+            if (isInteractive(axNode)) {
+                const label = getInteractiveLabel(axNode);
+                if (!label) return null;
+                return { axNode, children: [], label, kind: "interactive" };
             }
 
-            if (isLandmark(axNode) && childTrees.length > 0) {
-                return { axNode, children: childTrees };
+            if (isTextNode(axNode)) {
+                return { axNode, children: [], kind: "text" };
             }
 
-            if (childTrees.length === 1) return childTrees[0]!;
-            if (childTrees.length > 1) return { axNode: { nodeId: "", ignored: true }, children: childTrees };
-            return null;
+            const preserved = shouldPreserveNode(axNode, childTrees);
+            if (!preserved) {
+                if (childTrees.length === 1) return childTrees[0]!;
+                if (childTrees.length > 1) return { axNode: { nodeId: "", ignored: true }, children: childTrees, kind: "group" };
+                return null;
+            }
+
+            const role = getRole(axNode);
+            let kind: TreeNodeKind = "group";
+            if (isLandmark(axNode)) kind = "landmark";
+            else if (isHeading(axNode)) kind = "heading";
+            else if (isListContainer(axNode)) kind = "group";
+
+            let label: string | undefined;
+            if (shouldLabelGroup(axNode, kind, childTrees)) {
+                label = getGroupLabel();
+            }
+
+            return { axNode, children: childTrees, kind, label };
         }
 
-        function formatNode(node: AXNode, label?: string): string {
-            const role = node.role?.value ?? "unknown";
-            const name = node.name?.value ?? "";
+        function formatNode(node: AXNode, label?: string, summary?: { total: number; shown: number }): string {
+            const role = getRole(node);
+            const name = getName(node);
             const parts: string[] = [];
 
             if (label) parts.push(`[${label}]`);
             parts.push(role);
             if (name) parts.push(`"${name.slice(0, 50)}${name.length > 50 ? "..." : ""}"`);
+            if (summary && summary.total > 0) parts.push(`(${summary.total} items)`);
 
             return parts.join(" ");
         }
@@ -795,9 +895,14 @@ export async function interactiveOutline(selector = "body"): Promise<OutlineResu
             let output = "";
 
             if (!node.axNode.ignored || node.label) {
-                output = indent + formatNode(node.axNode, node.label) + "\n";
+                output = indent + formatNode(node.axNode, node.label, node.summary) + "\n";
+                const nextDepth = node.axNode.ignored ? depth : depth + 1;
                 for (const child of node.children) {
-                    output += render(child, depth + 1);
+                    output += render(child, nextDepth);
+                }
+                if (node.summary && node.summary.shown < node.summary.total && node.label) {
+                    const hidden = node.summary.total - node.summary.shown;
+                    output += `${"  ".repeat(nextDepth)}... (${hidden} more; outline ${node.label} to view all)\n`;
                 }
             } else {
                 for (const child of node.children) {
@@ -808,13 +913,92 @@ export async function interactiveOutline(selector = "body"): Promise<OutlineResu
             return output;
         }
 
+        function pruneTree(node: TreeNode, maxDepth: number, depth = 0, truncateGroups = true): TreeNode {
+            if (depth >= maxDepth) {
+                const summary = node.kind === "group" && node.children.length > 0
+                    ? { total: node.children.length, shown: 0 }
+                    : node.summary;
+                return { ...node, children: [], summary };
+            }
+
+            const children = node.children.map((child) => pruneTree(child, maxDepth, depth + 1, truncateGroups));
+            if (!truncateGroups) {
+                const summary = node.kind === "group" && children.length > 0
+                    ? { total: children.length, shown: children.length }
+                    : node.summary;
+                return { ...node, children, summary };
+            }
+
+            const groups = findRepeatedGroups(children);
+            let prunedChildren: TreeNode[] = [];
+
+            for (const group of groups) {
+                const count = group.count;
+                const start = group.start;
+                if (count > MAX_GROUP_ITEMS) {
+                    prunedChildren = prunedChildren.concat(children.slice(start, start + MAX_GROUP_ITEMS));
+                } else {
+                    prunedChildren = prunedChildren.concat(children.slice(start, start + count));
+                }
+            }
+
+            const summary = node.kind === "group" && children.length > 0
+                ? { total: children.length, shown: prunedChildren.length }
+                : node.summary;
+
+            return { ...node, children: prunedChildren, summary };
+        }
+
+        function flattenIgnoredGroups(node: TreeNode): TreeNode {
+            const children = node.children.flatMap((child) => {
+                const next = flattenIgnoredGroups(child);
+                if (next.axNode.ignored && !next.label) return next.children;
+                return [next];
+            });
+            return { ...node, children };
+        }
+
+        function mapBackendNodeIds(node: TreeNode): void {
+            if (node.label && node.axNode.backendDOMNodeId !== undefined) {
+                newLabelMap.set(node.label, node.axNode.backendDOMNodeId);
+            }
+            for (const child of node.children) mapBackendNodeIds(child);
+        }
+
+        function ensureGroupLabels(node: TreeNode): void {
+            if ((node.kind === "group" || node.kind === "heading" || node.kind === "landmark") && node.children.length > 0 && !node.label) {
+                node.label = getGroupLabel();
+            }
+            for (const child of node.children) ensureGroupLabels(child);
+        }
+
+        function findNodeByLabel(node: TreeNode, label: string): TreeNode | null {
+            if (node.label === label) return node;
+            for (const child of node.children) {
+                const match = findNodeByLabel(child, label);
+                if (match) return match;
+            }
+            return null;
+        }
+
         const rootNode = nodes.find((n) => !n.parentId);
         if (!rootNode) return { outline: "", timedOut };
 
-        const tree = buildTree(rootNode);
+        let tree = buildTree(rootNode, 0);
+        if (!tree) return { outline: "", timedOut };
+        tree = flattenIgnoredGroups(tree);
+        ensureGroupLabels(tree);
+        mapBackendNodeIds(tree);
+
+        const targetLabel = selector !== "body" ? selector : undefined;
+        const scopedNode = targetLabel ? findNodeByLabel(tree, targetLabel) : null;
+
+        const outlineRoot = scopedNode ?? tree;
+        const truncateGroups = scopedNode ? false : true;
+        const pruned = pruneTree(outlineRoot, MAX_OUTLINE_DEPTH, 0, truncateGroups);
         await writeLabelMap(newLabelMap);
 
-        const outline = tree ? render(tree).trimEnd() : "";
+        const outline = render(pruned).trimEnd();
         return { outline, timedOut };
     });
 }

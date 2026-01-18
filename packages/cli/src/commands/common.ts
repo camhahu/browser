@@ -9,7 +9,7 @@ export function exitWithError(message: string): never {
 }
 
 export async function printOutline(): Promise<void> {
-    const { outline, timedOut } = await interactiveOutline();
+    const { outline, timedOut } = await interactiveOutline("body");
     console.log(outline);
     if (timedOut) console.log("\n[timed out waiting for page to stabilize]");
 }
