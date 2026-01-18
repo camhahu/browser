@@ -2,6 +2,8 @@
 
 <p align="center">The fastest, most token-efficient way for AI agents to control Chrome.</p>
 
+<p align="center"><i>Benchmarks in progress: Early testing shows 3x faster than <a href="https://github.com/vercel-labs/agent-browser">agent-browser</a> for a variety of usecases.</i></p>
+
 <p align="center">
   <a href="https://github.com/camhahu/browser/releases/latest"><img alt="Release" src="https://img.shields.io/github/v/release/camhahu/browser?style=flat-square" /></a>
   <a href="https://github.com/camhahu/browser/actions/workflows/release.yml"><img alt="Build status" src="https://img.shields.io/github/actions/workflow/status/camhahu/browser/release.yml?style=flat-square" /></a>
