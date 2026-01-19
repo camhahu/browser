@@ -75,22 +75,38 @@ if [[ ":$PATH:" != *":$INSTALL_DIR:"* ]]; then
 
   if [ -n "$shell_config" ] && [ -f "$shell_config" ]; then
     if ! grep -q "$INSTALL_DIR" "$shell_config" 2>/dev/null; then
-      echo "" >> "$shell_config"
-      echo "# browser" >> "$shell_config"
+      # Prepare the PATH export command
       if [ "$(basename "${SHELL:-bash}")" = "fish" ]; then
-        echo "fish_add_path $INSTALL_DIR" >> "$shell_config"
+        path_command="fish_add_path $INSTALL_DIR"
       else
-        echo "export PATH=\"$INSTALL_DIR:\$PATH\"" >> "$shell_config"
+        path_command="export PATH=\"$INSTALL_DIR:\$PATH\""
       fi
-      echo -e "${DIM}Added to PATH in $shell_config${NC}"
-      echo ""
-      echo "Run 'source $shell_config' or restart your terminal, then run 'browser --help'"
+
+      # Try to append to shell config
+      if echo -e "\n# browser\n$path_command" >> "$shell_config" 2>/dev/null; then
+        echo -e "${DIM}Added to PATH in $shell_config${NC}"
+        echo ""
+        echo "Run 'source $shell_config' or restart your terminal, then run 'browser --help'"
+      else
+        # If write failed (e.g., read-only file), show instructions
+        echo -e "${DIM}Could not write to $shell_config (file may be managed by dotfiles)${NC}"
+        echo ""
+        echo "Please add the following to your shell configuration:"
+        echo ""
+        echo "  # browser"
+        echo "  $path_command"
+        echo ""
+        echo "Then run 'source $shell_config' or restart your terminal, and run 'browser --help'"
+      fi
     else
       echo ""
       echo "Run 'browser --help' to get started"
     fi
   else
-    echo -e "${DIM}Add to your PATH:${NC} export PATH=\"$INSTALL_DIR:\$PATH\""
+    echo ""
+    echo "Please add the following to your shell configuration:"
+    echo ""
+    echo "  export PATH=\"$INSTALL_DIR:\$PATH\""
   fi
 else
   echo ""
