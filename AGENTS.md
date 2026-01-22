@@ -9,7 +9,7 @@
 - No barrel exports
 - Never add `--json` output flags to CLI commands
 - No fallback logic - each piece of code should do one thing, one way
-- Run `bun run test` after changes (always runs headless)
+- Run `bun run test` after changes (always runs headless) - requires the web server running (`bun run dev:web`)
 - After completing a new feature, manually test it and add integration test coverage
 - When fixing a bug, first add a test case that reproduces the issue, then fix the bug
 - Never stage or commit files unless explicitly asked
