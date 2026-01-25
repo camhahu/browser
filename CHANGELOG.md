@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.5.1] - 2026-01-25
+
+### Added
+
+- Opt-out telemetry with interactive consent and per-session flags (`--no-telemetry`)
+
+### Fixed
+
+- Handle readonly dotfiles - @codesoda
+
 ## [0.5.0] - 2026-01-18
 
 ### Added
