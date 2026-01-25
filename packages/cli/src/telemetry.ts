@@ -17,11 +17,16 @@ export function setNoTelemetryFlag(value: boolean): void {
     noTelemetryFlag = value;
 }
 
+export async function isTelemetryConfigured(): Promise<boolean> {
+    const config = await getConfig();
+    return config.telemetry !== false;
+}
+
 export async function isTelemetryEnabled(): Promise<boolean> {
     if (noTelemetryFlag) return false;
     if (process.env.BROWSER_TELEMETRY === "0") return false;
-    const config = await getConfig();
-    return config.telemetry !== false;
+    if (process.env.CI) return false;
+    return isTelemetryConfigured();
 }
 
 export async function setTelemetryEnabled(enabled: boolean): Promise<void> {

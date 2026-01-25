@@ -1,7 +1,7 @@
 import type { RegisterCommand } from "./common";
 import { exitWithError } from "./common";
 import { getConfig, setConfig, unsetConfig, clearProfile, type Config } from "../config";
-import { isTelemetryEnabled, setTelemetryEnabled } from "../telemetry";
+import { isTelemetryConfigured, setTelemetryEnabled } from "../telemetry";
 
 export const registerConfigCommand: RegisterCommand = (program) => {
     const configCmd = program
@@ -61,7 +61,7 @@ export const registerConfigCommand: RegisterCommand = (program) => {
         .description("Show or set telemetry status (on/off)")
         .action(async (enabled?: string) => {
             if (enabled === undefined) {
-                console.log((await isTelemetryEnabled()) ? "on" : "off");
+                console.log((await isTelemetryConfigured()) ? "on" : "off");
             } else if (enabled === "on") {
                 await setTelemetryEnabled(true);
                 console.log("Telemetry enabled");

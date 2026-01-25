@@ -12,6 +12,7 @@ export async function run(args: string): Promise<{ stdout: string; stderr: strin
         env: {
             ...process.env,
             PATH: `${REPO_ROOT}/dist:${process.env.PATH ?? ""}`,
+            CI: "1",
         },
     });
     const [stdout, stderr] = await Promise.all([new Response(proc.stdout).text(), new Response(proc.stderr).text()]);
