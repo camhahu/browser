@@ -22,9 +22,9 @@ export const registerBrowserCommands: RegisterCommand = (program) => {
         .command("stop")
         .description("Stop the browser")
         .action(async () => {
-            await close();
+            const sessionId = await close();
             console.log("Stopped Chromium.");
-            capture("session_stop");
+            capture("session_stop", { session_id: sessionId });
             await flush();
         });
 

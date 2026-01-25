@@ -37,7 +37,7 @@ export async function setTelemetryEnabled(enabled: boolean): Promise<void> {
 async function send(event: string, properties: Record<string, unknown>): Promise<void> {
     if (!(await isTelemetryEnabled())) return;
     const distinctId = await getTelemetryId();
-    const sessionId = await getSessionId();
+    const sessionId = properties.session_id ?? (await getSessionId());
     fetch(`${POSTHOG_HOST}/capture/`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },

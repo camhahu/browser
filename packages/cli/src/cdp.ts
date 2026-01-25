@@ -185,7 +185,9 @@ export async function launch(options: { headless?: boolean }): Promise<string> {
     throw new Error("Failed to start browser");
 }
 
-export async function close(): Promise<void> {
+export async function close(): Promise<string | null> {
+    const state = await readState();
+    const sessionId = state?.sessionId ?? null;
     for (const cb of onCloseCallbacks) await cb();
     const targets = await listTargets().catch(() => []);
     if (targets.length > 0) {
@@ -198,6 +200,7 @@ export async function close(): Promise<void> {
     if (!persistent) {
         await rm(profileDir, { recursive: true, force: true });
     }
+    return sessionId;
 }
 
 export async function openTab(url: string): Promise<{ tabId: string; url: string }> {
