@@ -11,6 +11,7 @@ const LAUNCH_POLL_INTERVAL_MS = 100;
 
 interface State {
     activeTabId: string;
+    sessionId: string;
 }
 
 async function readState(): Promise<State | null> {
@@ -166,7 +167,7 @@ export async function launch(options: { headless?: boolean }): Promise<string> {
             const targets = await listTargets();
             const page = targets.find((t) => t.type === "page");
             if (page) {
-                await writeState({ activeTabId: page.id });
+                await writeState({ activeTabId: page.id, sessionId: crypto.randomUUID() });
                 const client = await CDP({ port: CDP_PORT, target: page.id });
                 await client.Emulation.setDeviceMetricsOverride({
                     width: 1920,
@@ -201,7 +202,8 @@ export async function close(): Promise<void> {
 
 export async function openTab(url: string): Promise<{ tabId: string; url: string }> {
     const target = await CDP.New({ port: CDP_PORT });
-    await writeState({ activeTabId: target.id });
+    const state = await readState();
+    await writeState({ activeTabId: target.id, sessionId: state?.sessionId ?? "" });
 
     const client = await CDP({ port: CDP_PORT, target: target.id });
     try {
@@ -230,7 +232,8 @@ export async function useTab(tabId: string): Promise<boolean> {
     const targets = await listTargets();
     const target = targets.find((t) => t.id === tabId);
     if (!target) return false;
-    await writeState({ activeTabId: tabId });
+    const state = await readState();
+    await writeState({ activeTabId: tabId, sessionId: state?.sessionId ?? "" });
     return true;
 }
 
@@ -244,7 +247,7 @@ export async function closeTab(tabId?: string): Promise<string | null> {
         if (state?.activeTabId === id) {
             const targets = await listTargets();
             const next = targets.find((t) => t.type === "page" && t.id !== id);
-            await writeState({ activeTabId: next?.id ?? "" });
+            await writeState({ activeTabId: next?.id ?? "", sessionId: state?.sessionId ?? "" });
         }
         return id;
     } catch {
@@ -265,6 +268,11 @@ export async function getTitle(): Promise<string> {
 export async function getActiveTabId(): Promise<string | null> {
     const state = await readState();
     return state?.activeTabId ?? null;
+}
+
+export async function getSessionId(): Promise<string | null> {
+    const state = await readState();
+    return state?.sessionId ?? null;
 }
 
 export type ScreenshotFormat = "png" | "jpeg" | "webp";

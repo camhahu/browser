@@ -1,4 +1,5 @@
 import { getConfig, setConfig } from "./config";
+import { getSessionId } from "./cdp";
 
 const POSTHOG_API_KEY = "phc_z9EynXrTvFcwt62vrYWFCrBXjX6ukIgpk3L4HHVXArk";
 const POSTHOG_HOST = "https://us.i.posthog.com";
@@ -36,6 +37,7 @@ export async function setTelemetryEnabled(enabled: boolean): Promise<void> {
 async function send(event: string, properties: Record<string, unknown>): Promise<void> {
     if (!(await isTelemetryEnabled())) return;
     const distinctId = await getTelemetryId();
+    const sessionId = await getSessionId();
     fetch(`${POSTHOG_HOST}/capture/`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -44,6 +46,7 @@ async function send(event: string, properties: Record<string, unknown>): Promise
             event,
             properties: {
                 distinct_id: distinctId,
+                session_id: sessionId,
                 $lib: "browser-cli",
                 $lib_version: process.env.VERSION ?? "0.0.0-dev",
                 os: process.platform,
