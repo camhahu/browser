@@ -15,8 +15,18 @@ import { registerUpdateCommand } from "./commands/update";
 import { registerScreenshotCommand } from "./commands/screenshot";
 import { registerViewportCommand } from "./commands/viewport";
 import { registerUseragentCommand } from "./commands/useragent";
+import { capture } from "./telemetry";
 
 const program = new Command();
+
+const SKIP_TELEMETRY = new Set(["start", "stop", "add-skill"]);
+
+program.hook("preAction", (_thisCommand, actionCommand) => {
+    const name = actionCommand.name();
+    if (!name.startsWith("_") && !SKIP_TELEMETRY.has(name)) {
+        capture("command", { name });
+    }
+});
 
 program
     .name("browser")
@@ -40,5 +50,5 @@ registerUseragentCommand(program);
 
 program.parseAsync(process.argv).catch((err) => {
     console.error(err.message);
-    process.exit(1);
+    process.exitCode = 1;
 });

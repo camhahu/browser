@@ -27,6 +27,8 @@ export interface Config {
     browserPath?: string;
     persistentProfile?: boolean;
     profileDir?: string;
+    telemetry?: boolean;
+    telemetryId?: string;
 }
 
 export async function getConfig(): Promise<Config> {

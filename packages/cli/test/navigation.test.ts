@@ -27,12 +27,12 @@ describe("navigation", () => {
     test("forward outputs outline", async () => {
         const output = await browser("forward");
         expect(output).toMatch(/\[l\d+\] link/);
-        expect(await browser("url")).toBe("http://localhost:5173/test/page/blog");
+        expect(await browser("url")).toBe(`${TEST_URL}/blog`);
     });
 
     test("refresh outputs outline", async () => {
         const output = await browser("refresh");
         expect(output).toMatch(/\[l\d+\] link/);
-        expect(await browser("url")).toBe("http://localhost:5173/test/page/blog");
+        expect(await browser("url")).toBe(`${TEST_URL}/blog`);
     });
 });

@@ -6,6 +6,7 @@ import {
     SUPPORTED_TARGETS,
     getGlobalSkillPath,
 } from "../skill-files";
+import { capture } from "../telemetry";
 
 export const registerSkillCommand: RegisterCommand = (program) => {
     program
@@ -46,5 +47,6 @@ export const registerSkillCommand: RegisterCommand = (program) => {
             fs.writeFileSync(path.join(skillDir, "SKILL.md"), skill);
 
             console.log(`Installed browser skill to ${displayPath}`);
+            capture("add_skill", { agent: target, global: options.global ?? false });
         });
 };

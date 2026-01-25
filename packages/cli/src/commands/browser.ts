@@ -1,6 +1,7 @@
 import type { RegisterCommand } from "./common";
 import { launch, close, getActiveTabId, toShortId } from "../cdp";
 import { exitWithError } from "./common";
+import { capture, flush } from "../telemetry";
 
 export const registerBrowserCommands: RegisterCommand = (program) => {
     program
@@ -14,6 +15,7 @@ export const registerBrowserCommands: RegisterCommand = (program) => {
             }
             const tabId = await launch({ headless: options.headless });
             console.log(`Started Chromium. Active tab: ${toShortId(tabId)}`);
+            capture("session_start", { headless: options.headless ?? false });
         });
 
     program
@@ -22,6 +24,8 @@ export const registerBrowserCommands: RegisterCommand = (program) => {
         .action(async () => {
             await close();
             console.log("Stopped Chromium.");
+            capture("session_stop");
+            await flush();
         });
 
     program
