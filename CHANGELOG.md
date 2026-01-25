@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.5.2] - 2026-01-26
+
+### Fixed
+
+- Session ID now correctly included in session_stop telemetry events
+
 ## [0.5.1] - 2026-01-25
 
 ### Added
