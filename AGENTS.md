@@ -1,5 +1,6 @@
 # AGENTS.md
 
+- Write OS-agnostic code (avoid platform-specific paths, commands, or APIs)
 - Always use Bun (never npm, pnpm, etc.)
 - Use Bun standard library instead of Node standard library where possible
 - Build with `bun run build` to compile to `./dist/browser`
