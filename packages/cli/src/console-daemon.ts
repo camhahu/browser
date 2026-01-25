@@ -1,6 +1,7 @@
 #!/usr/bin/env bun
 
 import CDP from "chrome-remote-interface";
+import { captureError, flush } from "./telemetry";
 
 const CDP_PORT = 9222;
 const SOCKET_PATH = "/tmp/browser-console.sock";
@@ -225,5 +226,9 @@ export async function runDaemon(): Promise<void> {
 }
 
 if (import.meta.main) {
-    runDaemon().catch(() => process.exit(1));
+    runDaemon().catch(async (err) => {
+        captureError(err);
+        await flush();
+        process.exit(1);
+    });
 }

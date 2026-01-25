@@ -15,7 +15,7 @@ import { registerUpdateCommand } from "./commands/update";
 import { registerScreenshotCommand } from "./commands/screenshot";
 import { registerViewportCommand } from "./commands/viewport";
 import { registerUseragentCommand } from "./commands/useragent";
-import { capture } from "./telemetry";
+import { capture, captureError, flush } from "./telemetry";
 
 const program = new Command();
 
@@ -48,7 +48,9 @@ registerScreenshotCommand(program);
 registerViewportCommand(program);
 registerUseragentCommand(program);
 
-program.parseAsync(process.argv).catch((err) => {
+program.parseAsync(process.argv).catch(async (err) => {
+    captureError(err);
+    await flush();
     console.error(err.message);
     process.exitCode = 1;
 });

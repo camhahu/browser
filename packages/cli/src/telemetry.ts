@@ -1,15 +1,20 @@
-import { homedir } from "node:os";
-import { join } from "node:path";
+import { PostHog } from "posthog-node";
 import { getConfig, setConfig } from "./config";
 
 const POSTHOG_API_KEY = "phc_z9EynXrTvFcwt62vrYWFCrBXjX6ukIgpk3L4HHVXArk";
 const POSTHOG_HOST = "https://us.i.posthog.com";
-const EVENTS_FILE = join(homedir(), ".browser", "events.json");
 
-interface Event {
-    event: string;
-    properties: Record<string, unknown>;
-    timestamp: string;
+let client: PostHog | null = null;
+
+function getClient(): PostHog {
+    if (!client) {
+        client = new PostHog(POSTHOG_API_KEY, {
+            host: POSTHOG_HOST,
+            flushAt: 1,
+            flushInterval: 0,
+        });
+    }
+    return client;
 }
 
 async function getTelemetryId(): Promise<string> {
@@ -30,66 +35,38 @@ export async function setTelemetryEnabled(enabled: boolean): Promise<void> {
     await setConfig("telemetry", enabled);
 }
 
-async function readEvents(): Promise<Event[]> {
-    try {
-        return await Bun.file(EVENTS_FILE).json();
-    } catch {
-        return [];
-    }
-}
-
-async function writeEvents(events: Event[]): Promise<void> {
-    await Bun.$`mkdir -p ${join(homedir(), ".browser")}`.quiet();
-    await Bun.write(EVENTS_FILE, JSON.stringify(events));
-}
-
-let pending: Promise<void> | null = null;
-
-export function capture(event: string, properties: Record<string, unknown> = {}): void {
-    const promise = captureAsync(event, properties);
-    pending = pending ? pending.then(() => promise) : promise;
-    pending.catch(() => {});
-}
-
-async function captureAsync(event: string, properties: Record<string, unknown>): Promise<void> {
+async function send(event: string, properties: Record<string, unknown>): Promise<void> {
     if (!(await isTelemetryEnabled())) return;
-    const events = await readEvents();
-    events.push({ event, properties, timestamp: new Date().toISOString() });
-    await writeEvents(events);
-}
-
-async function waitForPending(): Promise<void> {
-    if (pending) await pending.catch(() => {});
-}
-
-export async function flush(): Promise<void> {
-    await waitForPending();
-    if (!(await isTelemetryEnabled())) return;
-
-    const events = await readEvents();
-    if (events.length === 0) return;
-
     const distinctId = await getTelemetryId();
-    const batch = events.map((e) => ({
-        event: e.event,
+    getClient().capture({
+        distinctId,
+        event,
         properties: {
-            distinct_id: distinctId,
             $lib: "browser-cli",
             $lib_version: process.env.VERSION ?? "0.0.0-dev",
             os: process.platform,
             arch: process.arch,
-            ...e.properties,
+            ...properties,
         },
-        timestamp: e.timestamp,
-    }));
+    });
+}
 
-    try {
-        const res = await fetch(`${POSTHOG_HOST}/batch/`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ api_key: POSTHOG_API_KEY, batch }),
-            signal: AbortSignal.timeout(5000),
-        });
-        if (res.ok) await writeEvents([]);
-    } catch {}
+export function capture(event: string, properties: Record<string, unknown> = {}): void {
+    send(event, properties).catch(() => {});
+}
+
+export function captureError(error: Error): void {
+    send("error", {
+        error_message: error.message,
+        error_name: error.name,
+        error_stack: error.stack,
+    }).catch(() => {});
+}
+
+export async function flush(): Promise<void> {
+    if (!(await isTelemetryEnabled())) return;
+    if (client) {
+        await client.shutdown();
+        client = null;
+    }
 }
