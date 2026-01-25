@@ -160,6 +160,10 @@ browser click ".btn-primary"  # CSS selector
 
 See [packages/cli/skill/SKILL.md](packages/cli/skill/SKILL.md) for the AI agent skill file with usage patterns.
 
+## Telemetry
+
+We collect anonymous usage data to improve the tool. See [docs/TELEMETRY.md](docs/TELEMETRY.md) for details on what we collect and how to opt out.
+
 ## Contributing
 
 See [docs/TODO.md](docs/TODO.md) for planned features and [docs/BUGS.md](docs/BUGS.md) for known issues.

@@ -1,21 +1,7 @@
-import { PostHog } from "posthog-node";
 import { getConfig, setConfig } from "./config";
 
 const POSTHOG_API_KEY = "phc_z9EynXrTvFcwt62vrYWFCrBXjX6ukIgpk3L4HHVXArk";
 const POSTHOG_HOST = "https://us.i.posthog.com";
-
-let client: PostHog | null = null;
-
-function getClient(): PostHog {
-    if (!client) {
-        client = new PostHog(POSTHOG_API_KEY, {
-            host: POSTHOG_HOST,
-            flushAt: 1,
-            flushInterval: 0,
-        });
-    }
-    return client;
-}
 
 async function getTelemetryId(): Promise<string> {
     const config = await getConfig();
@@ -25,7 +11,14 @@ async function getTelemetryId(): Promise<string> {
     return id;
 }
 
+let noTelemetryFlag = false;
+
+export function setNoTelemetryFlag(value: boolean): void {
+    noTelemetryFlag = value;
+}
+
 export async function isTelemetryEnabled(): Promise<boolean> {
+    if (noTelemetryFlag) return false;
     if (process.env.BROWSER_TELEMETRY === "0") return false;
     const config = await getConfig();
     return config.telemetry !== false;
@@ -38,17 +31,24 @@ export async function setTelemetryEnabled(enabled: boolean): Promise<void> {
 async function send(event: string, properties: Record<string, unknown>): Promise<void> {
     if (!(await isTelemetryEnabled())) return;
     const distinctId = await getTelemetryId();
-    getClient().capture({
-        distinctId,
-        event,
-        properties: {
-            $lib: "browser-cli",
-            $lib_version: process.env.VERSION ?? "0.0.0-dev",
-            os: process.platform,
-            arch: process.arch,
-            ...properties,
-        },
-    });
+    fetch(`${POSTHOG_HOST}/capture/`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+            api_key: POSTHOG_API_KEY,
+            event,
+            properties: {
+                distinct_id: distinctId,
+                $lib: "browser-cli",
+                $lib_version: process.env.VERSION ?? "0.0.0-dev",
+                os: process.platform,
+                arch: process.arch,
+                ...properties,
+            },
+            timestamp: new Date().toISOString(),
+        }),
+        signal: AbortSignal.timeout(5000),
+    }).catch(() => {});
 }
 
 export function capture(event: string, properties: Record<string, unknown> = {}): void {
@@ -57,16 +57,9 @@ export function capture(event: string, properties: Record<string, unknown> = {})
 
 export function captureError(error: Error): void {
     send("error", {
-        error_message: error.message,
         error_name: error.name,
-        error_stack: error.stack,
     }).catch(() => {});
 }
 
 export async function flush(): Promise<void> {
-    if (!(await isTelemetryEnabled())) return;
-    if (client) {
-        await client.shutdown();
-        client = null;
-    }
 }

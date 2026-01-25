@@ -14,8 +14,7 @@
     },
     "dependencies": {
         "chrome-remote-interface": "^0.33.3",
-        "commander": "^14.0.2",
-        "posthog-node": "^5.24.2"
+        "commander": "^14.0.2"
     },
     "devDependencies": {
         "@types/bun": "latest",

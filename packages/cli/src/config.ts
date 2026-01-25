@@ -29,6 +29,7 @@ export interface Config {
     profileDir?: string;
     telemetry?: boolean;
     telemetryId?: string;
+    telemetryPrompted?: boolean;
 }
 
 export async function getConfig(): Promise<Config> {

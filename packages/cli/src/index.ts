@@ -15,13 +15,18 @@ import { registerUpdateCommand } from "./commands/update";
 import { registerScreenshotCommand } from "./commands/screenshot";
 import { registerViewportCommand } from "./commands/viewport";
 import { registerUseragentCommand } from "./commands/useragent";
-import { capture, captureError, flush } from "./telemetry";
+import { capture, captureError, flush, setNoTelemetryFlag } from "./telemetry";
+import { maybeShowTelemetryPrompt } from "./telemetry-prompt";
 
 const program = new Command();
 
 const SKIP_TELEMETRY = new Set(["start", "stop", "add-skill"]);
 
-program.hook("preAction", (_thisCommand, actionCommand) => {
+program.hook("preAction", async (thisCommand, actionCommand) => {
+    if (thisCommand.opts().noTelemetry) {
+        setNoTelemetryFlag(true);
+    }
+    await maybeShowTelemetryPrompt();
     const name = actionCommand.name();
     if (!name.startsWith("_") && !SKIP_TELEMETRY.has(name)) {
         capture("command", { name });
@@ -31,7 +36,8 @@ program.hook("preAction", (_thisCommand, actionCommand) => {
 program
     .name("browser")
     .description("CLI tool for controlling a Chromium browser via CDP")
-    .version(process.env.VERSION ?? "0.0.0-dev");
+    .version(process.env.VERSION ?? "0.0.0-dev")
+    .option("--no-telemetry", "Disable telemetry for this session");
 
 registerBrowserCommands(program);
 registerTabCommands(program);
