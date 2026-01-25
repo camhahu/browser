@@ -1,11 +1,14 @@
 #!/usr/bin/env bun
 
 import CDP from "chrome-remote-interface";
+import { homedir } from "node:os";
+import { join } from "node:path";
 import { captureError, flush } from "./telemetry";
 
 const CDP_PORT = 9222;
-const SOCKET_PATH = "/tmp/browser-network.sock";
-const STATE_FILE = "/tmp/browser-network-daemon.json";
+const BROWSER_DIR = join(homedir(), ".browser");
+const SOCKET_PATH = join(BROWSER_DIR, "network.sock");
+const STATE_FILE = join(BROWSER_DIR, "network-daemon.json");
 const HEALTH_CHECK_MS = 60_000;
 
 interface NetworkRequest {
@@ -286,6 +289,7 @@ export async function runDaemon(): Promise<void> {
         process.exit(1);
     }
 
+    await Bun.$`mkdir -p ${BROWSER_DIR}`.quiet();
     await Bun.write(STATE_FILE, JSON.stringify({ pid: process.pid, socketPath: SOCKET_PATH }));
 
     client = await CDP({ port: CDP_PORT });

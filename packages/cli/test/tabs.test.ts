@@ -1,5 +1,9 @@
 import { describe, test, expect } from "bun:test";
+import { homedir } from "node:os";
+import { join } from "node:path";
 import { browser, run, setupBrowser, TEST_URL } from "./helpers";
+
+const STATE_FILE = join(homedir(), ".browser", "state.json");
 
 describe("tabs", () => {
     setupBrowser();
@@ -22,7 +26,7 @@ describe("tabs", () => {
 
     test("error when active tab is closed externally", async () => {
         await browser(`open ${TEST_URL}`);
-        await Bun.write("/tmp/browser-cli.json", JSON.stringify({ activeTabId: "nonexistent" }));
+        await Bun.write(STATE_FILE, JSON.stringify({ activeTabId: "nonexistent" }));
 
         const { stderr, exitCode } = await run("url");
         expect(exitCode).toBe(1);

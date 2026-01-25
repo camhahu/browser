@@ -1,11 +1,11 @@
 import { describe, test, expect, beforeAll, afterAll } from "bun:test";
-import { homedir } from "node:os";
+import { homedir, tmpdir } from "node:os";
 import { join } from "node:path";
 import { existsSync } from "node:fs";
 import { run, browser, browserFails } from "./helpers";
 
 const PERSISTENT_PROFILE_DIR = join(homedir(), ".browser", "profile");
-const TEMP_PROFILE_DIR = "/tmp/browser-cli-profile";
+const TEMP_PROFILE_DIR = join(tmpdir(), "browser-cli-profile");
 
 describe("config", () => {
     beforeAll(async () => {

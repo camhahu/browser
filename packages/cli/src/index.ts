@@ -17,6 +17,7 @@ import { registerViewportCommand } from "./commands/viewport";
 import { registerUseragentCommand } from "./commands/useragent";
 import { capture, captureError, flush, setNoTelemetryFlag } from "./telemetry";
 import { maybeShowTelemetryPrompt } from "./telemetry-prompt";
+import { ensureBrowserDir } from "./config";
 
 const program = new Command();
 
@@ -26,6 +27,7 @@ program.hook("preAction", async (thisCommand, actionCommand) => {
     if (thisCommand.opts().noTelemetry) {
         setNoTelemetryFlag(true);
     }
+    await ensureBrowserDir();
     await maybeShowTelemetryPrompt();
     const name = actionCommand.name();
     if (!name.startsWith("_") && !SKIP_TELEMETRY.has(name)) {

@@ -1,8 +1,9 @@
 import CDP from "chrome-remote-interface";
 import { spawn } from "node:child_process";
-import { getBrowserPath, getProfileDir } from "./config";
+import { join } from "node:path";
+import { getBrowserPath, getProfileDir, BROWSER_DIR } from "./config";
 
-const STATE_FILE = "/tmp/browser-cli.json";
+const STATE_FILE = join(BROWSER_DIR, "state.json");
 export const CDP_PORT = 9222;
 const LAUNCH_TIMEOUT_MS = 5000;
 const LAUNCH_POLL_INTERVAL_MS = 100;

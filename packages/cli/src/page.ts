@@ -1,10 +1,12 @@
 import CDP from "chrome-remote-interface";
+import { join } from "node:path";
 import { CDP_PORT, getActiveTarget, withActivePage, withNavigation } from "./cdp";
+import { BROWSER_DIR } from "./config";
 export { navigate } from "./cdp";
 
 export type MatchType = "css" | "exact" | "partial" | "label";
 
-const LABEL_STATE_FILE = "/tmp/browser-cli-labels.json";
+const LABEL_STATE_FILE = join(BROWSER_DIR, "labels.json");
 const LABEL_PATTERN = /^[a-z]\d+$/;
 
 async function readLabelMap(): Promise<Map<string, number>> {

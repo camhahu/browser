@@ -1,8 +1,13 @@
-import { homedir } from "node:os";
+import { homedir, tmpdir } from "node:os";
 import { join } from "node:path";
 import { existsSync } from "node:fs";
 
-const CONFIG_FILE = join(homedir(), ".browser", "config.json");
+export const BROWSER_DIR = join(homedir(), ".browser");
+const CONFIG_FILE = join(BROWSER_DIR, "config.json");
+
+export async function ensureBrowserDir(): Promise<void> {
+    await Bun.$`mkdir -p ${BROWSER_DIR}`.quiet();
+}
 
 const CHROME_PATHS: Record<string, string[]> = {
     darwin: [
@@ -72,8 +77,8 @@ export async function getBrowserPath(): Promise<string> {
     );
 }
 
-const PERSISTENT_PROFILE_DIR = join(homedir(), ".browser", "profile");
-const TEMP_PROFILE_DIR = "/tmp/browser-cli-profile";
+const PERSISTENT_PROFILE_DIR = join(BROWSER_DIR, "profile");
+const TEMP_PROFILE_DIR = join(tmpdir(), "browser-cli-profile");
 
 export async function getProfileDir(): Promise<{ dir: string; persistent: boolean }> {
     const config = await getConfig();

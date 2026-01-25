@@ -1,8 +1,10 @@
 import { spawn } from "node:child_process";
+import { join } from "node:path";
 import { getActiveTarget, addOnLaunch, addOnClose } from "./cdp";
+import { BROWSER_DIR } from "./config";
 
-const DAEMON_STATE_FILE = "/tmp/browser-network-daemon.json";
-const DAEMON_SOCKET_PATH = "/tmp/browser-network.sock";
+const DAEMON_STATE_FILE = join(BROWSER_DIR, "network-daemon.json");
+const DAEMON_SOCKET_PATH = join(BROWSER_DIR, "network.sock");
 
 export interface NetworkRequest {
     id: number;
@@ -95,7 +97,7 @@ async function stopDaemon(): Promise<void> {
 }
 
 async function sendDaemonRequest(req: IPCRequest): Promise<IPCResponse> {
-    const res = await fetch(`http://localhost${DAEMON_SOCKET_PATH}`, {
+    const res = await fetch("http://localhost/", {
         method: "POST",
         unix: DAEMON_SOCKET_PATH,
         body: JSON.stringify(req),
