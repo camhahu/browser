@@ -1,6 +1,7 @@
 import CDP from "chrome-remote-interface";
 import { spawn } from "node:child_process";
 import { join } from "node:path";
+import { mkdir, rm } from "node:fs/promises";
 import { getBrowserPath, getProfileDir, BROWSER_DIR } from "./config";
 
 const STATE_FILE = join(BROWSER_DIR, "state.json");
@@ -25,7 +26,7 @@ async function writeState(state: State): Promise<void> {
 }
 
 async function clearState(): Promise<void> {
-    await Bun.$`rm -f ${STATE_FILE}`.quiet();
+    await rm(STATE_FILE, { force: true });
 }
 
 async function listTargets(): Promise<CDP.Target[]> {
@@ -142,7 +143,7 @@ export async function launch(options: { headless?: boolean }): Promise<string> {
     }
 
     const { dir: profileDir } = await getProfileDir();
-    await Bun.$`mkdir -p ${profileDir}`.quiet();
+    await mkdir(profileDir, { recursive: true });
 
     const browserPath = await getBrowserPath();
     const args = [
@@ -194,7 +195,7 @@ export async function close(): Promise<void> {
     await clearState();
     const { dir: profileDir, persistent } = await getProfileDir();
     if (!persistent) {
-        await Bun.$`rm -rf ${profileDir}`.quiet();
+        await rm(profileDir, { recursive: true, force: true });
     }
 }
 

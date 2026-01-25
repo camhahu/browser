@@ -1,12 +1,13 @@
 import { homedir, tmpdir } from "node:os";
 import { join } from "node:path";
 import { existsSync } from "node:fs";
+import { mkdir, rm } from "node:fs/promises";
 
 export const BROWSER_DIR = join(homedir(), ".browser");
 const CONFIG_FILE = join(BROWSER_DIR, "config.json");
 
 export async function ensureBrowserDir(): Promise<void> {
-    await Bun.$`mkdir -p ${BROWSER_DIR}`.quiet();
+    await mkdir(BROWSER_DIR, { recursive: true });
 }
 
 const CHROME_PATHS: Record<string, string[]> = {
@@ -90,6 +91,6 @@ export async function getProfileDir(): Promise<{ dir: string; persistent: boolea
 
 export async function clearProfile(): Promise<string> {
     const { dir } = await getProfileDir();
-    await Bun.$`rm -rf ${dir}`.quiet();
+    await rm(dir, { recursive: true, force: true });
     return dir;
 }

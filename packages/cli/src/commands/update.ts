@@ -1,5 +1,8 @@
 import type { RegisterCommand } from "./common";
 import { exitWithError } from "./common";
+import { homedir } from "node:os";
+import { join } from "node:path";
+import { chmod, mkdir } from "node:fs/promises";
 
 const DOWNLOAD_ATTRIBUTES = ["com.apple.provenance", "com.apple.quarantine"];
 
@@ -68,25 +71,37 @@ export const registerUpdateCommand: RegisterCommand = (program) => {
             }
 
             // Detect platform
-            const platform =
-                process.platform === "darwin" ? "darwin" : process.platform === "win32" ? "windows" : "linux";
-            const arch = process.arch === "arm64" ? "arm64" : "x64";
+            const platformMap: Record<string, string> = {
+                darwin: "darwin",
+                linux: "linux",
+                win32: "windows",
+            };
+            const archMap: Record<string, string> = {
+                arm64: "arm64",
+                x64: "x64",
+            };
+            const platform = platformMap[process.platform];
+            if (!platform) {
+                exitWithError(`Unsupported platform: ${process.platform}`);
+            }
+            const arch = archMap[process.arch];
+            if (!arch) {
+                exitWithError(`Unsupported architecture: ${process.arch}`);
+            }
             const ext = platform === "windows" ? ".exe" : "";
             const filename = `browser-${platform}-${arch}${ext}`;
             const downloadUrl = `https://github.com/${repo}/releases/download/v${latestVersion}/${filename}`;
 
             // Get install location
-            if (!process.env.HOME) {
-                exitWithError("HOME environment variable is not set");
-            }
-            const installDir = `${process.env.HOME}/.browser/bin`;
-            const installPath = `${installDir}/browser${ext}`;
+            const installDir = join(homedir(), ".browser", "bin");
+            const installPath = join(installDir, `browser${ext}`);
 
             console.log(`\nDownloading ${filename}...`);
 
-            const ensureDir = await runCommand(["mkdir", "-p", installDir]);
-            if (ensureDir.exitCode !== 0) {
-                exitWithError(`Failed to create install directory: ${ensureDir.stderr || ensureDir.stdout}`);
+            try {
+                await mkdir(installDir, { recursive: true });
+            } catch (error) {
+                exitWithError(`Failed to create install directory: ${(error as Error).message}`);
             }
 
             const download = await fetch(downloadUrl);
@@ -98,9 +113,10 @@ export const registerUpdateCommand: RegisterCommand = (program) => {
             await Bun.write(installPath, payload);
 
             if (platform !== "windows") {
-                const chmod = await runCommand(["chmod", "+x", installPath]);
-                if (chmod.exitCode !== 0) {
-                    exitWithError(`Failed to set executable bit: ${chmod.stderr || chmod.stdout}`);
+                try {
+                    await chmod(installPath, 0o755);
+                } catch (error) {
+                    exitWithError(`Failed to set executable bit: ${(error as Error).message}`);
                 }
             }
 

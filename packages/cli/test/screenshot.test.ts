@@ -2,6 +2,7 @@ import { describe, test, expect, afterAll } from "bun:test";
 import { browser, browserFails, setupBrowser, TEST_URL } from "./helpers";
 import { existsSync, unlinkSync, rmdirSync } from "fs";
 import { tmpdir } from "os";
+import { join } from "node:path";
 
 const SCREENSHOTS_DIR = ".screenshots";
 
@@ -44,41 +45,41 @@ describe("screenshot", () => {
     });
 
     test("--output saves to specified path", async () => {
-        const outputPath = `${tmpdir()}/browser-test-${Date.now()}.png`;
-        const output = await browser(`screenshot --output ${outputPath}`);
+        const outputPath = join(tmpdir(), `browser-test-${Date.now()}.png`);
+        const output = await browser(`screenshot --output "${outputPath}"`);
         expect(output).toBe(outputPath);
         expect(existsSync(output)).toBe(true);
         unlinkSync(outputPath);
     });
 
     test("--output detects format from extension", async () => {
-        const outputPath = `${tmpdir()}/browser-test-${Date.now()}.webp`;
-        const output = await browser(`screenshot -o ${outputPath}`);
+        const outputPath = join(tmpdir(), `browser-test-${Date.now()}.webp`);
+        const output = await browser(`screenshot -o "${outputPath}"`);
         expect(output).toBe(outputPath);
         expect(existsSync(output)).toBe(true);
         unlinkSync(outputPath);
     });
 
     test("--output appends .png when no extension", async () => {
-        const basePath = `${tmpdir()}/browser-test-${Date.now()}`;
-        const output = await browser(`screenshot -o ${basePath}`);
+        const basePath = join(tmpdir(), `browser-test-${Date.now()}`);
+        const output = await browser(`screenshot -o "${basePath}"`);
         expect(output).toBe(`${basePath}.png`);
         expect(existsSync(output)).toBe(true);
         unlinkSync(output);
     });
 
     test("--output with unsupported format fails", async () => {
-        const output = await browserFails(`screenshot -o /tmp/test.gif`);
+        const output = await browserFails(`screenshot -o "${join(tmpdir(), "browser-test.gif")}"`);
         expect(output).toContain("Unsupported format");
     });
 
     test("--output and --format together fails", async () => {
-        const output = await browserFails(`screenshot -o /tmp/test.png -f webp`);
+        const output = await browserFails(`screenshot -o "${join(tmpdir(), "browser-test.png")}" -f webp`);
         expect(output).toContain("Cannot use --format with --output");
     });
 
     test("name and --output together fails", async () => {
-        const output = await browserFails(`screenshot myname -o /tmp/test.png`);
+        const output = await browserFails(`screenshot myname -o "${join(tmpdir(), "browser-test.png")}"`);
         expect(output).toContain("Cannot use both [name] and --output");
     });
 });

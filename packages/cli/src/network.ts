@@ -1,10 +1,11 @@
 import { spawn } from "node:child_process";
 import { join } from "node:path";
+import { rm } from "node:fs/promises";
 import { getActiveTarget, addOnLaunch, addOnClose } from "./cdp";
 import { BROWSER_DIR } from "./config";
 
 const DAEMON_STATE_FILE = join(BROWSER_DIR, "network-daemon.json");
-const DAEMON_SOCKET_PATH = join(BROWSER_DIR, "network.sock");
+const IPC_HOST = "127.0.0.1";
 
 export interface NetworkRequest {
     id: number;
@@ -37,11 +38,12 @@ export interface NetworkListResult {
 
 interface DaemonState {
     pid: number;
-    socketPath: string;
+    port: number;
+    token: string;
 }
 
 interface IPCRequest {
-    type: "list" | "get" | "clear";
+    type: "list" | "get" | "clear" | "ping";
     tabId?: string;
     requestId?: number;
 }
@@ -54,21 +56,40 @@ interface IPCResponse {
 
 async function readDaemonState(): Promise<DaemonState | null> {
     try {
-        return await Bun.file(DAEMON_STATE_FILE).json();
+        const state = (await Bun.file(DAEMON_STATE_FILE).json()) as DaemonState;
+        if (!state || typeof state.port !== "number" || typeof state.token !== "string") return null;
+        return state;
     } catch {
         return null;
+    }
+}
+
+async function pingDaemon(state: DaemonState): Promise<boolean> {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 500);
+    try {
+        const res = await fetch(`http://${IPC_HOST}:${state.port}/`, {
+            method: "POST",
+            headers: {
+                "content-type": "application/json",
+                "x-browser-token": state.token,
+            },
+            body: JSON.stringify({ type: "ping" }),
+            signal: controller.signal,
+        } as RequestInit);
+        const data = (await res.json()) as IPCResponse;
+        return res.ok && data.success === true;
+    } catch {
+        return false;
+    } finally {
+        clearTimeout(timeout);
     }
 }
 
 async function isDaemonRunning(): Promise<boolean> {
     const state = await readDaemonState();
     if (!state) return false;
-    try {
-        process.kill(state.pid, 0);
-        return true;
-    } catch {
-        return false;
-    }
+    return pingDaemon(state);
 }
 
 async function startDaemon(): Promise<void> {
@@ -92,17 +113,25 @@ async function stopDaemon(): Promise<void> {
             process.kill(state.pid, "SIGTERM");
         } catch {}
     }
-    await Bun.$`pkill -f "network-daemon" 2>/dev/null || true`.quiet();
-    await Bun.$`rm -f ${DAEMON_STATE_FILE} ${DAEMON_SOCKET_PATH}`.quiet();
+    await rm(DAEMON_STATE_FILE, { force: true });
 }
 
 async function sendDaemonRequest(req: IPCRequest): Promise<IPCResponse> {
-    const res = await fetch("http://localhost/", {
-        method: "POST",
-        unix: DAEMON_SOCKET_PATH,
-        body: JSON.stringify(req),
-    } as RequestInit);
-    return res.json() as Promise<IPCResponse>;
+    const state = await readDaemonState();
+    if (!state) return { success: false, error: "Daemon not running" };
+    try {
+        const res = await fetch(`http://${IPC_HOST}:${state.port}/`, {
+            method: "POST",
+            headers: {
+                "content-type": "application/json",
+                "x-browser-token": state.token,
+            },
+            body: JSON.stringify(req),
+        } as RequestInit);
+        return res.json() as Promise<IPCResponse>;
+    } catch {
+        return { success: false, error: "Daemon not running" };
+    }
 }
 
 export async function network(filter?: NetworkFilter): Promise<NetworkListResult> {
@@ -114,7 +143,11 @@ export async function network(filter?: NetworkFilter): Promise<NetworkListResult
     }
 
     try {
-        const response = await sendDaemonRequest({ type: "list", tabId: target.id });
+        let response = await sendDaemonRequest({ type: "list", tabId: target.id });
+        if (!response.success && response.error === "Daemon not running") {
+            await startDaemon();
+            response = await sendDaemonRequest({ type: "list", tabId: target.id });
+        }
         if (!response.success) return { requests: [] };
 
         let requests = response.data as NetworkRequest[];

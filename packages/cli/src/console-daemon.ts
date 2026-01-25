@@ -1,15 +1,16 @@
 #!/usr/bin/env bun
 
 import CDP from "chrome-remote-interface";
-import { homedir } from "node:os";
 import { join } from "node:path";
+import { mkdir, rm } from "node:fs/promises";
 import { captureError, flush } from "./telemetry";
+import { BROWSER_DIR } from "./config";
 
 const CDP_PORT = 9222;
-const BROWSER_DIR = join(homedir(), ".browser");
-const SOCKET_PATH = join(BROWSER_DIR, "console.sock");
+const IPC_HOST = "127.0.0.1";
 const STATE_FILE = join(BROWSER_DIR, "console-daemon.json");
 const HEALTH_CHECK_MS = 60_000;
+let server: ReturnType<typeof Bun.serve> | null = null;
 
 interface ConsoleMessage {
     id: number;
@@ -133,7 +134,7 @@ function setupConsoleHandlers(): void {
 }
 
 interface IPCRequest {
-    type: "list" | "clear";
+    type: "list" | "clear" | "ping";
     tabId?: string;
 }
 
@@ -167,6 +168,8 @@ async function handleIPC(req: IPCRequest): Promise<{ success: boolean; data?: un
     await attachToNewTargets();
 
     switch (req.type) {
+        case "ping":
+            return { success: true };
         case "list":
             if (!req.tabId) {
                 const all: ConsoleMessage[] = [];
@@ -184,11 +187,23 @@ async function handleIPC(req: IPCRequest): Promise<{ success: boolean; data?: un
 }
 
 async function startIPC(): Promise<void> {
-    await Bun.$`rm -f ${SOCKET_PATH}`.quiet();
-    Bun.serve({
-        unix: SOCKET_PATH,
+    server = Bun.serve({
+        hostname: IPC_HOST,
+        port: 0,
         async fetch(req) {
-            const body = (await req.json()) as IPCRequest;
+            if (req.method !== "POST") {
+                return Response.json({ success: false, error: "Method not allowed" }, { status: 405 });
+            }
+            const token = req.headers.get("x-browser-token");
+            if (!token || token !== Bun.env.BROWSER_IPC_TOKEN) {
+                return Response.json({ success: false, error: "Unauthorized" }, { status: 401 });
+            }
+            let body: IPCRequest;
+            try {
+                body = (await req.json()) as IPCRequest;
+            } catch {
+                return Response.json({ success: false, error: "Invalid JSON" }, { status: 400 });
+            }
             return Response.json(await handleIPC(body));
         },
     });
@@ -196,7 +211,8 @@ async function startIPC(): Promise<void> {
 
 async function shutdown(): Promise<void> {
     if (client) await client.close().catch(() => {});
-    await Bun.$`rm -f ${SOCKET_PATH} ${STATE_FILE}`.quiet();
+    server?.stop();
+    await rm(STATE_FILE, { force: true });
     process.exit(0);
 }
 
@@ -207,13 +223,18 @@ export async function runDaemon(): Promise<void> {
         process.exit(1);
     }
 
-    await Bun.$`mkdir -p ${BROWSER_DIR}`.quiet();
-    await Bun.write(STATE_FILE, JSON.stringify({ pid: process.pid, socketPath: SOCKET_PATH }));
+    await mkdir(BROWSER_DIR, { recursive: true });
+    const token = crypto.randomUUID();
+    Bun.env.BROWSER_IPC_TOKEN = token;
+    await startIPC();
+    if (!server) {
+        throw new Error("Failed to start IPC server");
+    }
+    await Bun.write(STATE_FILE, JSON.stringify({ pid: process.pid, port: server.port, token }));
 
     client = await CDP({ port: CDP_PORT });
     setupConsoleHandlers();
     await setupAutoAttach();
-    await startIPC();
 
     setInterval(async () => {
         try {

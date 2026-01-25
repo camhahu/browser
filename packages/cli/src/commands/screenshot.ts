@@ -1,4 +1,5 @@
 import path from "node:path";
+import { mkdir } from "node:fs/promises";
 import type { RegisterCommand } from "./common";
 import { ensureRunning, exitWithError } from "./common";
 import { captureScreenshot, type ScreenshotFormat } from "../cdp";
@@ -52,12 +53,12 @@ export const registerScreenshotCommand: RegisterCommand = (program) => {
                     format = "png";
                     outputPath = path.resolve(`${options.output}.png`);
                 }
-                await Bun.$`mkdir -p ${path.dirname(outputPath)}`.quiet();
+                await mkdir(path.dirname(outputPath), { recursive: true });
             } else {
                 format = parseFormat(options.format) ?? exitWithError(`Invalid format: ${options.format}`);
                 const filename = name?.replace(/\.(png|jpe?g|webp)$/i, "") || generateFilename();
                 outputPath = path.resolve(`${SCREENSHOTS_DIR}/${filename}.${format}`);
-                await Bun.$`mkdir -p ${SCREENSHOTS_DIR}`.quiet();
+                await mkdir(SCREENSHOTS_DIR, { recursive: true });
             }
 
             const base64Data = await captureScreenshot(format);
