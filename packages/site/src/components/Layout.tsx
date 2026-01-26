@@ -56,6 +56,13 @@ export function BenchmarkLayout() {
             >
               Benchmark 2
             </Link>
+            <Link
+              to="/benchmark/3"
+              className="data-[active=true]:underline"
+              activeProps={{ 'data-active': 'true' }}
+            >
+              Benchmark 3
+            </Link>
             <Link to="/test">Test pages</Link>
           </nav>
           <span className={labelClass}>Mock network</span>

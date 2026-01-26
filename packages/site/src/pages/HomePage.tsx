@@ -24,6 +24,9 @@ export function HomePage() {
           <Link to="/benchmark/2" className={buttonPrimary}>
             Benchmark 2
           </Link>
+          <Link to="/benchmark/3" className={buttonPrimary}>
+            Benchmark 3
+          </Link>
           <Link to="/test" className={buttonGhost}>
             Test pages
           </Link>
@@ -40,6 +43,12 @@ export function HomePage() {
           <p className="font-semibold">Benchmark 2 · Data table</p>
           <p className={mutedClass}>
             Sort, filter, search, inline edit, and bulk actions.
+          </p>
+        </div>
+        <div className="border-t border-zinc-900/20 pt-4">
+          <p className="font-semibold">Benchmark 3 · Drag and drop</p>
+          <p className={mutedClass}>
+            Kanban board, reorder cards, drop zones, and undo/redo.
           </p>
         </div>
         <div className="border-t border-zinc-900/20 pt-4">
