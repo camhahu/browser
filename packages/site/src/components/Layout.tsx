@@ -63,6 +63,13 @@ export function BenchmarkLayout() {
             >
               Checkout Flow
             </Link>
+            <Link
+              to="/benchmark/9"
+              className="data-[active=true]:underline"
+              activeProps={{ 'data-active': 'true' }}
+            >
+              Error States
+            </Link>
             <Link to="/test">Test pages</Link>
           </nav>
           <span className={labelClass}>Mock network</span>
