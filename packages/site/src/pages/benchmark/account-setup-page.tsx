@@ -74,7 +74,7 @@ export function AccountSetupPage() {
   }
 
   return (
-    <section className="grid gap-4 md:grid-cols-[2fr_1fr]">
+    <section className="space-y-4">
       <div className="space-y-4">
         <div className="space-y-4">
           <p className={labelClass}>Benchmark 1 · Account setup</p>
@@ -84,20 +84,6 @@ export function AccountSetupPage() {
             account settings. All responses are mocked locally for evaluation
             benchmarks.
           </p>
-        </div>
-        <div className="space-y-4">
-          <div className="border-t border-zinc-900/20 pt-4">
-            <p className="font-semibold">Challenge</p>
-            <p className={mutedClass}>2FA prompt with focus capture.</p>
-          </div>
-          <div className="border-t border-zinc-900/20 pt-4">
-            <p className="font-semibold">Latency</p>
-            <p className={mutedClass}>700ms simulated auth handshake.</p>
-          </div>
-          <div className="border-t border-zinc-900/20 pt-4">
-            <p className="font-semibold">Scope</p>
-            <p className={mutedClass}>Email, password, and device settings.</p>
-          </div>
         </div>
       </div>
       <div className={`${panelClass} space-y-4`}>
@@ -132,7 +118,7 @@ export function AccountSetupPage() {
               required
             />
           </label>
-          <label className="flex items-center gap-4 text-zinc-600">
+          <label className="flex items-center gap-4 text-neutral-400">
             <input
               type="checkbox"
               checked={rememberDevice}
@@ -145,7 +131,7 @@ export function AccountSetupPage() {
           </button>
           <p className={mutedClass}>{loginNote}</p>
         </form>
-        <div className="space-y-4 border-t border-zinc-900/20 pt-4">
+        <div className="space-y-4 border-t border-neutral-800 pt-4">
           <p className="font-semibold">No network calls</p>
           <p className={mutedClass}>
             Every response and session token is generated in-memory for
@@ -157,15 +143,15 @@ export function AccountSetupPage() {
         </div>
       </div>
       {showTwoFactor ? (
-        <div className="fixed inset-0 flex items-center justify-center bg-black/40 p-4">
+        <div className="fixed inset-0 flex items-center justify-center bg-black/70 p-4">
           <div
-            className="relative w-full max-w-md border border-zinc-900/20 bg-white p-4"
+            className="relative w-full max-w-md border border-neutral-700 bg-neutral-900 p-4"
             role="dialog"
             aria-modal="true"
             aria-labelledby="twofa-title"
           >
             <button
-              className="absolute right-4 top-4 h-8 w-8 border border-zinc-900/20 bg-white"
+              className="absolute right-4 top-4 h-8 w-8 border border-neutral-700 bg-neutral-800 text-neutral-300 hover:bg-neutral-700 hover:text-neutral-100 transition-colors"
               type="button"
               onClick={handleCloseModal}
               aria-label="Close"
@@ -186,7 +172,7 @@ export function AccountSetupPage() {
                 <span className="font-semibold">Authentication code</span>
                 <input
                   ref={codeInputRef}
-                  className={`${inputBase}${codeError ? ' border-red-600' : ''}`}
+                  className={`${inputBase}${codeError ? ' border-red-500' : ''}`}
                   inputMode="numeric"
                   pattern="[0-9]*"
                   placeholder="123456"
@@ -195,7 +181,7 @@ export function AccountSetupPage() {
                   required
                 />
                 {codeError ? (
-                  <span className="text-red-700">{codeError}</span>
+                  <span className="text-red-400">{codeError}</span>
                 ) : null}
               </label>
               <div className="flex flex-wrap gap-4">

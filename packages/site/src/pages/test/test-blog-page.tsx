@@ -1,5 +1,4 @@
 import {
-  labelClass,
   mutedClass,
   panelClass,
   sectionClass,
@@ -17,24 +16,11 @@ export function TestBlogPage() {
       <TestNav slug={page.slug} />
       <main className={`${sectionClass} space-y-4`} role="main" tabIndex={-1}>
         <div className={panelClass}>
-          <p className={labelClass}>Blog · {slug}</p>
           <h1 className="font-semibold">Blog</h1>
-          <p className={mutedClass}>
-            A secondary route to validate navigation history and URL updates.
-          </p>
+          <p className={mutedClass}>Secondary route for navigation tests.</p>
         </div>
-        <div className={panelClass}>
-          <h2 className="font-semibold">Release notes</h2>
-          <p className={mutedClass}>
-            This section is intentionally brief. The goal is to keep navigation
-            predictable while still providing semantic headings and paragraphs.
-          </p>
-        </div>
-        <div className="border border-dashed border-zinc-900/20 p-4 min-h-[120vh]">
-          <p className="font-semibold">Additional notes</p>
-          <p className={mutedClass}>
-            Extra content to ensure the page scrolls for navigation tests.
-          </p>
+        <div className="border border-dashed border-neutral-800 p-4 min-h-[120vh]">
+          <p className="font-semibold">Notes</p>
           <ul className="list-disc space-y-4 pl-4">
             {Array.from({ length: 16 }).map((_, index) => (
               <li key={index}>Update {index + 1}</li>

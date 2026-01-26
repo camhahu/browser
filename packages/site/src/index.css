@@ -23,6 +23,7 @@
 
 :root {
   font-family: 'Geist Mono', 'SF Mono', 'Monaco', 'Inconsolata', 'Fira Mono', 'Droid Sans Mono', 'Source Code Pro', monospace;
+  font-size: 13px;
   color: #fafafa;
   background-color: #000;
   -webkit-font-smoothing: antialiased;

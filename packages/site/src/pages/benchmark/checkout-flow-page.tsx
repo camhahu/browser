@@ -131,7 +131,7 @@ export function CheckoutFlowPage() {
           <div key={step} className="flex items-center gap-2">
             {index > 0 && (
               <div
-                className={`h-px w-8 ${isCompleted ? 'bg-zinc-900' : 'bg-zinc-300'}`}
+                className={`h-px w-8 ${isCompleted ? 'bg-[#485f6b]' : 'bg-neutral-700'}`}
               />
             )}
             <button
@@ -142,10 +142,10 @@ export function CheckoutFlowPage() {
               disabled={!isCompleted}
               className={`flex h-8 w-8 items-center justify-center border text-sm ${
                 isActive
-                  ? 'border-zinc-900 bg-zinc-900 text-white'
+                  ? 'border-[#6b8fa3] bg-[#485f6b] text-white'
                   : isCompleted
-                    ? 'border-zinc-900 bg-white text-zinc-900 cursor-pointer'
-                    : 'border-zinc-300 bg-white text-zinc-400'
+                    ? 'border-[#6b8fa3] bg-white text-neutral-100 cursor-pointer'
+                    : 'border-zinc-300 bg-neutral-800 text-neutral-500'
               }`}
             >
               {index + 1}
@@ -171,7 +171,7 @@ export function CheckoutFlowPage() {
             type="button"
             onClick={() => updateData('plan', plan.id)}
             className={`${panelClass} text-left ${
-              data.plan === plan.id ? 'border-zinc-900 border-2' : ''
+              data.plan === plan.id ? 'border-[#6b8fa3] border-2' : ''
             }`}
           >
             <p className="font-semibold">{plan.name}</p>
@@ -184,7 +184,7 @@ export function CheckoutFlowPage() {
           </button>
         ))}
       </div>
-      {errors.plan && <p className="text-red-600 text-sm">{errors.plan}</p>}
+      {errors.plan && <p className="text-red-400 text-sm">{errors.plan}</p>}
     </div>
   )
 
@@ -196,7 +196,7 @@ export function CheckoutFlowPage() {
           type="button"
           onClick={() => updateData('billingCycle', 'monthly')}
           className={`${panelClass} text-left ${
-            data.billingCycle === 'monthly' ? 'border-zinc-900 border-2' : ''
+            data.billingCycle === 'monthly' ? 'border-[#6b8fa3] border-2' : ''
           }`}
         >
           <p className="font-semibold">Monthly</p>
@@ -206,14 +206,14 @@ export function CheckoutFlowPage() {
           type="button"
           onClick={() => updateData('billingCycle', 'annual')}
           className={`${panelClass} text-left ${
-            data.billingCycle === 'annual' ? 'border-zinc-900 border-2' : ''
+            data.billingCycle === 'annual' ? 'border-[#6b8fa3] border-2' : ''
           }`}
         >
           <p className="font-semibold">Annual</p>
           <p className={mutedClass}>Save 2 months with annual billing.</p>
         </button>
       </div>
-      {errors.billingCycle && <p className="text-red-600 text-sm">{errors.billingCycle}</p>}
+      {errors.billingCycle && <p className="text-red-400 text-sm">{errors.billingCycle}</p>}
     </div>
   )
 
@@ -227,7 +227,7 @@ export function CheckoutFlowPage() {
             type="button"
             onClick={() => updateData('paymentMethod', method)}
             className={`${buttonGhost} ${
-              data.paymentMethod === method ? 'border-zinc-900 border-2' : ''
+              data.paymentMethod === method ? 'border-[#6b8fa3] border-2' : ''
             }`}
           >
             {method === 'card' && 'Credit Card'}
@@ -236,7 +236,7 @@ export function CheckoutFlowPage() {
           </button>
         ))}
       </div>
-      {errors.paymentMethod && <p className="text-red-600 text-sm">{errors.paymentMethod}</p>}
+      {errors.paymentMethod && <p className="text-red-400 text-sm">{errors.paymentMethod}</p>}
 
       {data.paymentMethod === 'card' && (
         <div className="space-y-4 mt-4">
@@ -250,7 +250,7 @@ export function CheckoutFlowPage() {
               value={data.cardNumber}
               onChange={(e) => updateData('cardNumber', e.target.value)}
             />
-            {errors.cardNumber && <p className="text-red-600 text-sm">{errors.cardNumber}</p>}
+            {errors.cardNumber && <p className="text-red-400 text-sm">{errors.cardNumber}</p>}
           </label>
           <div className="grid gap-4 sm:grid-cols-2">
             <label className="grid gap-2">
@@ -263,7 +263,7 @@ export function CheckoutFlowPage() {
                 value={data.cardExpiry}
                 onChange={(e) => updateData('cardExpiry', e.target.value)}
               />
-              {errors.cardExpiry && <p className="text-red-600 text-sm">{errors.cardExpiry}</p>}
+              {errors.cardExpiry && <p className="text-red-400 text-sm">{errors.cardExpiry}</p>}
             </label>
             <label className="grid gap-2">
               <span className="text-sm font-semibold">CVC</span>
@@ -275,7 +275,7 @@ export function CheckoutFlowPage() {
                 value={data.cardCvc}
                 onChange={(e) => updateData('cardCvc', e.target.value)}
               />
-              {errors.cardCvc && <p className="text-red-600 text-sm">{errors.cardCvc}</p>}
+              {errors.cardCvc && <p className="text-red-400 text-sm">{errors.cardCvc}</p>}
             </label>
           </div>
         </div>
@@ -292,7 +292,7 @@ export function CheckoutFlowPage() {
               value={data.bankAccount}
               onChange={(e) => updateData('bankAccount', e.target.value)}
             />
-            {errors.bankAccount && <p className="text-red-600 text-sm">{errors.bankAccount}</p>}
+            {errors.bankAccount && <p className="text-red-400 text-sm">{errors.bankAccount}</p>}
           </label>
           <label className="grid gap-2">
             <span className="text-sm font-semibold">Routing number</span>
@@ -303,7 +303,7 @@ export function CheckoutFlowPage() {
               value={data.bankRouting}
               onChange={(e) => updateData('bankRouting', e.target.value)}
             />
-            {errors.bankRouting && <p className="text-red-600 text-sm">{errors.bankRouting}</p>}
+            {errors.bankRouting && <p className="text-red-400 text-sm">{errors.bankRouting}</p>}
           </label>
         </div>
       )}
@@ -319,7 +319,7 @@ export function CheckoutFlowPage() {
               value={data.invoiceEmail}
               onChange={(e) => updateData('invoiceEmail', e.target.value)}
             />
-            {errors.invoiceEmail && <p className="text-red-600 text-sm">{errors.invoiceEmail}</p>}
+            {errors.invoiceEmail && <p className="text-red-400 text-sm">{errors.invoiceEmail}</p>}
           </label>
           <label className="grid gap-2">
             <span className="text-sm font-semibold">PO number (optional)</span>
@@ -349,7 +349,7 @@ export function CheckoutFlowPage() {
           value={data.companyName}
           onChange={(e) => updateData('companyName', e.target.value)}
         />
-        {errors.companyName && <p className="text-red-600 text-sm">{errors.companyName}</p>}
+        {errors.companyName && <p className="text-red-400 text-sm">{errors.companyName}</p>}
       </label>
       <label className="grid gap-2">
         <span className="text-sm font-semibold">Company size</span>
@@ -364,7 +364,7 @@ export function CheckoutFlowPage() {
             <option key={size} value={size}>{size}</option>
           ))}
         </select>
-        {errors.companySize && <p className="text-red-600 text-sm">{errors.companySize}</p>}
+        {errors.companySize && <p className="text-red-400 text-sm">{errors.companySize}</p>}
       </label>
     </div>
   )
@@ -394,7 +394,7 @@ export function CheckoutFlowPage() {
                 <span>{data.companyName}</span>
               </div>
             )}
-            <div className="border-t border-zinc-900/20 pt-2 mt-2">
+            <div className="border-t border-neutral-800 pt-2 mt-2">
               <div className="flex justify-between font-semibold">
                 <span>Total</span>
                 <span>${getPlanPrice()}/{data.billingCycle === 'annual' ? 'year' : 'month'}</span>
@@ -411,7 +411,7 @@ export function CheckoutFlowPage() {
           />
           <span className="text-sm">I agree to the terms of service and privacy policy.</span>
         </label>
-        {errors.agreeTerms && <p className="text-red-600 text-sm">{errors.agreeTerms}</p>}
+        {errors.agreeTerms && <p className="text-red-400 text-sm">{errors.agreeTerms}</p>}
       </div>
     )
   }
@@ -449,7 +449,7 @@ export function CheckoutFlowPage() {
 
   return (
     <section className="space-y-4">
-      <div className="grid gap-4 md:grid-cols-[2fr_1fr]">
+      <div className="space-y-4">
         <div className="space-y-4">
           <p className={labelClass}>Checkout flow</p>
           <h1 className="font-semibold">Multi-step wizard</h1>
@@ -457,20 +457,6 @@ export function CheckoutFlowPage() {
             A checkout flow with conditional steps, validation, and state preservation.
             Enterprise plans show an additional company info step.
           </p>
-        </div>
-        <div className={`${panelClass} space-y-2`}>
-          <div className="border-b border-zinc-900/20 pb-2">
-            <p className="font-semibold text-sm">Challenge</p>
-            <p className={`${mutedClass} text-sm`}>Complete checkout with validation.</p>
-          </div>
-          <div className="border-b border-zinc-900/20 pb-2">
-            <p className="font-semibold text-sm">Latency</p>
-            <p className={`${mutedClass} text-sm`}>1200ms submit.</p>
-          </div>
-          <div>
-            <p className="font-semibold text-sm">Scope</p>
-            <p className={`${mutedClass} text-sm`}>Steps, validation, back nav.</p>
-          </div>
         </div>
       </div>
 
@@ -483,7 +469,7 @@ export function CheckoutFlowPage() {
         {currentStep === 'company' && renderCompanyStep()}
         {currentStep === 'review' && renderReviewStep()}
 
-        <div className="flex justify-between mt-6 pt-4 border-t border-zinc-900/20">
+        <div className="flex justify-between mt-6 pt-4 border-t border-neutral-800">
           <button
             type="button"
             className={buttonGhost}

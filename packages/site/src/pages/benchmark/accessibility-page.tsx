@@ -208,7 +208,7 @@ export function AccessibilityPage() {
         <div
           data-tree-id={node.id}
           tabIndex={isSelected ? 0 : -1}
-          className={`flex items-center gap-2 px-2 py-1 cursor-pointer outline-none focus:bg-zinc-200 ${isSelected ? 'bg-zinc-100' : ''}`}
+          className={`flex items-center gap-2 px-2 py-1 cursor-pointer outline-none focus:bg-neutral-700 ${isSelected ? 'bg-neutral-800' : ''}`}
           style={{ paddingLeft: `${level * 16 + 8}px` }}
           onClick={() => {
             setSelectedNode(node.id)
@@ -253,7 +253,7 @@ export function AccessibilityPage() {
       {/* Skip link */}
       <a
         href="#main-content"
-        className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-50 focus:bg-zinc-900 focus:text-white focus:px-4 focus:py-2"
+        className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-50 focus:bg-[#485f6b] focus:text-white focus:px-4 focus:py-2"
         onClick={(e) => {
           e.preventDefault()
           handleSkipToMain()
@@ -272,7 +272,7 @@ export function AccessibilityPage() {
         {liveMessage}
       </div>
 
-      <div className="grid gap-4 md:grid-cols-[2fr_1fr]">
+      <div className="space-y-4">
         <div className="space-y-4">
           <p className={labelClass}>Accessibility</p>
           <h1 className="font-semibold">Keyboard navigation</h1>
@@ -281,27 +281,13 @@ export function AccessibilityPage() {
             focus traps, skip links, and ARIA live regions.
           </p>
         </div>
-        <div className={`${panelClass} space-y-2`}>
-          <div className="border-b border-zinc-900/20 pb-2">
-            <p className="font-semibold text-sm">Challenge</p>
-            <p className={`${mutedClass} text-sm`}>Navigate without a mouse.</p>
-          </div>
-          <div className="border-b border-zinc-900/20 pb-2">
-            <p className="font-semibold text-sm">Patterns</p>
-            <p className={`${mutedClass} text-sm`}>Menu, tree, combobox, dialog.</p>
-          </div>
-          <div>
-            <p className="font-semibold text-sm">ARIA</p>
-            <p className={`${mutedClass} text-sm`}>Live regions, roles, states.</p>
-          </div>
-        </div>
       </div>
 
       {/* Tab list */}
       <div
         role="tablist"
         aria-label="Accessibility demos"
-        className="flex border-b border-zinc-900/20"
+        className="flex border-b border-neutral-800"
       >
         {tabs.map((tab, index) => (
           <button
@@ -311,7 +297,7 @@ export function AccessibilityPage() {
             aria-controls={`panel-${index}`}
             id={`tab-${index}`}
             tabIndex={tabIndex === index ? 0 : -1}
-            className={`px-4 py-2 border-b-2 ${tabIndex === index ? 'border-zinc-900 font-semibold' : 'border-transparent'}`}
+            className={`px-4 py-2 border-b-2 ${tabIndex === index ? 'border-[#6b8fa3] font-semibold' : 'border-transparent'}`}
             onClick={() => {
               setTabIndex(index)
               announce(`${tab} tab selected`)
@@ -389,7 +375,7 @@ export function AccessibilityPage() {
             ref={menuBarRef}
             role="menubar"
             aria-label="Application menu"
-            className="flex border border-zinc-900/20"
+            className="flex border border-neutral-800"
           >
             {menuItems.map((menu, menuIndex) => (
               <div key={menu.id} className="relative">
@@ -398,7 +384,7 @@ export function AccessibilityPage() {
                   role="menuitem"
                   aria-haspopup="true"
                   aria-expanded={openMenuId === menu.id}
-                  className={`px-4 py-2 ${openMenuId === menu.id ? 'bg-zinc-100' : ''}`}
+                  className={`px-4 py-2 ${openMenuId === menu.id ? 'bg-neutral-800' : ''}`}
                   onClick={() => setOpenMenuId(openMenuId === menu.id ? null : menu.id)}
                   onKeyDown={(e) => handleMenuBarKeyDown(e, menu.id, menuIndex)}
                 >
@@ -408,7 +394,7 @@ export function AccessibilityPage() {
                   <div
                     role="menu"
                     aria-label={menu.label}
-                    className="absolute top-full left-0 bg-white border border-zinc-900/20 min-w-[200px] z-10"
+                    className="absolute top-full left-0 bg-neutral-900 border border-neutral-800 min-w-[200px] z-10"
                   >
                     {menu.children.map((item, itemIndex) => (
                       <button
@@ -416,7 +402,7 @@ export function AccessibilityPage() {
                         data-menuitem-id={item.id}
                         role="menuitem"
                         tabIndex={-1}
-                        className={`w-full px-4 py-2 text-left flex justify-between items-center hover:bg-zinc-100 focus:bg-zinc-100 outline-none ${selectedMenuItem === item.id ? 'bg-zinc-50' : ''}`}
+                        className={`w-full px-4 py-2 text-left flex justify-between items-center hover:bg-neutral-800 focus:bg-neutral-800 outline-none ${selectedMenuItem === item.id ? 'bg-neutral-800/50' : ''}`}
                         onClick={() => {
                           setSelectedMenuItem(item.id)
                           setOpenMenuId(null)
@@ -452,7 +438,7 @@ export function AccessibilityPage() {
             ref={treeRef}
             role="tree"
             aria-label="File explorer"
-            className="border border-zinc-900/20 p-2 max-h-64 overflow-auto"
+            className="border border-neutral-800 p-2 max-h-64 overflow-auto"
           >
             {treeData.map((node) => renderTreeNode(node))}
           </div>
@@ -500,7 +486,7 @@ export function AccessibilityPage() {
                 ref={comboListRef}
                 id="combo-listbox"
                 role="listbox"
-                className="absolute top-full left-0 right-0 bg-white border border-zinc-900/20 max-h-48 overflow-auto z-10"
+                className="absolute top-full left-0 right-0 bg-neutral-900 border border-neutral-800 max-h-48 overflow-auto z-10"
               >
                 {filteredSuggestions.map((suggestion, index) => (
                   <li
@@ -508,7 +494,7 @@ export function AccessibilityPage() {
                     id={`combo-option-${index}`}
                     role="option"
                     aria-selected={comboIndex === index}
-                    className={`px-3 py-2 cursor-pointer ${comboIndex === index ? 'bg-zinc-100' : ''}`}
+                    className={`px-3 py-2 cursor-pointer ${comboIndex === index ? 'bg-neutral-800' : ''}`}
                     onClick={() => {
                       setComboValue(suggestion)
                       setComboOpen(false)
@@ -522,7 +508,7 @@ export function AccessibilityPage() {
               </ul>
             )}
             {comboOpen && filteredSuggestions.length === 0 && (
-              <div className="absolute top-full left-0 right-0 bg-white border border-zinc-900/20 p-3 text-center">
+              <div className="absolute top-full left-0 right-0 bg-neutral-900 border border-neutral-800 p-3 text-center">
                 <span className={mutedClass}>No results found</span>
               </div>
             )}
@@ -536,7 +522,7 @@ export function AccessibilityPage() {
           role="dialog"
           aria-modal="true"
           aria-labelledby="dialog-title"
-          className="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
+          className="fixed inset-0 bg-black/70 flex items-center justify-center z-50"
           onClick={(e) => {
             if (e.target === e.currentTarget) {
               setDialogOpen(false)
@@ -546,7 +532,7 @@ export function AccessibilityPage() {
         >
           <div
             ref={dialogRef}
-            className="bg-white p-6 max-w-md w-full mx-4 space-y-4"
+            className="bg-neutral-900 p-6 max-w-md w-full mx-4 space-y-4"
           >
             <h2 id="dialog-title" className="font-semibold text-lg">Focus Trap Dialog</h2>
             <p>

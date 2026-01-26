@@ -161,7 +161,7 @@ export function ErrorStatesPage() {
             key={scenario.id}
             type="button"
             onClick={() => handleScenarioSelect(scenario.id as ErrorScenario)}
-            className={`${panelClass} text-left hover:border-zinc-900`}
+            className={`${panelClass} text-left hover:border-neutral-700`}
           >
             <p className="font-semibold">{scenario.name}</p>
             <p className={mutedClass}>{scenario.description}</p>
@@ -170,7 +170,7 @@ export function ErrorStatesPage() {
         <button
           type="button"
           onClick={() => setShowConfirmDialog(true)}
-          className={`${panelClass} text-left hover:border-zinc-900`}
+          className={`${panelClass} text-left hover:border-neutral-700`}
         >
           <p className="font-semibold">Confirmation Dialog</p>
           <p className={mutedClass}>Are you sure? destructive action prompt</p>
@@ -199,15 +199,15 @@ export function ErrorStatesPage() {
         {view.status === 'loading' && (
           <div className={panelClass}>
             <p>Loading...</p>
-            <div className="mt-2 h-2 w-full bg-zinc-200 overflow-hidden">
-              <div className="h-full w-1/2 bg-zinc-900 animate-pulse" />
+            <div className="mt-2 h-2 w-full bg-neutral-700 overflow-hidden">
+              <div className="h-full w-1/2 bg-[#485f6b] animate-pulse" />
             </div>
           </div>
         )}
         {view.status === 'error' && (
-          <div className="border-2 border-red-500 bg-red-50 p-4 space-y-4">
-            <p className="font-semibold text-red-700">Connection Failed</p>
-            <p className="text-red-600">
+          <div className="border-2 border-red-500/50 bg-red-950/30 p-4 space-y-4">
+            <p className="font-semibold text-red-400">Connection Failed</p>
+            <p className="text-red-300">
               Unable to connect to the server. Please check your internet connection and try again.
             </p>
             <div className="flex gap-2">
@@ -221,9 +221,9 @@ export function ErrorStatesPage() {
           </div>
         )}
         {view.status === 'success' && (
-          <div className="border-2 border-green-500 bg-green-50 p-4">
-            <p className="font-semibold text-green-700">Success</p>
-            <p className="text-green-600">Data fetched successfully after retry.</p>
+          <div className="border-2 border-emerald-500/50 bg-emerald-950/30 p-4">
+            <p className="font-semibold text-emerald-400">Success</p>
+            <p className="text-emerald-300">Data fetched successfully after retry.</p>
             <button
               type="button"
               className={`${buttonGhost} mt-4`}
@@ -241,7 +241,7 @@ export function ErrorStatesPage() {
     if (view.type !== '404') return null
     return (
       <div className="space-y-4 text-center py-8">
-        <p className="text-6xl font-bold text-zinc-300">404</p>
+        <p className="text-6xl font-bold text-neutral-600">404</p>
         <h2 className="font-semibold text-xl">Page Not Found</h2>
         <p className={mutedClass}>
           The resource you requested could not be found. It may have been moved or deleted.
@@ -267,7 +267,7 @@ export function ErrorStatesPage() {
         <p className={mutedClass}>
           Something went wrong on our end. Our team has been notified.
         </p>
-        <p className="text-sm font-mono bg-zinc-100 inline-block px-2 py-1">
+        <p className="text-sm font-mono bg-neutral-800 inline-block px-2 py-1">
           Error ID: {view.errorId}
         </p>
         <div className="flex justify-center gap-2">
@@ -288,9 +288,9 @@ export function ErrorStatesPage() {
       <div className="space-y-4">
         <h2 className="font-semibold">Session Timeout</h2>
         {view.status === 'expired' && (
-          <div className="border-2 border-yellow-500 bg-yellow-50 p-4 space-y-4">
-            <p className="font-semibold text-yellow-700">Session Expired</p>
-            <p className="text-yellow-600">
+          <div className="border-2 border-amber-500/50 bg-amber-950/30 p-4 space-y-4">
+            <p className="font-semibold text-amber-400">Session Expired</p>
+            <p className="text-amber-300">
               Your session has expired due to inactivity. Please enter your password to continue.
             </p>
             <label className="grid gap-2">
@@ -320,9 +320,9 @@ export function ErrorStatesPage() {
           </div>
         )}
         {view.status === 'success' && (
-          <div className="border-2 border-green-500 bg-green-50 p-4">
-            <p className="font-semibold text-green-700">Session Restored</p>
-            <p className="text-green-600">You have been re-authenticated successfully.</p>
+          <div className="border-2 border-emerald-500/50 bg-emerald-950/30 p-4">
+            <p className="font-semibold text-emerald-400">Session Restored</p>
+            <p className="text-emerald-300">You have been re-authenticated successfully.</p>
             <button
               type="button"
               className={`${buttonGhost} mt-4`}
@@ -348,9 +348,9 @@ export function ErrorStatesPage() {
           This form validates on the server. Try submitting with invalid data.
         </p>
         {view.status === 'success' ? (
-          <div className="border-2 border-green-500 bg-green-50 p-4">
-            <p className="font-semibold text-green-700">Form Submitted</p>
-            <p className="text-green-600">Your data was accepted by the server.</p>
+          <div className="border-2 border-emerald-500/50 bg-emerald-950/30 p-4">
+            <p className="font-semibold text-emerald-400">Form Submitted</p>
+            <p className="text-emerald-300">Your data was accepted by the server.</p>
             <button
               type="button"
               className={`${buttonGhost} mt-4`}
@@ -362,7 +362,7 @@ export function ErrorStatesPage() {
         ) : (
           <form onSubmit={handleValidationSubmit} className={`${panelClass} space-y-4`}>
             {view.errors.general && (
-              <div className="border border-red-500 bg-red-50 p-2 text-red-600 text-sm">
+              <div className="border border-red-500/50 bg-red-950/30 p-2 text-red-300 text-sm">
                 {view.errors.general}
               </div>
             )}
@@ -377,7 +377,7 @@ export function ErrorStatesPage() {
                 placeholder="Enter username (not 'admin')"
               />
               {view.errors.username && (
-                <p className="text-red-600 text-sm">{view.errors.username}</p>
+                <p className="text-red-300 text-sm">{view.errors.username}</p>
               )}
             </label>
             <label className="grid gap-2">
@@ -391,7 +391,7 @@ export function ErrorStatesPage() {
                 placeholder="Enter email (not @test.com)"
               />
               {view.errors.email && (
-                <p className="text-red-600 text-sm">{view.errors.email}</p>
+                <p className="text-red-300 text-sm">{view.errors.email}</p>
               )}
             </label>
             <label className="grid gap-2">
@@ -405,7 +405,7 @@ export function ErrorStatesPage() {
                 placeholder="Must be 18+"
               />
               {view.errors.age && (
-                <p className="text-red-600 text-sm">{view.errors.age}</p>
+                <p className="text-red-300 text-sm">{view.errors.age}</p>
               )}
             </label>
             <div className="flex gap-2">
@@ -439,9 +439,9 @@ export function ErrorStatesPage() {
           Click the button multiple times to trigger rate limiting (after 3 requests).
         </p>
         {view.status === 'limited' ? (
-          <div className="border-2 border-orange-500 bg-orange-50 p-4 space-y-4">
-            <p className="font-semibold text-orange-700">Too Many Requests</p>
-            <p className="text-orange-600">
+          <div className="border-2 border-orange-500/50 bg-orange-950/30 p-4 space-y-4">
+            <p className="font-semibold text-orange-400">Too Many Requests</p>
+            <p className="text-orange-300">
               You have exceeded the rate limit. Please wait before making more requests.
             </p>
             <p className="font-mono text-sm">Retry after: {view.retryAfter} seconds</p>
@@ -471,7 +471,7 @@ export function ErrorStatesPage() {
               </button>
             </div>
             {view.status === 'success' && (
-              <p className="text-green-600 mt-2">Request successful!</p>
+              <p className="text-emerald-300 mt-2">Request successful!</p>
             )}
           </div>
         )}
@@ -482,8 +482,8 @@ export function ErrorStatesPage() {
   const renderConfirmDialog = () => {
     if (!showConfirmDialog) return null
     return (
-      <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-        <div className="bg-white p-6 max-w-md w-full mx-4 space-y-4">
+      <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
+        <div className="bg-neutral-900 p-6 max-w-md w-full mx-4 space-y-4">
           <h2 className="font-semibold text-lg">Confirm Deletion</h2>
           <p>
             Are you sure you want to delete <strong>{deleteItemName}</strong>? This action cannot be undone.
@@ -498,7 +498,7 @@ export function ErrorStatesPage() {
             </button>
             <button
               type="button"
-              className="border border-red-500 bg-red-500 text-white px-3 py-2"
+              className="border border-red-500/50 bg-red-950/300 text-white px-3 py-2"
               onClick={handleConfirmDelete}
             >
               Delete
@@ -514,9 +514,9 @@ export function ErrorStatesPage() {
     return (
       <div className="space-y-4">
         <h2 className="font-semibold">Confirmation Result</h2>
-        <div className="border-2 border-green-500 bg-green-50 p-4">
-          <p className="font-semibold text-green-700">Item Deleted</p>
-          <p className="text-green-600">
+        <div className="border-2 border-emerald-500/50 bg-emerald-950/30 p-4">
+          <p className="font-semibold text-emerald-400">Item Deleted</p>
+          <p className="text-emerald-300">
             "{deleteItemName}" has been permanently deleted.
           </p>
           <button
@@ -533,7 +533,7 @@ export function ErrorStatesPage() {
 
   return (
     <section className="space-y-4">
-      <div className="grid gap-4 md:grid-cols-[2fr_1fr]">
+      <div className="space-y-4">
         <div className="space-y-4">
           <p className={labelClass}>Error states</p>
           <h1 className="font-semibold">Error handling scenarios</h1>
@@ -541,20 +541,6 @@ export function ErrorStatesPage() {
             Test various error states and recovery flows. Select a scenario to simulate
             different failure modes and edge cases.
           </p>
-        </div>
-        <div className={`${panelClass} space-y-2`}>
-          <div className="border-b border-zinc-900/20 pb-2">
-            <p className="font-semibold text-sm">Challenge</p>
-            <p className={`${mutedClass} text-sm`}>Handle errors and recover.</p>
-          </div>
-          <div className="border-b border-zinc-900/20 pb-2">
-            <p className="font-semibold text-sm">Latency</p>
-            <p className={`${mutedClass} text-sm`}>500-1500ms per action.</p>
-          </div>
-          <div>
-            <p className="font-semibold text-sm">Scope</p>
-            <p className={`${mutedClass} text-sm`}>Errors, retry, dialogs.</p>
-          </div>
         </div>
       </div>
 

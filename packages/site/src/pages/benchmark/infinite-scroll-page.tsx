@@ -162,7 +162,7 @@ export function InfiniteScrollPage() {
             </p>
             <p className={`${mutedClass} text-sm mt-1 line-clamp-2`}>{item.preview}</p>
           </div>
-          <span className="text-xs bg-zinc-100 px-2 py-1 ml-2">#{index + 1}</span>
+          <span className="text-xs bg-neutral-800 px-2 py-1 ml-2">#{index + 1}</span>
         </div>
       </div>
     )
@@ -172,9 +172,9 @@ export function InfiniteScrollPage() {
     <div className="space-y-2">
       {Array.from({ length: 5 }).map((_, i) => (
         <div key={i} className={`${panelClass} animate-pulse`}>
-          <div className="h-4 w-3/4 bg-zinc-200 mb-2" />
-          <div className="h-3 w-1/2 bg-zinc-200 mb-2" />
-          <div className="h-3 w-full bg-zinc-200" />
+          <div className="h-4 w-3/4 bg-neutral-800 mb-2" />
+          <div className="h-3 w-1/2 bg-neutral-800 mb-2" />
+          <div className="h-3 w-full bg-neutral-800" />
         </div>
       ))}
     </div>
@@ -188,7 +188,7 @@ export function InfiniteScrollPage() {
 
   return (
     <section className="space-y-4">
-      <div className="grid gap-4 md:grid-cols-[2fr_1fr]">
+      <div className="space-y-4">
         <div className="space-y-4">
           <p className={labelClass}>Infinite scroll</p>
           <h1 className="font-semibold">Virtualized feed</h1>
@@ -196,20 +196,6 @@ export function InfiniteScrollPage() {
             An infinite-scrolling list with virtualization. Only visible items are
             rendered in the DOM for performance. Scroll to load more items.
           </p>
-        </div>
-        <div className={`${panelClass} space-y-2`}>
-          <div className="border-b border-zinc-900/20 pb-2">
-            <p className="font-semibold text-sm">Challenge</p>
-            <p className={`${mutedClass} text-sm`}>Scroll and load {TOTAL_ITEMS} items.</p>
-          </div>
-          <div className="border-b border-zinc-900/20 pb-2">
-            <p className="font-semibold text-sm">Latency</p>
-            <p className={`${mutedClass} text-sm`}>600ms per page load.</p>
-          </div>
-          <div>
-            <p className="font-semibold text-sm">Scope</p>
-            <p className={`${mutedClass} text-sm`}>Scroll, virtualize, jump.</p>
-          </div>
         </div>
       </div>
 
@@ -269,7 +255,7 @@ export function InfiniteScrollPage() {
       ) : (
         <div
           ref={containerRef}
-          className="border border-zinc-900/20 overflow-y-auto"
+          className="border border-neutral-800 overflow-y-auto"
           style={{ height: 500 }}
         >
           <div
@@ -300,7 +286,7 @@ export function InfiniteScrollPage() {
           )}
 
           {!hasMore && (
-            <div className="p-4 text-center border-t border-zinc-900/20">
+            <div className="p-4 text-center border-t border-neutral-800">
               <span className={mutedClass}>You've reached the end ({TOTAL_ITEMS} items)</span>
             </div>
           )}

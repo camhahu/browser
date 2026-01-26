@@ -18,7 +18,7 @@ export function TestIndexPage() {
             key={page.slug}
             to="/test/$slug"
             params={{ slug: page.slug }}
-            className="block border-t border-zinc-900/20 pt-4"
+            className="block border-t border-neutral-800 pt-4"
           >
             <p className="font-semibold">{page.title}</p>
             <p className={mutedClass}>/test/{page.slug}</p>

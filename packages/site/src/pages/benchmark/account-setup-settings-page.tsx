@@ -124,11 +124,11 @@ export function AccountSetupSettingsPage() {
           Complete the profile, update security preferences, and simulate an
           async save cycle with client-side validation.
         </p>
-        <div className="border-t border-zinc-900/20 pt-4">
+        <div className="border-t border-neutral-800 pt-4">
           <p className="font-semibold">Environment</p>
           <p className={mutedClass}>Sandbox · latency target 450ms.</p>
         </div>
-        <div className="border-t border-zinc-900/20 pt-4">
+        <div className="border-t border-neutral-800 pt-4">
           <p className="font-semibold">Sync status</p>
           <p className={mutedClass}>{saveState === 'saving' ? 'Syncing' : 'Idle'}</p>
           <p className={mutedClass}>{savedAt}</p>
@@ -144,7 +144,7 @@ export function AccountSetupSettingsPage() {
             <form className="space-y-4" onSubmit={handleSave}>
               <div className="grid gap-4 md:grid-cols-2">
                 <div className="space-y-4">
-                  <div className="flex h-20 w-20 items-center justify-center border border-zinc-900/20 font-semibold">
+                  <div className="flex h-20 w-20 items-center justify-center border border-neutral-800 font-semibold">
                     {avatarPreview ? (
                       <img
                         src={avatarPreview}
@@ -160,7 +160,7 @@ export function AccountSetupSettingsPage() {
                     <p className={mutedClass}>
                       PNG or JPG up to 2MB. Preview is local only.
                     </p>
-                    <label className="relative inline-flex items-center gap-4 border border-zinc-900/20 px-4 py-4">
+                    <label className="relative inline-flex items-center gap-4 border border-neutral-800 px-4 py-4">
                       <input
                         type="file"
                         accept="image/png, image/jpeg"
@@ -178,7 +178,7 @@ export function AccountSetupSettingsPage() {
                     <span className="font-semibold">Full name</span>
                     <input
                       className={`${inputBase}${
-                        touched.fullName && errors.fullName ? ' border-red-600' : ''
+                        touched.fullName && errors.fullName ? ' border-red-500' : ''
                       }`}
                       type="text"
                       value={profile.fullName}
@@ -189,7 +189,7 @@ export function AccountSetupSettingsPage() {
                       required
                     />
                     {touched.fullName && errors.fullName ? (
-                      <span className="text-red-700">{errors.fullName}</span>
+                      <span className="text-red-400">{errors.fullName}</span>
                     ) : null}
                   </label>
                   <label className="grid gap-4">
@@ -197,7 +197,7 @@ export function AccountSetupSettingsPage() {
                     <input
                       className={`${inputBase}${
                         touched.displayName && errors.displayName
-                          ? ' border-red-600'
+                          ? ' border-red-500'
                           : ''
                       }`}
                       type="text"
@@ -209,14 +209,14 @@ export function AccountSetupSettingsPage() {
                       required
                     />
                     {touched.displayName && errors.displayName ? (
-                      <span className="text-red-700">{errors.displayName}</span>
+                      <span className="text-red-400">{errors.displayName}</span>
                     ) : null}
                   </label>
                   <label className="grid gap-4">
                     <span className="font-semibold">Email</span>
                     <input
                       className={`${inputBase}${
-                        touched.email && errors.email ? ' border-red-600' : ''
+                        touched.email && errors.email ? ' border-red-500' : ''
                       }`}
                       type="email"
                       value={profile.email}
@@ -227,7 +227,7 @@ export function AccountSetupSettingsPage() {
                       required
                     />
                     {touched.email && errors.email ? (
-                      <span className="text-red-700">{errors.email}</span>
+                      <span className="text-red-400">{errors.email}</span>
                     ) : null}
                   </label>
                   <label className="grid gap-4">
@@ -268,7 +268,7 @@ export function AccountSetupSettingsPage() {
                 <span className="font-semibold">Bio</span>
                 <textarea
                   className={`${inputBase} min-h-20 ${
-                    touched.bio && errors.bio ? ' border-red-600' : ''
+                    touched.bio && errors.bio ? ' border-red-500' : ''
                   }`}
                   value={profile.bio}
                   onChange={(event) =>
@@ -281,19 +281,19 @@ export function AccountSetupSettingsPage() {
                   {profile.bio.length}/140 characters
                 </span>
                 {touched.bio && errors.bio ? (
-                  <span className="text-red-700">{errors.bio}</span>
+                  <span className="text-red-400">{errors.bio}</span>
                 ) : null}
               </label>
               <div className="flex flex-wrap items-center gap-4">
                 <button className={buttonPrimary} type="submit">
                   {saveState === 'saving' ? 'Saving...' : 'Save changes'}
                 </button>
-                <div className="flex flex-wrap items-center gap-4 text-zinc-600">
-                  <span className="border border-zinc-900/20 px-4 py-4">
+                <div className="flex flex-wrap items-center gap-4 text-neutral-400">
+                  <span className="border border-neutral-800 px-4 py-4">
                     {saveMessage}
                   </span>
                   {formNotice ? (
-                    <span className="text-red-700">{formNotice}</span>
+                    <span className="text-red-400">{formNotice}</span>
                   ) : null}
                 </div>
               </div>
@@ -307,7 +307,7 @@ export function AccountSetupSettingsPage() {
             <div className="space-y-4">
               {preferenceOptions.map((option) => (
                 <div
-                  className="flex items-center justify-between gap-4 border border-zinc-900/20 p-4"
+                  className="flex items-center justify-between gap-4 border border-neutral-800 p-4"
                   key={option.key}
                 >
                   <div>
@@ -315,15 +315,15 @@ export function AccountSetupSettingsPage() {
                     <p className={mutedClass}>{option.description}</p>
                   </div>
                   <button
-                    className={`h-8 w-12 border border-zinc-900/20 p-4 ${
-                      preferences[option.key] ? 'bg-zinc-900' : 'bg-transparent'
+                    className={`h-8 w-12 border border-neutral-800 p-4 ${
+                      preferences[option.key] ? 'bg-[#485f6b]' : 'bg-transparent'
                     }`}
                     type="button"
                     aria-pressed={preferences[option.key]}
                     onClick={() => handleToggle(option.key)}
                   >
                     <span
-                      className={`block h-4 w-4 bg-white ${
+                      className={`block h-4 w-4 bg-neutral-300 ${
                         preferences[option.key] ? 'translate-x-4' : ''
                       }`}
                     />
@@ -342,7 +342,7 @@ export function AccountSetupSettingsPage() {
             <div className="space-y-4">
               {securitySignals.map((signal) => (
                 <div
-                  className="flex items-center justify-between gap-4 border border-zinc-900/20 p-4"
+                  className="flex items-center justify-between gap-4 border border-neutral-800 p-4"
                   key={signal.title}
                 >
                   <div>
@@ -360,30 +360,30 @@ export function AccountSetupSettingsPage() {
               <p className={mutedClass}>Recent sessions and device posture.</p>
             </div>
             <ul className="space-y-4">
-              <li className="flex items-center justify-between gap-4 border border-zinc-900/20 p-4">
+              <li className="flex items-center justify-between gap-4 border border-neutral-800 p-4">
                 <div>
                   <p className="font-semibold">MacBook Pro · SF, CA</p>
                   <p className={mutedClass}>Chrome · 2 hours ago</p>
                 </div>
-                <span className="border border-zinc-900/20 px-4 py-4">
+                <span className="border border-neutral-800 px-4 py-4">
                   Trusted
                 </span>
               </li>
-              <li className="flex items-center justify-between gap-4 border border-zinc-900/20 p-4">
+              <li className="flex items-center justify-between gap-4 border border-neutral-800 p-4">
                 <div>
                   <p className="font-semibold">iPhone 15 · Seattle, WA</p>
                   <p className={mutedClass}>Safari · Yesterday</p>
                 </div>
-                <span className="border border-zinc-900/20 px-4 py-4">
+                <span className="border border-neutral-800 px-4 py-4">
                   Verified
                 </span>
               </li>
-              <li className="flex items-center justify-between gap-4 border border-zinc-900/20 p-4">
+              <li className="flex items-center justify-between gap-4 border border-neutral-800 p-4">
                 <div>
                   <p className="font-semibold">Linux VM · Dublin</p>
                   <p className={mutedClass}>Firefox · 3 days ago</p>
                 </div>
-                <span className="border border-zinc-900/20 px-4 py-4">
+                <span className="border border-neutral-800 px-4 py-4">
                   Review
                 </span>
               </li>

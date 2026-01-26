@@ -203,9 +203,9 @@ export function DataTablePage() {
 
   const getStatusBadge = (status: User['status']) => {
     const colors = {
-      active: 'bg-green-100 text-green-800',
-      inactive: 'bg-zinc-100 text-zinc-600',
-      pending: 'bg-yellow-100 text-yellow-800',
+      active: 'bg-emerald-900/50 text-emerald-300',
+      inactive: 'bg-neutral-800 text-neutral-400',
+      pending: 'bg-amber-900/50 text-amber-300',
     }
     return (
       <span className={`inline-block px-2 py-1 text-sm ${colors[status]}`}>
@@ -218,13 +218,13 @@ export function DataTablePage() {
     <div className="space-y-2">
       {Array.from({ length: PAGE_SIZE }).map((_, i) => (
         <div key={i} className="flex gap-4 animate-pulse">
-          <div className="h-10 w-8 bg-zinc-200" />
-          <div className="h-10 flex-1 bg-zinc-200" />
-          <div className="h-10 flex-1 bg-zinc-200" />
-          <div className="h-10 w-24 bg-zinc-200" />
-          <div className="h-10 w-24 bg-zinc-200" />
-          <div className="h-10 w-28 bg-zinc-200" />
-          <div className="h-10 w-28 bg-zinc-200" />
+          <div className="h-10 w-8 bg-neutral-800" />
+          <div className="h-10 flex-1 bg-neutral-800" />
+          <div className="h-10 flex-1 bg-neutral-800" />
+          <div className="h-10 w-24 bg-neutral-800" />
+          <div className="h-10 w-24 bg-neutral-800" />
+          <div className="h-10 w-28 bg-neutral-800" />
+          <div className="h-10 w-28 bg-neutral-800" />
         </div>
       ))}
     </div>
@@ -249,7 +249,7 @@ export function DataTablePage() {
   )
 
   return (
-    <section className="grid gap-4 md:grid-cols-[2fr_1fr]">
+    <section className="space-y-4">
       <div className="space-y-4">
         <div className="space-y-4">
           <p className={labelClass}>Benchmark 2 · Data table</p>
@@ -258,20 +258,6 @@ export function DataTablePage() {
             A data table with sorting, filtering, pagination, inline editing, and
             bulk actions. All operations are mocked locally for evaluation benchmarks.
           </p>
-        </div>
-        <div className="space-y-4">
-          <div className="border-t border-zinc-900/20 pt-4">
-            <p className="font-semibold">Challenge</p>
-            <p className={mutedClass}>CRUD operations with multi-select.</p>
-          </div>
-          <div className="border-t border-zinc-900/20 pt-4">
-            <p className="font-semibold">Latency</p>
-            <p className={mutedClass}>800ms initial load, 300ms search debounce.</p>
-          </div>
-          <div className="border-t border-zinc-900/20 pt-4">
-            <p className="font-semibold">Scope</p>
-            <p className={mutedClass}>Sort, filter, edit, delete, export.</p>
-          </div>
         </div>
       </div>
 
@@ -332,7 +318,7 @@ export function DataTablePage() {
 
       <div className="md:col-span-2 space-y-4">
         {selectedIds.size > 0 ? (
-          <div className="flex items-center gap-4 border border-zinc-900/20 p-4">
+          <div className="flex items-center gap-4 border border-neutral-800 p-4">
             <span className="font-semibold">{selectedIds.size} selected</span>
             <button
               className={buttonGhost}
@@ -360,7 +346,7 @@ export function DataTablePage() {
         ) : null}
 
         {actionNotice ? (
-          <div className="flex items-center justify-between border border-zinc-900/20 bg-zinc-50 p-4">
+          <div className="flex items-center justify-between border border-neutral-800 bg-neutral-900 p-4">
             <span>{actionNotice}</span>
             <button
               className={buttonGhost}
@@ -449,7 +435,7 @@ export function DataTablePage() {
                 {paginatedUsers.map((user, index) => (
                   <tr
                     key={user.id}
-                    className={`border-b border-zinc-900/10 ${selectedIds.has(user.id) ? 'bg-zinc-100' : ''}`}
+                    className={`border-b border-neutral-800/50 ${selectedIds.has(user.id) ? 'bg-neutral-800/50' : ''}`}
                   >
                     <td className="p-2">
                       <input

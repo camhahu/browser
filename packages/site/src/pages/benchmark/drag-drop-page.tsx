@@ -171,9 +171,9 @@ export function DragDropPage() {
     <div className="grid grid-cols-4 gap-4">
       {Array.from({ length: 4 }).map((_, colIndex) => (
         <div key={colIndex} className="space-y-3">
-          <div className="h-6 w-24 bg-zinc-200 animate-pulse" />
+          <div className="h-6 w-24 bg-neutral-800 animate-pulse" />
           {Array.from({ length: 2 }).map((_, cardIndex) => (
-            <div key={cardIndex} className="h-24 bg-zinc-200 animate-pulse" />
+            <div key={cardIndex} className="h-24 bg-neutral-800 animate-pulse" />
           ))}
         </div>
       ))}
@@ -188,7 +188,7 @@ export function DragDropPage() {
     return (
       <div key={card.id}>
         {isDropTarget && (
-          <div className="h-1 bg-zinc-900 mb-2" aria-hidden="true" />
+          <div className="h-1 bg-[#6b8fa3] mb-2" aria-hidden="true" />
         )}
         <div
           ref={isBeingDragged ? draggedCardRef : null}
@@ -263,10 +263,10 @@ export function DragDropPage() {
           <h3 className="font-semibold">{column.title}</h3>
           <span className={`${mutedClass} text-sm`}>{column.cards.length}</span>
         </div>
-        <div className="space-y-2 min-h-[100px] border border-dashed border-zinc-300 p-2">
+        <div className="space-y-2 min-h-[100px] border border-dashed border-neutral-700 p-2">
           {column.cards.map((card, index) => renderCard(card, column.id, index))}
           {isDropTargetColumn && column.cards.length > 0 && (
-            <div className="h-1 bg-zinc-900" aria-hidden="true" />
+            <div className="h-1 bg-[#6b8fa3]" aria-hidden="true" />
           )}
           {column.cards.length === 0 && (
             <p className={`${mutedClass} text-center py-4`}>Drop cards here</p>
@@ -278,7 +278,7 @@ export function DragDropPage() {
 
   return (
     <section className="space-y-4">
-      <div className="grid gap-4 md:grid-cols-[2fr_1fr]">
+      <div className="space-y-4">
         <div className="space-y-4">
           <p className={labelClass}>Benchmark 3 · Drag and drop</p>
           <h1 className="font-semibold">Kanban board</h1>
@@ -308,25 +308,11 @@ export function DragDropPage() {
               Redo
             </button>
           </div>
-          <div className="space-y-2">
-            <div className="border-t border-zinc-900/20 pt-2">
-              <p className="font-semibold text-sm">Challenge</p>
-              <p className={`${mutedClass} text-sm`}>Drag cards between columns.</p>
-            </div>
-            <div className="border-t border-zinc-900/20 pt-2">
-              <p className="font-semibold text-sm">Latency</p>
-              <p className={`${mutedClass} text-sm`}>600ms initial load.</p>
-            </div>
-            <div className="border-t border-zinc-900/20 pt-2">
-              <p className="font-semibold text-sm">Scope</p>
-              <p className={`${mutedClass} text-sm`}>Drag, drop, reorder, undo.</p>
-            </div>
-          </div>
         </div>
       </div>
 
       {actionNotice && (
-        <div className="flex items-center justify-between border border-zinc-900/20 bg-zinc-50 p-4">
+        <div className="flex items-center justify-between border border-neutral-800 bg-neutral-900 p-4">
           <span>{actionNotice}</span>
           <button
             className={buttonGhost}
