@@ -1,0 +1,13 @@
+{
+    "name": "benchmarks",
+    "private": true,
+    "type": "module",
+    "scripts": {
+        "benchmark": "bun run scripts/benchmark.ts",
+        "generate": "bun run scripts/generate-benchmark.ts"
+    },
+    "devDependencies": {
+        "@types/bun": "latest",
+        "typescript": "^5"
+    }
+}

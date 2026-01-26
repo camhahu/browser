@@ -1,70 +1,30 @@
 # Account Settings Benchmark
 
-Test profile editing, preferences, and form validation (part of Account Setup flow).
+Test profile editing, preferences, and form validation (settings page only).
 
 ## Steps
 
-### Profile Form
-
-1. Navigate directly to /benchmark/account-setup/settings (or complete login flow)
-2. Fill in the profile form:
-   - Full name: "John Doe"
-   - Display name: "johndoe"
-   - Email: "john@example.com"
-   - Role: Select "Editor" from dropdown
-   - Timezone: Select any timezone from dropdown
-   - Bio: Enter text up to 140 characters
-3. Click on a field and then click away to trigger touched state
-
-### Avatar Upload
-
-1. Click on the avatar area or find the file upload input
-2. Upload an image file
-3. Verify preview displays the uploaded image
-4. Verify initials are replaced by image preview
-
-### Preferences
-
-1. Locate the toggle switches:
-   - Weekly digest
-   - Product updates
-   - Security alerts
-   - Session lock
-2. Toggle each preference on/off
-3. Verify toggle states change visually
-
-### Save and Validation
-
-1. Click "Save changes" button
-2. Wait for save operation (900ms)
-3. Verify "Saved at [time]" confirmation appears
-4. Clear required fields and try to save
-5. Verify validation errors appear for required fields
-6. Enter invalid email (no @ symbol)
-7. Verify email validation error
-8. Enter bio longer than 140 characters
-9. Verify character limit validation
-
-### Security Signals (Read-only)
-
-1. Scroll to security signals section
-2. Verify security info cards are displayed (read-only)
-3. Verify access log shows device/browser/location history
-
-## Success Criteria
-
-- Profile form accepts valid input
-- Dropdowns work for role and timezone
-- Bio has character limit (140)
-- Avatar upload shows preview
-- Preferences toggle correctly
-- Save shows loading state then confirmation
-- Validation shows per-field errors
-- Security signals display correctly
-
-## Edge Cases to Test
-
-- Save with no changes made
-- Upload non-image file
-- Paste text longer than bio limit
-- Tab through all form fields
+1. Navigate to `http://localhost:4244/benchmark/account-setup/settings`.
+2. Fill the profile form with the exact values below:
+   - Full name: `John Doe`
+   - Display name: `johndoe`
+   - Email: `john@example.com`
+   - Role: select `Security Engineer`
+   - Timezone: select `Asia/Singapore`
+   - Bio: `Hands-on security leader shipping reliable tooling.`
+3. Click inside the Email field, then click outside the form to trigger touched state.
+4. Upload an avatar using the file input with `packages/site/public/vite.svg`.
+5. Set preference toggles to these exact states (click to change if needed):
+   - Weekly digest: on
+   - Product updates: off
+   - Security alerts: on
+   - Session lock: on
+6. Click "Save changes" and confirm the "Saved" message appears.
+7. Clear the Full name and Email fields so they are empty.
+8. Click "Save changes" again and confirm validation errors appear.
+9. Fix the fields with:
+   - Full name: `Jane Roe`
+   - Email: `jane@example.com`
+10. Replace the Bio with this 160-character string (paste exactly):
+    `AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA`
+11. Click "Save changes" and confirm the bio length validation error appears.

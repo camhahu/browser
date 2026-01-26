@@ -17,6 +17,10 @@ logs
 _.log
 report.[0-9]_.[0-9]_.[0-9]_.[0-9]_.json
 
+# benchmark results
+packages/benchmarks/benchmark-results
+packages/benchmarks/benchmark-comparison.md
+
 # dotenv environment variable files
 .env
 .env.development.local
