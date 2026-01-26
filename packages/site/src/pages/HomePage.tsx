@@ -18,25 +18,25 @@ export function HomePage() {
           benchmarks.
         </p>
         <div className="flex flex-wrap gap-4">
-          <Link to="/benchmark/1" className={buttonPrimary}>
+          <Link to="/benchmark/account-setup" className={buttonPrimary}>
             Account Setup
           </Link>
-          <Link to="/benchmark/2" className={buttonPrimary}>
+          <Link to="/benchmark/data-table" className={buttonPrimary}>
             Data Table
           </Link>
-          <Link to="/benchmark/3" className={buttonPrimary}>
+          <Link to="/benchmark/drag-drop" className={buttonPrimary}>
             Drag & Drop
           </Link>
-          <Link to="/benchmark/5" className={buttonPrimary}>
+          <Link to="/benchmark/checkout-flow" className={buttonPrimary}>
             Checkout Flow
           </Link>
-          <Link to="/benchmark/8" className={buttonPrimary}>
+          <Link to="/benchmark/accessibility" className={buttonPrimary}>
             Accessibility
           </Link>
-          <Link to="/benchmark/9" className={buttonPrimary}>
+          <Link to="/benchmark/error-states" className={buttonPrimary}>
             Error States
           </Link>
-          <Link to="/benchmark/13" className={buttonPrimary}>
+          <Link to="/benchmark/infinite-scroll" className={buttonPrimary}>
             Infinite Scroll
           </Link>
           <Link to="/test" className={buttonGhost}>

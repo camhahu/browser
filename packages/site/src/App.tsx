@@ -35,50 +35,50 @@ const benchmarkLayoutRoute = createRoute({
 
 const benchmarkLoginRoute = createRoute({
   getParentRoute: () => benchmarkLayoutRoute,
-  path: '1',
+  path: 'account-setup',
   component: BenchmarkLoginPage,
 })
 
 const benchmarkSettingsRoute = createRoute({
   getParentRoute: () => benchmarkLayoutRoute,
-  path: '1/settings',
+  path: 'account-setup/settings',
   component: BenchmarkSettingsPage,
 })
 
 const benchmarkDataTableRoute = createRoute({
   getParentRoute: () => benchmarkLayoutRoute,
-  path: '2',
+  path: 'data-table',
   component: BenchmarkDataTablePage,
 })
 
 const benchmarkDragDropRoute = createRoute({
   getParentRoute: () => benchmarkLayoutRoute,
-  path: '3',
+  path: 'drag-drop',
   component: BenchmarkDragDropPage,
 })
 
 const benchmarkWizardRoute = createRoute({
   getParentRoute: () => benchmarkLayoutRoute,
-  path: '5',
+  path: 'checkout-flow',
   component: BenchmarkWizardPage,
+})
+
+const benchmarkAccessibilityRoute = createRoute({
+  getParentRoute: () => benchmarkLayoutRoute,
+  path: 'accessibility',
+  component: BenchmarkAccessibilityPage,
 })
 
 const benchmarkErrorHandlingRoute = createRoute({
   getParentRoute: () => benchmarkLayoutRoute,
-  path: '9',
+  path: 'error-states',
   component: BenchmarkErrorHandlingPage,
 })
 
 const benchmarkInfiniteScrollRoute = createRoute({
   getParentRoute: () => benchmarkLayoutRoute,
-  path: '13',
+  path: 'infinite-scroll',
   component: BenchmarkInfiniteScrollPage,
-})
-
-const benchmarkAccessibilityRoute = createRoute({
-  getParentRoute: () => benchmarkLayoutRoute,
-  path: '8',
-  component: BenchmarkAccessibilityPage,
 })
 
 const testLayoutRoute = createRoute({

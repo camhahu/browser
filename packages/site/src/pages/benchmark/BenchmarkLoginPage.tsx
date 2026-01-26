@@ -57,7 +57,7 @@ export function BenchmarkLoginPage() {
       setStatus('idle')
       setShowTwoFactor(false)
       setLoginNote('Session established. Redirecting to settings...')
-      navigate({ to: '/benchmark/1/settings' })
+      navigate({ to: '/benchmark/account-setup/settings' })
     }, 900)
   }
 

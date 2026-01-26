@@ -36,49 +36,49 @@ export function BenchmarkLayout() {
           </div>
           <nav className="flex flex-wrap gap-4" aria-label="Primary">
             <Link
-              to="/benchmark/1"
+              to="/benchmark/account-setup"
               className="data-[active=true]:underline"
               activeProps={{ 'data-active': 'true' }}
             >
               Account Setup
             </Link>
             <Link
-              to="/benchmark/2"
+              to="/benchmark/data-table"
               className="data-[active=true]:underline"
               activeProps={{ 'data-active': 'true' }}
             >
               Data Table
             </Link>
             <Link
-              to="/benchmark/3"
+              to="/benchmark/drag-drop"
               className="data-[active=true]:underline"
               activeProps={{ 'data-active': 'true' }}
             >
               Drag & Drop
             </Link>
             <Link
-              to="/benchmark/5"
+              to="/benchmark/checkout-flow"
               className="data-[active=true]:underline"
               activeProps={{ 'data-active': 'true' }}
             >
               Checkout Flow
             </Link>
             <Link
-              to="/benchmark/8"
+              to="/benchmark/accessibility"
               className="data-[active=true]:underline"
               activeProps={{ 'data-active': 'true' }}
             >
               Accessibility
             </Link>
             <Link
-              to="/benchmark/9"
+              to="/benchmark/error-states"
               className="data-[active=true]:underline"
               activeProps={{ 'data-active': 'true' }}
             >
               Error States
             </Link>
             <Link
-              to="/benchmark/13"
+              to="/benchmark/infinite-scroll"
               className="data-[active=true]:underline"
               activeProps={{ 'data-active': 'true' }}
             >
