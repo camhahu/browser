@@ -33,6 +33,9 @@ export function HomePage() {
           <Link to="/benchmark/9" className={buttonPrimary}>
             Error States
           </Link>
+          <Link to="/benchmark/13" className={buttonPrimary}>
+            Infinite Scroll
+          </Link>
           <Link to="/test" className={buttonGhost}>
             Test pages
           </Link>
@@ -67,6 +70,12 @@ export function HomePage() {
           <p className="font-semibold">Error States</p>
           <p className={mutedClass}>
             Network errors, 404/500 pages, session timeout, and rate limiting.
+          </p>
+        </div>
+        <div className="border-t border-zinc-900/20 pt-4">
+          <p className="font-semibold">Infinite Scroll</p>
+          <p className={mutedClass}>
+            Virtualized list, lazy loading, jump to item, and scroll position.
           </p>
         </div>
         <div className="border-t border-zinc-900/20 pt-4">

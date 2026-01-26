@@ -70,6 +70,13 @@ export function BenchmarkLayout() {
             >
               Error States
             </Link>
+            <Link
+              to="/benchmark/13"
+              className="data-[active=true]:underline"
+              activeProps={{ 'data-active': 'true' }}
+            >
+              Infinite Scroll
+            </Link>
             <Link to="/test">Test pages</Link>
           </nav>
           <span className={labelClass}>Mock network</span>
