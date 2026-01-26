@@ -30,6 +30,9 @@ export function HomePage() {
           <Link to="/benchmark/5" className={buttonPrimary}>
             Checkout Flow
           </Link>
+          <Link to="/benchmark/8" className={buttonPrimary}>
+            Accessibility
+          </Link>
           <Link to="/benchmark/9" className={buttonPrimary}>
             Error States
           </Link>
@@ -64,6 +67,12 @@ export function HomePage() {
           <p className="font-semibold">Checkout Flow</p>
           <p className={mutedClass}>
             Multi-step wizard with conditional steps and validation.
+          </p>
+        </div>
+        <div className="border-t border-zinc-900/20 pt-4">
+          <p className="font-semibold">Accessibility</p>
+          <p className={mutedClass}>
+            Keyboard navigation, focus traps, ARIA live regions, and combobox.
           </p>
         </div>
         <div className="border-t border-zinc-900/20 pt-4">

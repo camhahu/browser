@@ -12,6 +12,7 @@ import { BenchmarkDragDropPage } from './pages/benchmark/BenchmarkDragDropPage'
 import { BenchmarkWizardPage } from './pages/benchmark/BenchmarkWizardPage'
 import { BenchmarkErrorHandlingPage } from './pages/benchmark/BenchmarkErrorHandlingPage'
 import { BenchmarkInfiniteScrollPage } from './pages/benchmark/BenchmarkInfiniteScrollPage'
+import { BenchmarkAccessibilityPage } from './pages/benchmark/BenchmarkAccessibilityPage'
 import { TestIndexPage } from './pages/test/TestIndexPage'
 import { TestPage } from './pages/test/TestPage'
 import { TestBlogPage } from './pages/test/TestBlogPage'
@@ -74,6 +75,12 @@ const benchmarkInfiniteScrollRoute = createRoute({
   component: BenchmarkInfiniteScrollPage,
 })
 
+const benchmarkAccessibilityRoute = createRoute({
+  getParentRoute: () => benchmarkLayoutRoute,
+  path: '8',
+  component: BenchmarkAccessibilityPage,
+})
+
 const testLayoutRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/test',
@@ -106,6 +113,7 @@ const routeTree = rootRoute.addChildren([
     benchmarkDataTableRoute,
     benchmarkDragDropRoute,
     benchmarkWizardRoute,
+    benchmarkAccessibilityRoute,
     benchmarkErrorHandlingRoute,
     benchmarkInfiniteScrollRoute,
   ]),
