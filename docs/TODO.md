@@ -1,7 +1,7 @@
 # TODO
 
 - **Action output** - `type` and similar commands should print something like the selector text after the action completes.
-- **Telemetry** - Add anonymous usage telemetry to understand how the CLI is being used.
+- **Telemetry installs/updates** - Add anonymous telemetry for installs and updates to understand adoption and upgrade paths.
 - **Community** - Set up a Discord server or similar for users to get help and share feedback.
 
 ## Not doing
