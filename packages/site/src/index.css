@@ -1,13 +1,40 @@
 @import "tailwindcss";
 
+@font-face {
+  font-family: 'Geist Mono';
+  src: url('https://cdn.jsdelivr.net/npm/geist@1.2.0/dist/fonts/geist-mono/GeistMono-Regular.woff2') format('woff2');
+  font-weight: 400;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Geist Mono';
+  src: url('https://cdn.jsdelivr.net/npm/geist@1.2.0/dist/fonts/geist-mono/GeistMono-Medium.woff2') format('woff2');
+  font-weight: 500;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Geist Mono';
+  src: url('https://cdn.jsdelivr.net/npm/geist@1.2.0/dist/fonts/geist-mono/GeistMono-SemiBold.woff2') format('woff2');
+  font-weight: 600;
+  font-display: swap;
+}
+
 :root {
-  font-family: "IBM Plex Mono", "SFMono-Regular", "Menlo", "Monaco", "Consolas", monospace;
-  color: #111111;
-  background-color: #f9f8f4;
+  font-family: 'Geist Mono', 'SF Mono', 'Monaco', 'Inconsolata', 'Fira Mono', 'Droid Sans Mono', 'Source Code Pro', monospace;
+  color: #fafafa;
+  background-color: #000;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 body {
   margin: 0;
   min-height: 100vh;
-  background: #f9f8f4;
+  background: #000;
+}
+
+::selection {
+  background: rgba(255, 255, 255, 0.2);
 }
