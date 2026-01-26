@@ -19,4 +19,4 @@ Test a complete login and account settings flow.
     - Product updates: on
     - Security alerts: on
     - Session lock: off
-6. Click "Save changes" and confirm the "Saved" message appears.
+6. Click "Save changes" and confirm saved
