@@ -19,13 +19,16 @@ export function HomePage() {
         </p>
         <div className="flex flex-wrap gap-4">
           <Link to="/benchmark/1" className={buttonPrimary}>
-            Benchmark 1
+            Account Setup
           </Link>
           <Link to="/benchmark/2" className={buttonPrimary}>
-            Benchmark 2
+            Data Table
           </Link>
           <Link to="/benchmark/3" className={buttonPrimary}>
-            Benchmark 3
+            Drag & Drop
+          </Link>
+          <Link to="/benchmark/5" className={buttonPrimary}>
+            Checkout Flow
           </Link>
           <Link to="/test" className={buttonGhost}>
             Test pages
@@ -34,21 +37,27 @@ export function HomePage() {
       </div>
       <div className="space-y-4">
         <div className="border-t border-zinc-900/20 pt-4">
-          <p className="font-semibold">Benchmark 1 · Account setup</p>
+          <p className="font-semibold">Account Setup</p>
           <p className={mutedClass}>
             Login, 2FA, profile, preferences, and async saves.
           </p>
         </div>
         <div className="border-t border-zinc-900/20 pt-4">
-          <p className="font-semibold">Benchmark 2 · Data table</p>
+          <p className="font-semibold">Data Table</p>
           <p className={mutedClass}>
             Sort, filter, search, inline edit, and bulk actions.
           </p>
         </div>
         <div className="border-t border-zinc-900/20 pt-4">
-          <p className="font-semibold">Benchmark 3 · Drag and drop</p>
+          <p className="font-semibold">Drag & Drop</p>
           <p className={mutedClass}>
             Kanban board, reorder cards, drop zones, and undo/redo.
+          </p>
+        </div>
+        <div className="border-t border-zinc-900/20 pt-4">
+          <p className="font-semibold">Checkout Flow</p>
+          <p className={mutedClass}>
+            Multi-step wizard with conditional steps and validation.
           </p>
         </div>
         <div className="border-t border-zinc-900/20 pt-4">

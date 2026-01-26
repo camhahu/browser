@@ -40,28 +40,28 @@ export function BenchmarkLayout() {
               className="data-[active=true]:underline"
               activeProps={{ 'data-active': 'true' }}
             >
-              Benchmark 1
-            </Link>
-            <Link
-              to="/benchmark/1/settings"
-              className="data-[active=true]:underline"
-              activeProps={{ 'data-active': 'true' }}
-            >
-              Settings
+              Account Setup
             </Link>
             <Link
               to="/benchmark/2"
               className="data-[active=true]:underline"
               activeProps={{ 'data-active': 'true' }}
             >
-              Benchmark 2
+              Data Table
             </Link>
             <Link
               to="/benchmark/3"
               className="data-[active=true]:underline"
               activeProps={{ 'data-active': 'true' }}
             >
-              Benchmark 3
+              Drag & Drop
+            </Link>
+            <Link
+              to="/benchmark/5"
+              className="data-[active=true]:underline"
+              activeProps={{ 'data-active': 'true' }}
+            >
+              Checkout Flow
             </Link>
             <Link to="/test">Test pages</Link>
           </nav>

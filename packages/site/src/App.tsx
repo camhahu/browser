@@ -9,6 +9,7 @@ import { BenchmarkLoginPage } from './pages/benchmark/BenchmarkLoginPage'
 import { BenchmarkSettingsPage } from './pages/benchmark/BenchmarkSettingsPage'
 import { BenchmarkDataTablePage } from './pages/benchmark/BenchmarkDataTablePage'
 import { BenchmarkDragDropPage } from './pages/benchmark/BenchmarkDragDropPage'
+import { BenchmarkWizardPage } from './pages/benchmark/BenchmarkWizardPage'
 import { TestIndexPage } from './pages/test/TestIndexPage'
 import { TestPage } from './pages/test/TestPage'
 import { TestBlogPage } from './pages/test/TestBlogPage'
@@ -53,6 +54,12 @@ const benchmarkDragDropRoute = createRoute({
   component: BenchmarkDragDropPage,
 })
 
+const benchmarkWizardRoute = createRoute({
+  getParentRoute: () => benchmarkLayoutRoute,
+  path: '5',
+  component: BenchmarkWizardPage,
+})
+
 const testLayoutRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/test',
@@ -84,6 +91,7 @@ const routeTree = rootRoute.addChildren([
     benchmarkSettingsRoute,
     benchmarkDataTableRoute,
     benchmarkDragDropRoute,
+    benchmarkWizardRoute,
   ]),
   testLayoutRoute.addChildren([testIndexRoute, testPageRoute, testBlogRoute]),
 ])
