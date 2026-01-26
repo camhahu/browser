@@ -7,6 +7,7 @@ import { RootLayout, BenchmarkLayout, TestLayout } from './components/Layout'
 import { HomePage } from './pages/HomePage'
 import { BenchmarkLoginPage } from './pages/benchmark/BenchmarkLoginPage'
 import { BenchmarkSettingsPage } from './pages/benchmark/BenchmarkSettingsPage'
+import { BenchmarkDataTablePage } from './pages/benchmark/BenchmarkDataTablePage'
 import { TestIndexPage } from './pages/test/TestIndexPage'
 import { TestPage } from './pages/test/TestPage'
 import { TestBlogPage } from './pages/test/TestBlogPage'
@@ -39,6 +40,12 @@ const benchmarkSettingsRoute = createRoute({
   component: BenchmarkSettingsPage,
 })
 
+const benchmarkDataTableRoute = createRoute({
+  getParentRoute: () => benchmarkLayoutRoute,
+  path: '2',
+  component: BenchmarkDataTablePage,
+})
+
 const testLayoutRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/test',
@@ -68,6 +75,7 @@ const routeTree = rootRoute.addChildren([
   benchmarkLayoutRoute.addChildren([
     benchmarkLoginRoute,
     benchmarkSettingsRoute,
+    benchmarkDataTableRoute,
   ]),
   testLayoutRoute.addChildren([testIndexRoute, testPageRoute, testBlogRoute]),
 ])

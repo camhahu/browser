@@ -21,6 +21,9 @@ export function HomePage() {
           <Link to="/benchmark/1" className={buttonPrimary}>
             Benchmark 1
           </Link>
+          <Link to="/benchmark/2" className={buttonPrimary}>
+            Benchmark 2
+          </Link>
           <Link to="/test" className={buttonGhost}>
             Test pages
           </Link>
@@ -31,6 +34,12 @@ export function HomePage() {
           <p className="font-semibold">Benchmark 1 · Account setup</p>
           <p className={mutedClass}>
             Login, 2FA, profile, preferences, and async saves.
+          </p>
+        </div>
+        <div className="border-t border-zinc-900/20 pt-4">
+          <p className="font-semibold">Benchmark 2 · Data table</p>
+          <p className={mutedClass}>
+            Sort, filter, search, inline edit, and bulk actions.
           </p>
         </div>
         <div className="border-t border-zinc-900/20 pt-4">
