@@ -8,7 +8,7 @@
 - See `docs/TODO.md` for planned features and `docs/BUGS.md` for known issues
 - When fixing a bug or implementing a TODO, remove the corresponding entry from `docs/BUGS.md` or `docs/TODO.md`
 - No barrel exports
-- Never add `--json` output flags to CLI commands
+- Never add `--json` output flags to the `browser` CLI commands (other CLIs are ok)
 - No fallback logic - each piece of code should do one thing, one way
 - Run `bun run test` after changes (always runs headless) - requires the web server running (`bun run dev:web`)
 - After completing a new feature, manually test it and add integration test coverage
