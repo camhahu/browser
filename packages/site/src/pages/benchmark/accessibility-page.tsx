@@ -6,7 +6,7 @@ import {
   labelClass,
   mutedClass,
   panelClass,
-} from '../../components/Layout'
+} from '../../components/layout'
 import {
   autocompleteSuggestions,
   menuItems,
@@ -15,7 +15,7 @@ import {
   type TreeNode,
 } from '../../data/benchmark-8-data'
 
-export function BenchmarkAccessibilityPage() {
+export function AccessibilityPage() {
   const [liveMessage, setLiveMessage] = useState('')
   const [dialogOpen, setDialogOpen] = useState(false)
   const [selectedMenuItem, setSelectedMenuItem] = useState<string | null>(null)

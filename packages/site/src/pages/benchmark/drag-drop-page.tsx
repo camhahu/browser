@@ -4,7 +4,7 @@ import {
   labelClass,
   mutedClass,
   panelClass,
-} from '../../components/Layout'
+} from '../../components/layout'
 import {
   initialColumns,
   priorityColors,
@@ -20,7 +20,7 @@ type DragState = {
 
 type HistoryEntry = Column[]
 
-export function BenchmarkDragDropPage() {
+export function DragDropPage() {
   const [columns, setColumns] = useState<Column[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [dragState, setDragState] = useState<DragState>(null)

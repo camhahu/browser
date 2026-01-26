@@ -6,7 +6,7 @@ import {
   labelClass,
   mutedClass,
   panelClass,
-} from '../../components/Layout'
+} from '../../components/layout'
 import {
   departments,
   initialUsers,
@@ -20,7 +20,7 @@ type SortDirection = 'asc' | 'desc'
 
 const PAGE_SIZE = 5
 
-export function BenchmarkDataTablePage() {
+export function DataTablePage() {
   const [users, setUsers] = useState<User[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState('')

@@ -6,7 +6,7 @@ import {
   labelClass,
   mutedClass,
   panelClass,
-} from '../../components/Layout'
+} from '../../components/layout'
 import {
   companySizes,
   initialWizardData,
@@ -26,7 +26,7 @@ const stepTitles: Record<Step, string> = {
   review: 'Review',
 }
 
-export function BenchmarkWizardPage() {
+export function CheckoutFlowPage() {
   const [currentStep, setCurrentStep] = useState<Step>('plan')
   const [data, setData] = useState<WizardData>(initialWizardData)
   const [errors, setErrors] = useState<Partial<Record<keyof WizardData, string>>>({})

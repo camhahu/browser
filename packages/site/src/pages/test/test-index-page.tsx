@@ -1,6 +1,6 @@
 import { Link } from '@tanstack/react-router'
-import { labelClass, mutedClass, sectionClass } from '../../components/Layout'
-import { testPages } from '../../data/testPages'
+import { labelClass, mutedClass, sectionClass } from '../../components/layout'
+import { testPages } from '../../data/test-pages'
 
 export function TestIndexPage() {
   return (

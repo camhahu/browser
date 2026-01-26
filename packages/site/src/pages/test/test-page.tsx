@@ -6,8 +6,8 @@ import {
   panelClass,
   sectionClass,
   TestNav,
-} from '../../components/Layout'
-import { getTestPage, type TestSlug } from '../../data/testPages'
+} from '../../components/layout'
+import { getTestPage, type TestSlug } from '../../data/test-pages'
 import { useParams } from '@tanstack/react-router'
 
 export function TestPage() {

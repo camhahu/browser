@@ -5,7 +5,7 @@ import {
   labelClass,
   mutedClass,
   sectionClass,
-} from '../components/Layout'
+} from '../components/layout'
 
 export function HomePage() {
   return (

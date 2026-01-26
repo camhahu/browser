@@ -4,7 +4,7 @@ import {
   testBlogPaths,
   testPagePaths,
   type TestSlug,
-} from '../data/testPages'
+} from '../data/test-pages'
 
 export const containerClass = 'mx-auto w-full max-w-4xl'
 export const sectionClass = `${containerClass} p-4`

@@ -6,7 +6,7 @@ import {
   labelClass,
   mutedClass,
   panelClass,
-} from '../../components/Layout'
+} from '../../components/layout'
 import {
   errorScenarios,
   initialFormData,
@@ -25,7 +25,7 @@ type ViewState =
   | { type: 'ratelimit'; status: 'idle' | 'loading' | 'limited' | 'success'; retryAfter: number; requestCount: number }
   | { type: 'confirm'; confirmed: boolean }
 
-export function BenchmarkErrorHandlingPage() {
+export function ErrorStatesPage() {
   const [view, setView] = useState<ViewState>({ type: 'menu' })
   const [formData, setFormData] = useState<FormData>(initialFormData)
   const [password, setPassword] = useState('')

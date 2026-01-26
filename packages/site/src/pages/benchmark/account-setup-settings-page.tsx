@@ -6,14 +6,14 @@ import {
   labelClass,
   mutedClass,
   panelClass,
-} from '../../components/Layout'
+} from '../../components/layout'
 import {
   initialProfile,
   preferenceOptions,
   roles,
   securitySignals,
   timezones,
-} from '../../data/benchmarkData'
+} from '../../data/benchmark-1-data'
 
 type ProfileForm = typeof initialProfile
 
@@ -27,7 +27,7 @@ type ProfileErrors = Partial<Record<ProfileField, string>>
 
 type SaveState = 'idle' | 'saving' | 'saved'
 
-export function BenchmarkSettingsPage() {
+export function AccountSetupSettingsPage() {
   const [profile, setProfile] = useState<ProfileForm>(initialProfile)
   const [preferences, setPreferences] = useState<Preferences>({
     weeklyDigest: true,

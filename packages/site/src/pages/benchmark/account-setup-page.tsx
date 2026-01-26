@@ -7,9 +7,9 @@ import {
   labelClass,
   mutedClass,
   panelClass,
-} from '../../components/Layout'
+} from '../../components/layout'
 
-export function BenchmarkLoginPage() {
+export function AccountSetupPage() {
   const navigate = useNavigate()
   const codeInputRef = useRef<HTMLInputElement>(null)
   const [email, setEmail] = useState('')

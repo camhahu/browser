@@ -6,7 +6,7 @@ import {
   labelClass,
   mutedClass,
   panelClass,
-} from '../../components/Layout'
+} from '../../components/layout'
 import {
   generateFeedItems,
   ITEMS_PER_PAGE,
@@ -15,7 +15,7 @@ import {
   type FeedItem,
 } from '../../data/benchmark-13-data'
 
-export function BenchmarkInfiniteScrollPage() {
+export function InfiniteScrollPage() {
   const [items, setItems] = useState<FeedItem[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [isLoadingMore, setIsLoadingMore] = useState(false)
