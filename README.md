@@ -16,6 +16,8 @@
 
 > **Experimental**: Commands are stable, but their output format is subject to change as we optimize for AI agent effectiveness.
 
+> **Platform Support**: Confirmed working on macOS. Linux and Windows support is untested—please [open an issue](https://github.com/camhahu/browser/issues) if you encounter problems.
+
 ## Install
 
 ```bash
