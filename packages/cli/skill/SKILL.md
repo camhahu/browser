@@ -65,6 +65,8 @@ Navigation commands (`open`, `click`, `navigate`, `back`, `forward`, `refresh`) 
 
 For debugging or user intervention, start a headed browser with `browser start --headed`.
 
+For software rendering, use `browser start --headless --software-rendering`. To pass through Chrome flags like Docker's `--no-sandbox`, use `browser start --chrome-arg --no-sandbox`.
+
 Run `browser --help` for full command list.
 
 ## Outline
