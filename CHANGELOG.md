@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.5.3] - 2026-03-18
+
+### Added
+
+- Software rendering and custom Chrome args support - @matthewijordan
+
 ## [0.5.2] - 2026-01-26
 
 ### Fixed
