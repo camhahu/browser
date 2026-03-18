@@ -59,7 +59,7 @@ browser stop
 
 | Command | Description |
 |---------|-------------|
-| `start [--headed\|--headless]` | Start browser (default: headed) |
+| `start [--headed\|--headless] [--software-rendering] [--chrome-arg <arg>]...` | Start browser (default: headed) |
 | `stop` | Stop the browser |
 
 ### Navigation

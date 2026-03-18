@@ -1,6 +1,12 @@
 import { describe, test, expect, beforeAll, afterAll } from "bun:test";
 import { removeMacosDownloadAttributes } from "../src/commands/update";
-import { run, browser } from "./helpers";
+import { run, browser, browserFails } from "./helpers";
+
+async function expectBrowserStarts(args: string): Promise<void> {
+    await browser(args);
+    expect(await browser("active")).toBeTruthy();
+    await browser("stop");
+}
 
 describe("browser", () => {
     beforeAll(async () => {
@@ -25,6 +31,28 @@ describe("browser", () => {
         await browser("stop");
         const { exitCode } = await run("active");
         expect(exitCode).toBe(1);
+    });
+
+    test("start with software rendering", async () => {
+        await expectBrowserStarts("start --headless --software-rendering");
+    });
+
+    test("start with extra chrome arg", async () => {
+        await expectBrowserStarts("start --headless --chrome-arg --disable-dev-shm-usage");
+    });
+
+    test("start with software rendering and extra chrome arg", async () => {
+        await expectBrowserStarts("start --headless --software-rendering --chrome-arg --disable-dev-shm-usage");
+    });
+
+    test("rejects reserved chrome arg --remote-debugging-port", async () => {
+        const output = await browserFails("start --headless --chrome-arg --remote-debugging-port=9333");
+        expect(output).toContain("--remote-debugging-port");
+    });
+
+    test("rejects reserved chrome arg --user-data-dir", async () => {
+        const output = await browserFails("start --headless --chrome-arg --user-data-dir=/tmp/evil");
+        expect(output).toContain("--user-data-dir");
     });
 });
 

@@ -137,7 +137,23 @@ export function addOnClose(cb: OnCloseCallback): void {
     onCloseCallbacks.push(cb);
 }
 
-export async function launch(options: { headless?: boolean }): Promise<string> {
+const SOFTWARE_RENDERING_ARGS = ["--disable-gpu", "--use-gl=swiftshader"];
+const MANAGED_CHROME_ARGS = ["--remote-debugging-port", "--remote-debugging-pipe", "--user-data-dir"];
+
+export function findManagedChromeArg(args: string[]): string | null {
+    for (const arg of args) {
+        const flag = arg.split("=")[0];
+        if (MANAGED_CHROME_ARGS.includes(flag)) return flag;
+    }
+
+    return null;
+}
+
+export async function launch(options: {
+    headless?: boolean;
+    softwareRendering?: boolean;
+    extraArgs?: string[];
+}): Promise<string> {
     if (await isRunning()) {
         const state = await readState();
         return state?.activeTabId ?? "1";
@@ -154,6 +170,8 @@ export async function launch(options: { headless?: boolean }): Promise<string> {
         "--no-default-browser-check",
     ];
     if (options.headless) args.push("--headless=new");
+    if (options.softwareRendering) args.push(...SOFTWARE_RENDERING_ARGS);
+    if (options.extraArgs?.length) args.push(...options.extraArgs);
 
     spawn(browserPath, args, {
         detached: true,
