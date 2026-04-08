@@ -1,10 +1,12 @@
 import CDP from "chrome-remote-interface";
 import { spawn } from "node:child_process";
+import { openSync, closeSync } from "node:fs";
 import { join } from "node:path";
 import { mkdir, rm } from "node:fs/promises";
 import { getBrowserPath, getProfileDir, BROWSER_DIR } from "./config";
 
 const STATE_FILE = join(BROWSER_DIR, "state.json");
+const LAUNCH_ERROR_FILE = join(BROWSER_DIR, "launch-error.log");
 export const CDP_PORT = 9222;
 const LAUNCH_TIMEOUT_MS = 5000;
 const LAUNCH_POLL_INTERVAL_MS = 100;
@@ -140,6 +142,10 @@ export function addOnClose(cb: OnCloseCallback): void {
 const SOFTWARE_RENDERING_ARGS = ["--disable-gpu", "--use-gl=swiftshader"];
 const MANAGED_CHROME_ARGS = ["--remote-debugging-port", "--remote-debugging-pipe", "--user-data-dir"];
 
+function needsNoSandbox(): boolean {
+    return process.platform === "linux" && typeof process.getuid === "function" && process.getuid() === 0;
+}
+
 export function findManagedChromeArg(args: string[]): string | null {
     for (const arg of args) {
         const flag = arg.split("=")[0];
@@ -171,12 +177,16 @@ export async function launch(options: {
     ];
     if (options.headless) args.push("--headless=new");
     if (options.softwareRendering) args.push(...SOFTWARE_RENDERING_ARGS);
+    if (needsNoSandbox()) args.push("--no-sandbox");
     if (options.extraArgs?.length) args.push(...options.extraArgs);
 
+    await rm(LAUNCH_ERROR_FILE, { force: true });
+    const launchErrorFd = openSync(LAUNCH_ERROR_FILE, "w");
     spawn(browserPath, args, {
         detached: true,
-        stdio: "ignore",
+        stdio: ["ignore", "ignore", launchErrorFd],
     }).unref();
+    closeSync(launchErrorFd);
 
     const maxAttempts = LAUNCH_TIMEOUT_MS / LAUNCH_POLL_INTERVAL_MS;
     for (let i = 0; i < maxAttempts; i++) {
@@ -194,13 +204,16 @@ export async function launch(options: {
                     mobile: false,
                 });
                 await client.close();
+                await rm(LAUNCH_ERROR_FILE, { force: true });
                 for (const cb of onLaunchCallbacks) await cb();
                 return page.id;
             }
         }
     }
 
-    throw new Error("Failed to start browser");
+    const launchError = (await Bun.file(LAUNCH_ERROR_FILE).text()).trim();
+    await rm(LAUNCH_ERROR_FILE, { force: true });
+    throw new Error(launchError ? `Failed to start browser:\n${launchError}` : "Failed to start browser");
 }
 
 export async function close(): Promise<string | null> {

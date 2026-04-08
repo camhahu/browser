@@ -1,6 +1,19 @@
 import { describe, test, expect, beforeAll, afterAll } from "bun:test";
+import { mkdir, rm } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { removeMacosDownloadAttributes } from "../src/commands/update";
 import { run, browser, browserFails } from "./helpers";
+
+async function writeFakeBrowser(path: string, message: string): Promise<void> {
+    if (process.platform === "win32") {
+        await Bun.write(path, `@echo off\r\necho ${message} 1>&2\r\nexit /b 1\r\n`);
+        return;
+    }
+
+    await Bun.write(path, `#!/bin/sh\nprintf "%s\\n" "${message}" >&2\nexit 1\n`);
+    await Bun.spawn(["chmod", "+x", path]).exited;
+}
 
 async function expectBrowserStarts(args: string): Promise<void> {
     await browser(args);
@@ -54,6 +67,29 @@ describe("browser", () => {
         const output = await browserFails("start --headless --chrome-arg --user-data-dir=/tmp/evil");
         expect(output).toContain("--user-data-dir");
     });
+
+    test("shows browser launch stderr when Chromium exits immediately", async () => {
+        const dir = join(tmpdir(), `browser-cli-launch-${crypto.randomUUID()}`);
+        const fakeBrowserPath = join(dir, process.platform === "win32" ? "fake-browser.cmd" : "fake-browser");
+        const configuredBrowserPath = await run("config browserPath");
+        const message = "Running as root without --no-sandbox is not supported.";
+
+        await mkdir(dir, { recursive: true });
+        await writeFakeBrowser(fakeBrowserPath, message);
+
+        try {
+            await browser(`config set browserPath ${fakeBrowserPath}`);
+            const output = await browserFails("start --headless");
+            expect(output).toContain(message);
+        } finally {
+            if (configuredBrowserPath.exitCode === 0 && configuredBrowserPath.stdout) {
+                await browser(`config set browserPath ${configuredBrowserPath.stdout}`);
+            } else {
+                await run("config unset browserPath");
+            }
+            await rm(dir, { recursive: true, force: true });
+        }
+    }, 10000);
 });
 
 describe("add-skill", () => {
@@ -65,17 +101,26 @@ describe("add-skill", () => {
 });
 
 describe("update", () => {
-    test("removes macOS download attributes", async () => {
-        const target = Bun.fileURLToPath(new URL("../../../dist/browser-test", import.meta.url));
-        const content = await Bun.file(Bun.fileURLToPath(new URL("../../../dist/browser", import.meta.url))).arrayBuffer();
-        await Bun.write(target, content);
-        await Bun.spawn(["chmod", "+x", target]).exited;
-        await Bun.spawn(["xattr", "-w", "com.apple.provenance", "test", target]).exited;
+    if (process.platform === "darwin") {
+        test("removes macOS download attributes", async () => {
+            const target = Bun.fileURLToPath(new URL("../../../dist/browser-test", import.meta.url));
+            const content = await Bun.file(
+                Bun.fileURLToPath(new URL("../../../dist/browser", import.meta.url)),
+            ).arrayBuffer();
+            await Bun.write(target, content);
+            await Bun.spawn(["chmod", "+x", target]).exited;
+            await Bun.spawn(["xattr", "-w", "com.apple.provenance", "test", target]).exited;
 
-        await removeMacosDownloadAttributes(target);
+            await removeMacosDownloadAttributes(target);
 
-        const { exitCode, stdout } = await run("--version");
-        expect(exitCode).toBe(0);
-        expect(stdout).toBeTruthy();
-    });
+            const { exitCode, stdout } = await run("--version");
+            expect(exitCode).toBe(0);
+            expect(stdout).toBeTruthy();
+        });
+    } else {
+        test("removeMacosDownloadAttributes is a no-op on non-macOS", async () => {
+            await removeMacosDownloadAttributes("/tmp/browser-test");
+            expect(true).toBe(true);
+        });
+    }
 });

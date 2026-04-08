@@ -7,10 +7,28 @@ const version = (await $`bun pm pkg get version --cwd ${cliRoot}`.text()).trim()
 const target = process.argv[2];
 
 const outfile = target ? `dist/browser-${target.replace("bun-", "")}` : "dist/browser";
-const targetFlag = target ? `--target=${target}` : "";
 const entrypoint = Bun.fileURLToPath(new URL("../src/index.ts", import.meta.url));
 const outfilePath = Bun.fileURLToPath(new URL(`../../../${outfile}`, import.meta.url));
 
 console.log(`Building browser v${version}${target ? ` for ${target}` : ""}`);
 
-await $`bun build --compile ${entrypoint} --outfile ${outfilePath} ${targetFlag} --define "process.env.VERSION='${version}'"`;
+const proc = Bun.spawn(
+    [
+        "bun",
+        "build",
+        "--compile",
+        entrypoint,
+        "--outfile",
+        outfilePath,
+        ...(target ? [`--target=${target}`] : []),
+        "--define",
+        `process.env.VERSION='${version}'`,
+    ],
+    {
+        stdout: "inherit",
+        stderr: "inherit",
+    },
+);
+
+const exitCode = await proc.exited;
+if (exitCode !== 0) process.exit(exitCode);
